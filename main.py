@@ -18,7 +18,7 @@ movement_router = MovementRouter()
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
 
 
-origins = ["http://localhost:3000"]
+origins = ["http://localhost:3000", "http://localhost:5173"]
 
 initialize()
 

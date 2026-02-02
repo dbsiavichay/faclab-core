@@ -18,7 +18,7 @@ class ProductBase(TypedDict):
     name: str
     sku: str
     description: NotRequired[str]
-    category: NotRequired[str]
+    category_id: NotRequired[int]
 
 
 class ProductInput(ProductBase):
