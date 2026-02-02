@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import AliasChoices, BaseModel, Field
 
@@ -29,3 +29,7 @@ class CategoryResponse(CategoryInput):
 
 class ProductResponse(ProductInput):
     id: int = Field(ge=1, description="Product ID")
+
+
+class ProductsResponse(BaseModel):
+    data: List[ProductResponse] = Field(..., description="List of products")

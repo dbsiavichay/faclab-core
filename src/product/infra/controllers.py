@@ -19,6 +19,7 @@ from src.product.infra.validators import (
     CategoryResponse,
     ProductInput,
     ProductResponse,
+    ProductsResponse,
 )
 
 
@@ -89,9 +90,10 @@ class ProductController:
     def delete(self, id: int) -> None:
         self.delete_product.execute(id)
 
-    def get_all(self) -> List[ProductResponse]:
+    def get_all(self) -> ProductsResponse:
         products = self.get_all_products.execute()
-        return [ProductResponse.model_validate(product) for product in products]
+        data = [ProductResponse.model_validate(product) for product in products]
+        return ProductsResponse(data=data)
 
     def get_by_id(self, id: int) -> ProductResponse:
         product = self.get_product_by_id.execute(id)
