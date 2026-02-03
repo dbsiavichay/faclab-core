@@ -4,7 +4,12 @@ from environs import Env
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from src.core.infra.db import Base
+
+# Import all models for autogenerate support
+from src.catalog.product.infra.models import CategoryModel, ProductModel  # noqa: F401
+from src.inventory.movement.infra.models import MovementModel  # noqa: F401
+from src.inventory.stock.infra.models import StockModel  # noqa: F401
+from src.shared.infra.db import Base
 
 env = Env()
 env.read_env()
