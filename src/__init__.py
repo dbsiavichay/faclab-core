@@ -3,14 +3,7 @@ import uuid
 from fastapi import Depends
 
 from config import config
-from src.core.infra.di import DependencyContainer, LifetimeScope
-from src.core.infra.repositories import Repository
-from src.movement.app.use_cases import CreateMovementUseCase, FilterMovementsUseCase
-from src.movement.domain.entities import Movement
-from src.movement.infra.controllers import MovementController
-from src.movement.infra.mappers import MovementMapper
-from src.movement.infra.repositories import MovementRepositoryImpl
-from src.product.app.use_cases import (
+from src.catalog.product.app.use_cases import (
     CreateCategoryUseCase,
     CreateProductUseCase,
     DeleteCategoryUseCase,
@@ -22,15 +15,28 @@ from src.product.app.use_cases import (
     UpdateCategoryUseCase,
     UpdateProductUseCase,
 )
-from src.product.domain.entities import Category, Product
-from src.product.infra.controllers import CategoryController, ProductController
-from src.product.infra.mappers import CategoryMapper, ProductMapper
-from src.product.infra.repositories import CategoryRepositoryImpl, ProductRepositoryImpl
-from src.stock.app.use_cases import FilterStocksUseCase
-from src.stock.domain.entities import Stock
-from src.stock.infra.controllers import StockController
-from src.stock.infra.mappers import StockMapper
-from src.stock.infra.repositories import StockRepositoryImpl
+from src.catalog.product.domain.entities import Category, Product
+from src.catalog.product.infra.controllers import CategoryController, ProductController
+from src.catalog.product.infra.mappers import CategoryMapper, ProductMapper
+from src.catalog.product.infra.repositories import (
+    CategoryRepositoryImpl,
+    ProductRepositoryImpl,
+)
+from src.inventory.movement.app.use_cases import (
+    CreateMovementUseCase,
+    FilterMovementsUseCase,
+)
+from src.inventory.movement.domain.entities import Movement
+from src.inventory.movement.infra.controllers import MovementController
+from src.inventory.movement.infra.mappers import MovementMapper
+from src.inventory.movement.infra.repositories import MovementRepositoryImpl
+from src.inventory.stock.app.use_cases import FilterStocksUseCase
+from src.inventory.stock.domain.entities import Stock
+from src.inventory.stock.infra.controllers import StockController
+from src.inventory.stock.infra.mappers import StockMapper
+from src.inventory.stock.infra.repositories import StockRepositoryImpl
+from src.shared.infra.di import DependencyContainer, LifetimeScope
+from src.shared.infra.repositories import Repository
 
 container = DependencyContainer()
 

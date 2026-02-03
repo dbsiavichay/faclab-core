@@ -5,10 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from src import initialize
-from src.core.infra.middlewares import ErrorHandlingMiddleware
-from src.movement.infra.routes import MovementRouter
-from src.product.infra.routes import CategoryRouter, ProductRouter
-from src.stock.infra.routes import StockRouter
+from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
+from src.inventory.movement.infra.routes import MovementRouter
+from src.inventory.stock.infra.routes import StockRouter
+from src.shared.infra.middlewares import ErrorHandlingMiddleware
 
 category_router = CategoryRouter()
 product_router = ProductRouter()
