@@ -22,6 +22,31 @@ from src.catalog.product.infra.repositories import (
     CategoryRepositoryImpl,
     ProductRepositoryImpl,
 )
+from src.customers.app.use_cases import (
+    ActivateCustomerUseCase,
+    CreateCustomerContactUseCase,
+    CreateCustomerUseCase,
+    DeactivateCustomerUseCase,
+    DeleteCustomerContactUseCase,
+    DeleteCustomerUseCase,
+    GetAllCustomersUseCase,
+    GetContactsByCustomerIdUseCase,
+    GetCustomerByIdUseCase,
+    GetCustomerByTaxIdUseCase,
+    GetCustomerContactByIdUseCase,
+    UpdateCustomerContactUseCase,
+    UpdateCustomerUseCase,
+)
+from src.customers.domain.entities import Customer, CustomerContact
+from src.customers.infra.controllers import (
+    CustomerContactController,
+    CustomerController,
+)
+from src.customers.infra.mappers import CustomerContactMapper, CustomerMapper
+from src.customers.infra.repositories import (
+    CustomerContactRepositoryImpl,
+    CustomerRepositoryImpl,
+)
 from src.inventory.movement.app.use_cases import (
     CreateMovementUseCase,
     FilterMovementsUseCase,
@@ -67,6 +92,18 @@ def init_mappers() -> None:
         factory=lambda c: StockMapper(),
         scope=LifetimeScope.SINGLETON,
     )
+    # Register the customer mapper
+    container.register(
+        CustomerMapper,
+        factory=lambda c: CustomerMapper(),
+        scope=LifetimeScope.SINGLETON,
+    )
+    # Register the customer contact mapper
+    container.register(
+        CustomerContactMapper,
+        factory=lambda c: CustomerContactMapper(),
+        scope=LifetimeScope.SINGLETON,
+    )
 
 
 def init_repositories() -> None:
@@ -104,6 +141,24 @@ def init_repositories() -> None:
         factory=lambda c, scope_id=None: MovementRepositoryImpl(
             c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
             c.resolve(MovementMapper),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register the customer repository
+    container.register(
+        Repository[Customer],
+        factory=lambda c, scope_id=None: CustomerRepositoryImpl(
+            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
+            c.resolve(CustomerMapper),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register the customer contact repository
+    container.register(
+        Repository[CustomerContact],
+        factory=lambda c, scope_id=None: CustomerContactRepositoryImpl(
+            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
+            c.resolve(CustomerContactMapper),
         ),
         scope=LifetimeScope.SCOPED,
     )
@@ -233,6 +288,125 @@ def init_use_cases() -> None:
         ),
         scope=LifetimeScope.SCOPED,
     )
+    # Register customer use cases
+    container.register(
+        CreateCustomerUseCase,
+        factory=lambda c, scope_id=None: CreateCustomerUseCase(
+            c.resolve_scoped(Repository[Customer], scope_id)
+            if scope_id
+            else c.resolve(Repository[Customer])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        UpdateCustomerUseCase,
+        factory=lambda c, scope_id=None: UpdateCustomerUseCase(
+            c.resolve_scoped(Repository[Customer], scope_id)
+            if scope_id
+            else c.resolve(Repository[Customer])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        DeleteCustomerUseCase,
+        factory=lambda c, scope_id=None: DeleteCustomerUseCase(
+            c.resolve_scoped(Repository[Customer], scope_id)
+            if scope_id
+            else c.resolve(Repository[Customer])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetAllCustomersUseCase,
+        factory=lambda c, scope_id=None: GetAllCustomersUseCase(
+            c.resolve_scoped(Repository[Customer], scope_id)
+            if scope_id
+            else c.resolve(Repository[Customer])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetCustomerByIdUseCase,
+        factory=lambda c, scope_id=None: GetCustomerByIdUseCase(
+            c.resolve_scoped(Repository[Customer], scope_id)
+            if scope_id
+            else c.resolve(Repository[Customer])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetCustomerByTaxIdUseCase,
+        factory=lambda c, scope_id=None: GetCustomerByTaxIdUseCase(
+            c.resolve_scoped(Repository[Customer], scope_id)
+            if scope_id
+            else c.resolve(Repository[Customer])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        ActivateCustomerUseCase,
+        factory=lambda c, scope_id=None: ActivateCustomerUseCase(
+            c.resolve_scoped(Repository[Customer], scope_id)
+            if scope_id
+            else c.resolve(Repository[Customer])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        DeactivateCustomerUseCase,
+        factory=lambda c, scope_id=None: DeactivateCustomerUseCase(
+            c.resolve_scoped(Repository[Customer], scope_id)
+            if scope_id
+            else c.resolve(Repository[Customer])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register customer contact use cases
+    container.register(
+        CreateCustomerContactUseCase,
+        factory=lambda c, scope_id=None: CreateCustomerContactUseCase(
+            c.resolve_scoped(Repository[CustomerContact], scope_id)
+            if scope_id
+            else c.resolve(Repository[CustomerContact])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        UpdateCustomerContactUseCase,
+        factory=lambda c, scope_id=None: UpdateCustomerContactUseCase(
+            c.resolve_scoped(Repository[CustomerContact], scope_id)
+            if scope_id
+            else c.resolve(Repository[CustomerContact])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        DeleteCustomerContactUseCase,
+        factory=lambda c, scope_id=None: DeleteCustomerContactUseCase(
+            c.resolve_scoped(Repository[CustomerContact], scope_id)
+            if scope_id
+            else c.resolve(Repository[CustomerContact])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetCustomerContactByIdUseCase,
+        factory=lambda c, scope_id=None: GetCustomerContactByIdUseCase(
+            c.resolve_scoped(Repository[CustomerContact], scope_id)
+            if scope_id
+            else c.resolve(Repository[CustomerContact])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetContactsByCustomerIdUseCase,
+        factory=lambda c, scope_id=None: GetContactsByCustomerIdUseCase(
+            c.resolve_scoped(Repository[CustomerContact], scope_id)
+            if scope_id
+            else c.resolve(Repository[CustomerContact])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
 
 
 def init_controllers() -> None:
@@ -303,6 +477,59 @@ def init_controllers() -> None:
         ),
         scope=LifetimeScope.SCOPED,
     )
+    # Register the customer controller
+    container.register(
+        CustomerController,
+        factory=lambda c, scope_id=None: CustomerController(
+            c.resolve_scoped(CreateCustomerUseCase, scope_id)
+            if scope_id
+            else c.resolve(CreateCustomerUseCase),
+            c.resolve_scoped(UpdateCustomerUseCase, scope_id)
+            if scope_id
+            else c.resolve(UpdateCustomerUseCase),
+            c.resolve_scoped(DeleteCustomerUseCase, scope_id)
+            if scope_id
+            else c.resolve(DeleteCustomerUseCase),
+            c.resolve_scoped(GetAllCustomersUseCase, scope_id)
+            if scope_id
+            else c.resolve(GetAllCustomersUseCase),
+            c.resolve_scoped(GetCustomerByIdUseCase, scope_id)
+            if scope_id
+            else c.resolve(GetCustomerByIdUseCase),
+            c.resolve_scoped(GetCustomerByTaxIdUseCase, scope_id)
+            if scope_id
+            else c.resolve(GetCustomerByTaxIdUseCase),
+            c.resolve_scoped(ActivateCustomerUseCase, scope_id)
+            if scope_id
+            else c.resolve(ActivateCustomerUseCase),
+            c.resolve_scoped(DeactivateCustomerUseCase, scope_id)
+            if scope_id
+            else c.resolve(DeactivateCustomerUseCase),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register the customer contact controller
+    container.register(
+        CustomerContactController,
+        factory=lambda c, scope_id=None: CustomerContactController(
+            c.resolve_scoped(CreateCustomerContactUseCase, scope_id)
+            if scope_id
+            else c.resolve(CreateCustomerContactUseCase),
+            c.resolve_scoped(UpdateCustomerContactUseCase, scope_id)
+            if scope_id
+            else c.resolve(UpdateCustomerContactUseCase),
+            c.resolve_scoped(DeleteCustomerContactUseCase, scope_id)
+            if scope_id
+            else c.resolve(DeleteCustomerContactUseCase),
+            c.resolve_scoped(GetCustomerContactByIdUseCase, scope_id)
+            if scope_id
+            else c.resolve(GetCustomerContactByIdUseCase),
+            c.resolve_scoped(GetContactsByCustomerIdUseCase, scope_id)
+            if scope_id
+            else c.resolve(GetContactsByCustomerIdUseCase),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
 
 
 def initialize() -> None:
@@ -369,6 +596,32 @@ def get_movement_controller(
 ) -> MovementController:
     """Gets the movement controller for a specific request."""
     controller = container.resolve_scoped(MovementController, scope_id)
+    try:
+        yield controller
+    finally:
+        # Close the scope when the request ends
+        container.close_scope(scope_id)
+
+
+# Dependency to get the customer controller in a request scope
+def get_customer_controller(
+    scope_id: str = Depends(get_request_scope_id),
+) -> CustomerController:
+    """Gets the customer controller for a specific request."""
+    controller = container.resolve_scoped(CustomerController, scope_id)
+    try:
+        yield controller
+    finally:
+        # Close the scope when the request ends
+        container.close_scope(scope_id)
+
+
+# Dependency to get the customer contact controller in a request scope
+def get_customer_contact_controller(
+    scope_id: str = Depends(get_request_scope_id),
+) -> CustomerContactController:
+    """Gets the customer contact controller for a specific request."""
+    controller = container.resolve_scoped(CustomerContactController, scope_id)
     try:
         yield controller
     finally:
