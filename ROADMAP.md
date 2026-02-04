@@ -70,7 +70,6 @@ core/domain + core/app + core/infra → shared/
 ```python
 Customer {
     id: int
-    code: str                    # Código único del cliente
     name: str
     tax_id: str                 # RUC/NIT/Tax ID
     email: str
@@ -590,9 +589,9 @@ GET /reports/financial/accounts-receivable
   src/movement → src/inventory/movement
   src/core → src/shared
   ```
-- [ ] Actualizar imports en todos los archivos
-- [ ] Mover domain/app/infra comunes a shared/
-- [ ] Mejorar BaseRepository (fix filter return type)
+- [x] Actualizar imports en todos los archivos
+- [x] Mover domain/app/infra comunes a shared/
+- [x] Mejorar BaseRepository (fix filter return type)
 - [ ] Implementar paginación funcional en todos los endpoints
 - [ ] Crear tests básicos (repository + use cases)
 - [ ] Actualizar README.md con estructura nueva
@@ -606,14 +605,14 @@ GET /reports/financial/accounts-receivable
 ### Fase 2: Clientes y Ventas Básicas (Semanas 2-3)
 
 **Semana 2: Módulo Customers**
-- [ ] Crear estructura customers/ (domain, app, infra)
-- [ ] Implementar entidades Customer y CustomerContact
-- [ ] Crear modelos SQLAlchemy
-- [ ] Implementar repository y mapper
-- [ ] Crear use cases (CRUD + búsqueda)
-- [ ] Crear controller y routes
-- [ ] Registrar en DI container
-- [ ] Migration para tablas customers
+- [x] Crear estructura customers/ (domain, app, infra)
+- [x] Implementar entidades Customer y CustomerContact
+- [x] Crear modelos SQLAlchemy
+- [x] Implementar repository y mapper
+- [x] Crear use cases (CRUD + búsqueda)
+- [x] Crear controller y routes
+- [x] Registrar en DI container
+- [x] Migration para tablas customers
 - [ ] Tests unitarios (>80% coverage)
 - [ ] Tests de integración (API endpoints)
 

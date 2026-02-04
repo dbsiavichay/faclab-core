@@ -1,8 +1,8 @@
-"""Initial
+"""init database
 
-Revision ID: 65795b8e6de3
+Revision ID: e15e44843ce8
 Revises:
-Create Date: 2025-05-03 03:52:18.198261
+Create Date: 2026-02-04 14:41:51.504060
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "65795b8e6de3"
+revision: str = "e15e44843ce8"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,6 +26,36 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("name", sa.String(length=64), nullable=False),
         sa.Column("description", sa.String(length=128), nullable=True),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "customers",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("name", sa.String(length=128), nullable=False),
+        sa.Column("tax_id", sa.String(length=32), nullable=False),
+        sa.Column("tax_type", sa.Integer(), nullable=False),
+        sa.Column("email", sa.String(length=128), nullable=True),
+        sa.Column("phone", sa.String(length=32), nullable=True),
+        sa.Column("address", sa.String(length=255), nullable=True),
+        sa.Column("city", sa.String(length=64), nullable=True),
+        sa.Column("state", sa.String(length=64), nullable=True),
+        sa.Column("country", sa.String(length=64), nullable=True),
+        sa.Column("credit_limit", sa.Numeric(precision=12, scale=2), nullable=True),
+        sa.Column("payment_terms", sa.Integer(), nullable=True),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("tax_id"),
+    )
+    op.create_table(
+        "customer_contacts",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("customer_id", sa.Integer(), nullable=False),
+        sa.Column("name", sa.String(length=128), nullable=False),
+        sa.Column("role", sa.String(length=64), nullable=True),
+        sa.Column("email", sa.String(length=128), nullable=True),
+        sa.Column("phone", sa.String(length=32), nullable=True),
+        sa.ForeignKeyConstraint(["customer_id"], ["customers.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -79,5 +109,7 @@ def downgrade() -> None:
     op.drop_table("stocks")
     op.drop_table("movements")
     op.drop_table("products")
+    op.drop_table("customer_contacts")
+    op.drop_table("customers")
     op.drop_table("categories")
     # ### end Alembic commands ###
