@@ -15,7 +15,7 @@ down:  ## Stop the docker containers
 	docker compose down
 
 tests:  ## Run tests
-	docker compose run --no-deps --rm api pytest --cov='app'
+	docker compose run --no-deps --rm api pytest --cov='src'
 
 lint:  ## Fix linter errors
 	source .venv/bin/activate && black . && isort . --profile black && flake8 .	
