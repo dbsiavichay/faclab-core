@@ -1,11 +1,12 @@
 from typing import Any, ClassVar, Generic, List, Optional, TypeVar, Union
 
-from sqlalchemy import asc, desc
+from sqlalchemy import asc, desc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
 
 from src.shared.app.repositories import Repository
 from src.shared.domain.entities import Entity
+from src.shared.domain.specifications import Specification
 from src.shared.infra.mappers import Mapper
 
 from .db import Base
@@ -150,3 +151,26 @@ class BaseRepository(Repository[E], Generic[E]):
         for key, value in kwargs.items():
             filter_criteria.append(getattr(self.__model__, key) == value)
         return self.filter(criteria=filter_criteria, limit=limit, offset=offset)
+
+    def filter_by_spec(
+        self,
+        spec: Specification,
+        order_by: Optional[OrderCriteria] = None,
+        desc_order: bool = False,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> List[E]:
+        criteria = spec.to_sql_criteria()
+        return self.filter(
+            criteria=criteria,
+            order_by=order_by,
+            desc_order=desc_order,
+            limit=limit,
+            offset=offset,
+        )
+
+    def count_by_spec(self, spec: Specification) -> int:
+        criteria = spec.to_sql_criteria()
+        return (
+            self.session.query(func.count(self.__model__.id)).filter(*criteria).scalar()
+        )
