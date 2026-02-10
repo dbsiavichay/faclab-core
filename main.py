@@ -9,6 +9,7 @@ from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.movement.infra.routes import MovementRouter
 from src.inventory.stock.infra.routes import StockRouter
+from src.sales.infra.routes import SaleRouter
 from src.shared.infra.middlewares import ErrorHandlingMiddleware
 
 category_router = CategoryRouter()
@@ -17,6 +18,7 @@ stock_router = StockRouter()
 movement_router = MovementRouter()
 customer_router = CustomerRouter()
 customer_contact_router = CustomerContactRouter()
+sale_router = SaleRouter()
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
 
@@ -47,6 +49,7 @@ app.include_router(
     prefix="/customer-contacts",
     tags=["customer-contacts"],
 )
+app.include_router(sale_router.router, prefix="/sales", tags=["sales"])
 
 
 @app.get("/")

@@ -1,0 +1,149 @@
+from dataclasses import dataclass, field
+from typing import Any, Dict, List
+
+from src.shared.domain.events import DomainEvent
+
+
+@dataclass
+class SaleCreated(DomainEvent):
+    """Evento emitido cuando se crea una venta"""
+
+    sale_id: int = 0
+    customer_id: int = 0
+    total: float = 0.0
+
+    def _payload(self) -> Dict[str, Any]:
+        return {
+            "sale_id": self.sale_id,
+            "customer_id": self.customer_id,
+            "total": self.total,
+        }
+
+
+@dataclass
+class SaleConfirmed(DomainEvent):
+    """
+    Evento emitido cuando se confirma una venta.
+    Este evento desencadena la creación de movimientos de inventario (OUT).
+    """
+
+    sale_id: int = 0
+    customer_id: int = 0
+    items: List[Dict[str, Any]] = field(
+        default_factory=list
+    )  # [{product_id, quantity, unit_price}]
+    total: float = 0.0
+
+    def _payload(self) -> Dict[str, Any]:
+        return {
+            "sale_id": self.sale_id,
+            "customer_id": self.customer_id,
+            "items": self.items,
+            "total": self.total,
+        }
+
+
+@dataclass
+class SaleCancelled(DomainEvent):
+    """
+    Evento emitido cuando se cancela una venta.
+    Si la venta estaba confirmada, esto desencadena movimientos de reversión (IN).
+    """
+
+    sale_id: int = 0
+    customer_id: int = 0
+    items: List[Dict[str, Any]] = field(
+        default_factory=list
+    )  # [{product_id, quantity}]
+    reason: str = ""
+    was_confirmed: bool = (
+        False  # True si la venta estaba confirmada antes de cancelarse
+    )
+
+    def _payload(self) -> Dict[str, Any]:
+        return {
+            "sale_id": self.sale_id,
+            "customer_id": self.customer_id,
+            "items": self.items,
+            "reason": self.reason,
+            "was_confirmed": self.was_confirmed,
+        }
+
+
+@dataclass
+class SaleInvoiced(DomainEvent):
+    """Evento emitido cuando se factura una venta"""
+
+    sale_id: int = 0
+    customer_id: int = 0
+    invoice_number: str = ""
+    total: float = 0.0
+
+    def _payload(self) -> Dict[str, Any]:
+        return {
+            "sale_id": self.sale_id,
+            "customer_id": self.customer_id,
+            "invoice_number": self.invoice_number,
+            "total": self.total,
+        }
+
+
+@dataclass
+class PaymentReceived(DomainEvent):
+    """
+    Evento emitido cuando se registra un pago para una venta.
+    Permite actualizar el estado de pago de la venta.
+    """
+
+    payment_id: int = 0
+    sale_id: int = 0
+    amount: float = 0.0
+    payment_method: str = ""
+    reference: str = ""
+
+    def _payload(self) -> Dict[str, Any]:
+        return {
+            "payment_id": self.payment_id,
+            "sale_id": self.sale_id,
+            "amount": self.amount,
+            "payment_method": self.payment_method,
+            "reference": self.reference,
+        }
+
+
+@dataclass
+class SaleItemAdded(DomainEvent):
+    """Evento emitido cuando se agrega un item a una venta"""
+
+    sale_id: int = 0
+    sale_item_id: int = 0
+    product_id: int = 0
+    quantity: int = 0
+    unit_price: float = 0.0
+
+    def _payload(self) -> Dict[str, Any]:
+        return {
+            "sale_id": self.sale_id,
+            "sale_item_id": self.sale_item_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "unit_price": self.unit_price,
+        }
+
+
+@dataclass
+class SaleItemRemoved(DomainEvent):
+    """Evento emitido cuando se elimina un item de una venta"""
+
+    sale_id: int = 0
+    sale_item_id: int = 0
+    product_id: int = 0
+    quantity: int = 0
+
+    def _payload(self) -> Dict[str, Any]:
+        return {
+            "sale_id": self.sale_id,
+            "sale_item_id": self.sale_item_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+        }

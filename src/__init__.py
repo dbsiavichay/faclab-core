@@ -62,6 +62,28 @@ from src.inventory.stock.domain.entities import Stock
 from src.inventory.stock.infra.controllers import StockController
 from src.inventory.stock.infra.mappers import StockMapper
 from src.inventory.stock.infra.repositories import StockRepositoryImpl
+from src.sales.app.commands import (
+    AddSaleItemCommandHandler,
+    CancelSaleCommandHandler,
+    ConfirmSaleCommandHandler,
+    CreateSaleCommandHandler,
+    RegisterPaymentCommandHandler,
+    RemoveSaleItemCommandHandler,
+)
+from src.sales.app.queries import (
+    GetAllSalesQueryHandler,
+    GetSaleByIdQueryHandler,
+    GetSaleItemsQueryHandler,
+    GetSalePaymentsQueryHandler,
+)
+from src.sales.domain.entities import Payment, Sale, SaleItem
+from src.sales.infra.controllers import SaleController
+from src.sales.infra.mappers import PaymentMapper, SaleItemMapper, SaleMapper
+from src.sales.infra.repositories import (
+    PaymentRepositoryImpl,
+    SaleItemRepositoryImpl,
+    SaleRepositoryImpl,
+)
 from src.shared.infra.di import DependencyContainer, LifetimeScope
 from src.shared.infra.repositories import Repository
 
@@ -104,6 +126,24 @@ def init_mappers() -> None:
     container.register(
         CustomerContactMapper,
         factory=lambda c: CustomerContactMapper(),
+        scope=LifetimeScope.SINGLETON,
+    )
+    # Register the sale mapper
+    container.register(
+        SaleMapper,
+        factory=lambda c: SaleMapper(),
+        scope=LifetimeScope.SINGLETON,
+    )
+    # Register the sale item mapper
+    container.register(
+        SaleItemMapper,
+        factory=lambda c: SaleItemMapper(),
+        scope=LifetimeScope.SINGLETON,
+    )
+    # Register the payment mapper
+    container.register(
+        PaymentMapper,
+        factory=lambda c: PaymentMapper(),
         scope=LifetimeScope.SINGLETON,
     )
 
@@ -161,6 +201,33 @@ def init_repositories() -> None:
         factory=lambda c, scope_id=None: CustomerContactRepositoryImpl(
             c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
             c.resolve(CustomerContactMapper),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register the sale repository
+    container.register(
+        Repository[Sale],
+        factory=lambda c, scope_id=None: SaleRepositoryImpl(
+            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
+            c.resolve(SaleMapper),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register the sale item repository
+    container.register(
+        Repository[SaleItem],
+        factory=lambda c, scope_id=None: SaleItemRepositoryImpl(
+            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
+            c.resolve(SaleItemMapper),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register the payment repository
+    container.register(
+        Repository[Payment],
+        factory=lambda c, scope_id=None: PaymentRepositoryImpl(
+            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
+            c.resolve(PaymentMapper),
         ),
         scope=LifetimeScope.SCOPED,
     )
@@ -412,6 +479,115 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
 
+    # Register sales command handlers
+    container.register(
+        CreateSaleCommandHandler,
+        factory=lambda c, scope_id=None: CreateSaleCommandHandler(
+            c.resolve_scoped(Repository[Sale], scope_id)
+            if scope_id
+            else c.resolve(Repository[Sale])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        AddSaleItemCommandHandler,
+        factory=lambda c, scope_id=None: AddSaleItemCommandHandler(
+            c.resolve_scoped(Repository[Sale], scope_id)
+            if scope_id
+            else c.resolve(Repository[Sale]),
+            c.resolve_scoped(Repository[SaleItem], scope_id)
+            if scope_id
+            else c.resolve(Repository[SaleItem]),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        RemoveSaleItemCommandHandler,
+        factory=lambda c, scope_id=None: RemoveSaleItemCommandHandler(
+            c.resolve_scoped(Repository[Sale], scope_id)
+            if scope_id
+            else c.resolve(Repository[Sale]),
+            c.resolve_scoped(Repository[SaleItem], scope_id)
+            if scope_id
+            else c.resolve(Repository[SaleItem]),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        ConfirmSaleCommandHandler,
+        factory=lambda c, scope_id=None: ConfirmSaleCommandHandler(
+            c.resolve_scoped(Repository[Sale], scope_id)
+            if scope_id
+            else c.resolve(Repository[Sale]),
+            c.resolve_scoped(Repository[SaleItem], scope_id)
+            if scope_id
+            else c.resolve(Repository[SaleItem]),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        CancelSaleCommandHandler,
+        factory=lambda c, scope_id=None: CancelSaleCommandHandler(
+            c.resolve_scoped(Repository[Sale], scope_id)
+            if scope_id
+            else c.resolve(Repository[Sale]),
+            c.resolve_scoped(Repository[SaleItem], scope_id)
+            if scope_id
+            else c.resolve(Repository[SaleItem]),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        RegisterPaymentCommandHandler,
+        factory=lambda c, scope_id=None: RegisterPaymentCommandHandler(
+            c.resolve_scoped(Repository[Sale], scope_id)
+            if scope_id
+            else c.resolve(Repository[Sale]),
+            c.resolve_scoped(Repository[Payment], scope_id)
+            if scope_id
+            else c.resolve(Repository[Payment]),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+
+    # Register sales query handlers
+    container.register(
+        GetAllSalesQueryHandler,
+        factory=lambda c, scope_id=None: GetAllSalesQueryHandler(
+            c.resolve_scoped(Repository[Sale], scope_id)
+            if scope_id
+            else c.resolve(Repository[Sale])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetSaleByIdQueryHandler,
+        factory=lambda c, scope_id=None: GetSaleByIdQueryHandler(
+            c.resolve_scoped(Repository[Sale], scope_id)
+            if scope_id
+            else c.resolve(Repository[Sale])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetSaleItemsQueryHandler,
+        factory=lambda c, scope_id=None: GetSaleItemsQueryHandler(
+            c.resolve_scoped(Repository[SaleItem], scope_id)
+            if scope_id
+            else c.resolve(Repository[SaleItem])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetSalePaymentsQueryHandler,
+        factory=lambda c, scope_id=None: GetSalePaymentsQueryHandler(
+            c.resolve_scoped(Repository[Payment], scope_id)
+            if scope_id
+            else c.resolve(Repository[Payment])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+
 
 def init_controllers() -> None:
     """Initializes all controllers."""
@@ -534,6 +710,43 @@ def init_controllers() -> None:
         ),
         scope=LifetimeScope.SCOPED,
     )
+    # Register the sale controller
+    container.register(
+        SaleController,
+        factory=lambda c, scope_id=None: SaleController(
+            c.resolve_scoped(CreateSaleCommandHandler, scope_id)
+            if scope_id
+            else c.resolve(CreateSaleCommandHandler),
+            c.resolve_scoped(AddSaleItemCommandHandler, scope_id)
+            if scope_id
+            else c.resolve(AddSaleItemCommandHandler),
+            c.resolve_scoped(RemoveSaleItemCommandHandler, scope_id)
+            if scope_id
+            else c.resolve(RemoveSaleItemCommandHandler),
+            c.resolve_scoped(ConfirmSaleCommandHandler, scope_id)
+            if scope_id
+            else c.resolve(ConfirmSaleCommandHandler),
+            c.resolve_scoped(CancelSaleCommandHandler, scope_id)
+            if scope_id
+            else c.resolve(CancelSaleCommandHandler),
+            c.resolve_scoped(RegisterPaymentCommandHandler, scope_id)
+            if scope_id
+            else c.resolve(RegisterPaymentCommandHandler),
+            c.resolve_scoped(GetAllSalesQueryHandler, scope_id)
+            if scope_id
+            else c.resolve(GetAllSalesQueryHandler),
+            c.resolve_scoped(GetSaleByIdQueryHandler, scope_id)
+            if scope_id
+            else c.resolve(GetSaleByIdQueryHandler),
+            c.resolve_scoped(GetSaleItemsQueryHandler, scope_id)
+            if scope_id
+            else c.resolve(GetSaleItemsQueryHandler),
+            c.resolve_scoped(GetSalePaymentsQueryHandler, scope_id)
+            if scope_id
+            else c.resolve(GetSalePaymentsQueryHandler),
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
 
 
 def initialize() -> None:
@@ -548,6 +761,9 @@ def initialize() -> None:
     init_repositories()
     init_use_cases()
     init_controllers()
+
+    # Import event handlers to register them via decorators
+    import src.inventory.infra.event_handlers  # noqa: F401
 
 
 # Function to generate a unique scope ID for each request
@@ -626,6 +842,19 @@ def get_customer_contact_controller(
 ) -> CustomerContactController:
     """Gets the customer contact controller for a specific request."""
     controller = container.resolve_scoped(CustomerContactController, scope_id)
+    try:
+        yield controller
+    finally:
+        # Close the scope when the request ends
+        container.close_scope(scope_id)
+
+
+# Dependency to get the sale controller in a request scope
+def get_sale_controller(
+    scope_id: str = Depends(get_request_scope_id),
+) -> SaleController:
+    """Gets the sale controller for a specific request."""
+    controller = container.resolve_scoped(SaleController, scope_id)
     try:
         yield controller
     finally:
