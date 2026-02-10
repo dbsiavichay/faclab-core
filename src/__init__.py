@@ -22,20 +22,22 @@ from src.catalog.product.infra.repositories import (
     CategoryRepositoryImpl,
     ProductRepositoryImpl,
 )
-from src.customers.app.use_cases import (
-    ActivateCustomerUseCase,
-    CreateCustomerContactUseCase,
-    CreateCustomerUseCase,
-    DeactivateCustomerUseCase,
-    DeleteCustomerContactUseCase,
-    DeleteCustomerUseCase,
-    GetAllCustomersUseCase,
-    GetContactsByCustomerIdUseCase,
-    GetCustomerByIdUseCase,
-    GetCustomerByTaxIdUseCase,
-    GetCustomerContactByIdUseCase,
-    UpdateCustomerContactUseCase,
-    UpdateCustomerUseCase,
+from src.customers.app.commands import (
+    ActivateCustomerCommandHandler,
+    CreateCustomerCommandHandler,
+    CreateCustomerContactCommandHandler,
+    DeactivateCustomerCommandHandler,
+    DeleteCustomerCommandHandler,
+    DeleteCustomerContactCommandHandler,
+    UpdateCustomerCommandHandler,
+    UpdateCustomerContactCommandHandler,
+)
+from src.customers.app.queries import (
+    GetAllCustomersQueryHandler,
+    GetContactsByCustomerIdQueryHandler,
+    GetCustomerByIdQueryHandler,
+    GetCustomerByTaxIdQueryHandler,
+    GetCustomerContactByIdQueryHandler,
 )
 from src.customers.domain.entities import Customer, CustomerContact
 from src.customers.infra.controllers import (
@@ -288,10 +290,10 @@ def init_use_cases() -> None:
         ),
         scope=LifetimeScope.SCOPED,
     )
-    # Register customer use cases
+    # Register customer command handlers
     container.register(
-        CreateCustomerUseCase,
-        factory=lambda c, scope_id=None: CreateCustomerUseCase(
+        CreateCustomerCommandHandler,
+        factory=lambda c, scope_id=None: CreateCustomerCommandHandler(
             c.resolve_scoped(Repository[Customer], scope_id)
             if scope_id
             else c.resolve(Repository[Customer])
@@ -299,8 +301,8 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        UpdateCustomerUseCase,
-        factory=lambda c, scope_id=None: UpdateCustomerUseCase(
+        UpdateCustomerCommandHandler,
+        factory=lambda c, scope_id=None: UpdateCustomerCommandHandler(
             c.resolve_scoped(Repository[Customer], scope_id)
             if scope_id
             else c.resolve(Repository[Customer])
@@ -308,8 +310,8 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        DeleteCustomerUseCase,
-        factory=lambda c, scope_id=None: DeleteCustomerUseCase(
+        DeleteCustomerCommandHandler,
+        factory=lambda c, scope_id=None: DeleteCustomerCommandHandler(
             c.resolve_scoped(Repository[Customer], scope_id)
             if scope_id
             else c.resolve(Repository[Customer])
@@ -317,8 +319,8 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        GetAllCustomersUseCase,
-        factory=lambda c, scope_id=None: GetAllCustomersUseCase(
+        ActivateCustomerCommandHandler,
+        factory=lambda c, scope_id=None: ActivateCustomerCommandHandler(
             c.resolve_scoped(Repository[Customer], scope_id)
             if scope_id
             else c.resolve(Repository[Customer])
@@ -326,8 +328,18 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        GetCustomerByIdUseCase,
-        factory=lambda c, scope_id=None: GetCustomerByIdUseCase(
+        DeactivateCustomerCommandHandler,
+        factory=lambda c, scope_id=None: DeactivateCustomerCommandHandler(
+            c.resolve_scoped(Repository[Customer], scope_id)
+            if scope_id
+            else c.resolve(Repository[Customer])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register customer query handlers
+    container.register(
+        GetAllCustomersQueryHandler,
+        factory=lambda c, scope_id=None: GetAllCustomersQueryHandler(
             c.resolve_scoped(Repository[Customer], scope_id)
             if scope_id
             else c.resolve(Repository[Customer])
@@ -335,8 +347,8 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        GetCustomerByTaxIdUseCase,
-        factory=lambda c, scope_id=None: GetCustomerByTaxIdUseCase(
+        GetCustomerByIdQueryHandler,
+        factory=lambda c, scope_id=None: GetCustomerByIdQueryHandler(
             c.resolve_scoped(Repository[Customer], scope_id)
             if scope_id
             else c.resolve(Repository[Customer])
@@ -344,27 +356,18 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        ActivateCustomerUseCase,
-        factory=lambda c, scope_id=None: ActivateCustomerUseCase(
+        GetCustomerByTaxIdQueryHandler,
+        factory=lambda c, scope_id=None: GetCustomerByTaxIdQueryHandler(
             c.resolve_scoped(Repository[Customer], scope_id)
             if scope_id
             else c.resolve(Repository[Customer])
         ),
         scope=LifetimeScope.SCOPED,
     )
+    # Register customer contact command handlers
     container.register(
-        DeactivateCustomerUseCase,
-        factory=lambda c, scope_id=None: DeactivateCustomerUseCase(
-            c.resolve_scoped(Repository[Customer], scope_id)
-            if scope_id
-            else c.resolve(Repository[Customer])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register customer contact use cases
-    container.register(
-        CreateCustomerContactUseCase,
-        factory=lambda c, scope_id=None: CreateCustomerContactUseCase(
+        CreateCustomerContactCommandHandler,
+        factory=lambda c, scope_id=None: CreateCustomerContactCommandHandler(
             c.resolve_scoped(Repository[CustomerContact], scope_id)
             if scope_id
             else c.resolve(Repository[CustomerContact])
@@ -372,8 +375,8 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        UpdateCustomerContactUseCase,
-        factory=lambda c, scope_id=None: UpdateCustomerContactUseCase(
+        UpdateCustomerContactCommandHandler,
+        factory=lambda c, scope_id=None: UpdateCustomerContactCommandHandler(
             c.resolve_scoped(Repository[CustomerContact], scope_id)
             if scope_id
             else c.resolve(Repository[CustomerContact])
@@ -381,8 +384,18 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        DeleteCustomerContactUseCase,
-        factory=lambda c, scope_id=None: DeleteCustomerContactUseCase(
+        DeleteCustomerContactCommandHandler,
+        factory=lambda c, scope_id=None: DeleteCustomerContactCommandHandler(
+            c.resolve_scoped(Repository[CustomerContact], scope_id)
+            if scope_id
+            else c.resolve(Repository[CustomerContact])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register customer contact query handlers
+    container.register(
+        GetCustomerContactByIdQueryHandler,
+        factory=lambda c, scope_id=None: GetCustomerContactByIdQueryHandler(
             c.resolve_scoped(Repository[CustomerContact], scope_id)
             if scope_id
             else c.resolve(Repository[CustomerContact])
@@ -390,17 +403,8 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        GetCustomerContactByIdUseCase,
-        factory=lambda c, scope_id=None: GetCustomerContactByIdUseCase(
-            c.resolve_scoped(Repository[CustomerContact], scope_id)
-            if scope_id
-            else c.resolve(Repository[CustomerContact])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetContactsByCustomerIdUseCase,
-        factory=lambda c, scope_id=None: GetContactsByCustomerIdUseCase(
+        GetContactsByCustomerIdQueryHandler,
+        factory=lambda c, scope_id=None: GetContactsByCustomerIdQueryHandler(
             c.resolve_scoped(Repository[CustomerContact], scope_id)
             if scope_id
             else c.resolve(Repository[CustomerContact])
@@ -481,30 +485,30 @@ def init_controllers() -> None:
     container.register(
         CustomerController,
         factory=lambda c, scope_id=None: CustomerController(
-            c.resolve_scoped(CreateCustomerUseCase, scope_id)
+            c.resolve_scoped(CreateCustomerCommandHandler, scope_id)
             if scope_id
-            else c.resolve(CreateCustomerUseCase),
-            c.resolve_scoped(UpdateCustomerUseCase, scope_id)
+            else c.resolve(CreateCustomerCommandHandler),
+            c.resolve_scoped(UpdateCustomerCommandHandler, scope_id)
             if scope_id
-            else c.resolve(UpdateCustomerUseCase),
-            c.resolve_scoped(DeleteCustomerUseCase, scope_id)
+            else c.resolve(UpdateCustomerCommandHandler),
+            c.resolve_scoped(DeleteCustomerCommandHandler, scope_id)
             if scope_id
-            else c.resolve(DeleteCustomerUseCase),
-            c.resolve_scoped(GetAllCustomersUseCase, scope_id)
+            else c.resolve(DeleteCustomerCommandHandler),
+            c.resolve_scoped(ActivateCustomerCommandHandler, scope_id)
             if scope_id
-            else c.resolve(GetAllCustomersUseCase),
-            c.resolve_scoped(GetCustomerByIdUseCase, scope_id)
+            else c.resolve(ActivateCustomerCommandHandler),
+            c.resolve_scoped(DeactivateCustomerCommandHandler, scope_id)
             if scope_id
-            else c.resolve(GetCustomerByIdUseCase),
-            c.resolve_scoped(GetCustomerByTaxIdUseCase, scope_id)
+            else c.resolve(DeactivateCustomerCommandHandler),
+            c.resolve_scoped(GetAllCustomersQueryHandler, scope_id)
             if scope_id
-            else c.resolve(GetCustomerByTaxIdUseCase),
-            c.resolve_scoped(ActivateCustomerUseCase, scope_id)
+            else c.resolve(GetAllCustomersQueryHandler),
+            c.resolve_scoped(GetCustomerByIdQueryHandler, scope_id)
             if scope_id
-            else c.resolve(ActivateCustomerUseCase),
-            c.resolve_scoped(DeactivateCustomerUseCase, scope_id)
+            else c.resolve(GetCustomerByIdQueryHandler),
+            c.resolve_scoped(GetCustomerByTaxIdQueryHandler, scope_id)
             if scope_id
-            else c.resolve(DeactivateCustomerUseCase),
+            else c.resolve(GetCustomerByTaxIdQueryHandler),
         ),
         scope=LifetimeScope.SCOPED,
     )
@@ -512,21 +516,21 @@ def init_controllers() -> None:
     container.register(
         CustomerContactController,
         factory=lambda c, scope_id=None: CustomerContactController(
-            c.resolve_scoped(CreateCustomerContactUseCase, scope_id)
+            c.resolve_scoped(CreateCustomerContactCommandHandler, scope_id)
             if scope_id
-            else c.resolve(CreateCustomerContactUseCase),
-            c.resolve_scoped(UpdateCustomerContactUseCase, scope_id)
+            else c.resolve(CreateCustomerContactCommandHandler),
+            c.resolve_scoped(UpdateCustomerContactCommandHandler, scope_id)
             if scope_id
-            else c.resolve(UpdateCustomerContactUseCase),
-            c.resolve_scoped(DeleteCustomerContactUseCase, scope_id)
+            else c.resolve(UpdateCustomerContactCommandHandler),
+            c.resolve_scoped(DeleteCustomerContactCommandHandler, scope_id)
             if scope_id
-            else c.resolve(DeleteCustomerContactUseCase),
-            c.resolve_scoped(GetCustomerContactByIdUseCase, scope_id)
+            else c.resolve(DeleteCustomerContactCommandHandler),
+            c.resolve_scoped(GetCustomerContactByIdQueryHandler, scope_id)
             if scope_id
-            else c.resolve(GetCustomerContactByIdUseCase),
-            c.resolve_scoped(GetContactsByCustomerIdUseCase, scope_id)
+            else c.resolve(GetCustomerContactByIdQueryHandler),
+            c.resolve_scoped(GetContactsByCustomerIdQueryHandler, scope_id)
             if scope_id
-            else c.resolve(GetContactsByCustomerIdUseCase),
+            else c.resolve(GetContactsByCustomerIdQueryHandler),
         ),
         scope=LifetimeScope.SCOPED,
     )

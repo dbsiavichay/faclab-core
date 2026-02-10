@@ -1,0 +1,194 @@
+from dataclasses import dataclass, replace
+from decimal import Decimal
+from typing import Optional
+
+from src.customers.app.types import CustomerOutput
+from src.customers.domain.entities import Customer, TaxType
+from src.customers.domain.events import (
+    CustomerActivated,
+    CustomerCreated,
+    CustomerDeactivated,
+    CustomerUpdated,
+)
+from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.repositories import Repository
+from src.shared.domain.value_objects import Email, TaxId
+from src.shared.infra.events.event_bus import EventBus
+
+
+@dataclass
+class CreateCustomerCommand(Command):
+    name: str = ""
+    tax_id: str = ""
+    tax_type: int = 1
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    credit_limit: Optional[Decimal] = None
+    payment_terms: Optional[int] = None
+    is_active: bool = True
+
+
+class CreateCustomerCommandHandler(
+    CommandHandler[CreateCustomerCommand, CustomerOutput]
+):
+    def __init__(self, repo: Repository[Customer]):
+        self.repo = repo
+
+    def handle(self, command: CreateCustomerCommand) -> CustomerOutput:
+        if command.email:
+            Email(command.email)
+        TaxId(command.tax_id)
+
+        customer = Customer(
+            name=command.name,
+            tax_id=command.tax_id,
+            tax_type=TaxType(command.tax_type),
+            email=command.email,
+            phone=command.phone,
+            address=command.address,
+            city=command.city,
+            state=command.state,
+            country=command.country,
+            credit_limit=command.credit_limit,
+            payment_terms=command.payment_terms,
+            is_active=command.is_active,
+        )
+        customer = self.repo.create(customer)
+
+        EventBus.publish(
+            CustomerCreated(
+                aggregate_id=customer.id,
+                customer_id=customer.id,
+                name=customer.name,
+                tax_id=customer.tax_id,
+            )
+        )
+        return customer.dict()
+
+
+@dataclass
+class UpdateCustomerCommand(Command):
+    id: int = 0
+    name: str = ""
+    tax_id: str = ""
+    tax_type: int = 1
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    credit_limit: Optional[Decimal] = None
+    payment_terms: Optional[int] = None
+    is_active: bool = True
+
+
+class UpdateCustomerCommandHandler(
+    CommandHandler[UpdateCustomerCommand, CustomerOutput]
+):
+    def __init__(self, repo: Repository[Customer]):
+        self.repo = repo
+
+    def handle(self, command: UpdateCustomerCommand) -> CustomerOutput:
+        if command.email:
+            Email(command.email)
+        TaxId(command.tax_id)
+
+        customer = Customer(
+            id=command.id,
+            name=command.name,
+            tax_id=command.tax_id,
+            tax_type=TaxType(command.tax_type),
+            email=command.email,
+            phone=command.phone,
+            address=command.address,
+            city=command.city,
+            state=command.state,
+            country=command.country,
+            credit_limit=command.credit_limit,
+            payment_terms=command.payment_terms,
+            is_active=command.is_active,
+        )
+        customer = self.repo.update(customer)
+
+        EventBus.publish(
+            CustomerUpdated(
+                aggregate_id=customer.id,
+                customer_id=customer.id,
+                name=customer.name,
+            )
+        )
+        return customer.dict()
+
+
+@dataclass
+class DeleteCustomerCommand(Command):
+    id: int = 0
+
+
+class DeleteCustomerCommandHandler(CommandHandler[DeleteCustomerCommand, None]):
+    def __init__(self, repo: Repository[Customer]):
+        self.repo = repo
+
+    def handle(self, command: DeleteCustomerCommand) -> None:
+        self.repo.delete(command.id)
+
+
+@dataclass
+class ActivateCustomerCommand(Command):
+    id: int = 0
+
+
+class ActivateCustomerCommandHandler(
+    CommandHandler[ActivateCustomerCommand, CustomerOutput]
+):
+    def __init__(self, repo: Repository[Customer]):
+        self.repo = repo
+
+    def handle(self, command: ActivateCustomerCommand) -> CustomerOutput:
+        customer = self.repo.get_by_id(command.id)
+        if customer is None:
+            raise ValueError(f"Customer with id {command.id} not found")
+
+        updated_customer = replace(customer, is_active=True)
+        updated_customer = self.repo.update(updated_customer)
+
+        EventBus.publish(
+            CustomerActivated(
+                aggregate_id=updated_customer.id,
+                customer_id=updated_customer.id,
+            )
+        )
+        return updated_customer.dict()
+
+
+@dataclass
+class DeactivateCustomerCommand(Command):
+    id: int = 0
+
+
+class DeactivateCustomerCommandHandler(
+    CommandHandler[DeactivateCustomerCommand, CustomerOutput]
+):
+    def __init__(self, repo: Repository[Customer]):
+        self.repo = repo
+
+    def handle(self, command: DeactivateCustomerCommand) -> CustomerOutput:
+        customer = self.repo.get_by_id(command.id)
+        if customer is None:
+            raise ValueError(f"Customer with id {command.id} not found")
+
+        updated_customer = replace(customer, is_active=False)
+        updated_customer = self.repo.update(updated_customer)
+
+        EventBus.publish(
+            CustomerDeactivated(
+                aggregate_id=updated_customer.id,
+                customer_id=updated_customer.id,
+            )
+        )
+        return updated_customer.dict()
