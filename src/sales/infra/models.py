@@ -1,0 +1,96 @@
+from datetime import datetime
+from decimal import Decimal
+from typing import List, Optional
+
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.shared.infra.db import Base
+
+
+class SaleModel(Base):
+    """Modelo SQLAlchemy para Sales"""
+
+    __tablename__ = "sales"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    customer_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("customers.id"), nullable=False
+    )
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="DRAFT")
+    sale_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    subtotal: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0")
+    )
+    tax: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0")
+    )
+    discount: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0")
+    )
+    total: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0")
+    )
+    payment_status: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="PENDING"
+    )
+    notes: Mapped[Optional[str]] = mapped_column(String(512))
+    created_by: Mapped[Optional[str]] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.now
+    )
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, onupdate=datetime.now
+    )
+
+    # Relationships
+    items: Mapped[List["SaleItemModel"]] = relationship(
+        back_populates="sale", cascade="all, delete-orphan"
+    )
+    payments: Mapped[List["PaymentModel"]] = relationship(
+        back_populates="sale", cascade="all, delete-orphan"
+    )
+
+
+class SaleItemModel(Base):
+    """Modelo SQLAlchemy para Sale Items"""
+
+    __tablename__ = "sale_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    sale_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("sales.id", ondelete="CASCADE"), nullable=False
+    )
+    product_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("products.id"), nullable=False
+    )
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    discount: Mapped[Decimal] = mapped_column(
+        Numeric(5, 2), nullable=False, default=Decimal("0")
+    )
+
+    # Relationships
+    sale: Mapped["SaleModel"] = relationship(back_populates="items")
+
+
+class PaymentModel(Base):
+    """Modelo SQLAlchemy para Payments"""
+
+    __tablename__ = "payments"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    sale_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("sales.id", ondelete="CASCADE"), nullable=False
+    )
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    payment_method: Mapped[str] = mapped_column(String(16), nullable=False)
+    payment_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    reference: Mapped[Optional[str]] = mapped_column(String(128))
+    notes: Mapped[Optional[str]] = mapped_column(String(512))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.now
+    )
+
+    # Relationships
+    sale: Mapped["SaleModel"] = relationship(back_populates="payments")

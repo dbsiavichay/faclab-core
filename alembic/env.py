@@ -9,6 +9,7 @@ from alembic import context
 from src.catalog.product.infra.models import CategoryModel, ProductModel  # noqa: F401
 from src.inventory.movement.infra.models import MovementModel  # noqa: F401
 from src.inventory.stock.infra.models import StockModel  # noqa: F401
+from src.sales.infra.models import PaymentModel, SaleItemModel, SaleModel  # noqa: F401
 from src.shared.infra.db import Base
 
 env = Env()

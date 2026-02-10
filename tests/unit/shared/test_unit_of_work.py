@@ -20,7 +20,7 @@ def test_rollback_on_exception():
     session_factory = MagicMock(return_value=session)
 
     try:
-        with SQLAlchemyUnitOfWork(session_factory) as uow:
+        with SQLAlchemyUnitOfWork(session_factory):
             raise ValueError("something went wrong")
     except ValueError:
         pass
@@ -33,7 +33,7 @@ def test_close_always_called():
     session = MagicMock()
     session_factory = MagicMock(return_value=session)
 
-    with SQLAlchemyUnitOfWork(session_factory) as uow:
+    with SQLAlchemyUnitOfWork(session_factory):
         pass
 
     session.close.assert_called_once()
