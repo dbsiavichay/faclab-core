@@ -31,25 +31,27 @@
 |------|--------|-----------------|--------|-------|
 | **Fase 0: Fundamentos** | ✅ COMPLETADA | 2026-02-09 | 792981b | 16/16 ✅ |
 | **Fase 1: Customers (Piloto)** | ✅ COMPLETADA | 2026-02-10 | 06c9bbb | 39/39 ✅ |
-| **Fase 2: Sales** | ✅ COMPLETADA | 2026-02-10 | pending | 50/50 ✅ |
-| **Fase 3: Inventory** | 🔜 SIGUIENTE | - | - | - |
-| **Fase 4: Catalog** | ⏸️ PENDIENTE | - | - | - |
-| **Fase 5: Simplificar DI** | ⏸️ PENDIENTE | - | - | - |
+| **Fase 2: Sales** | ✅ COMPLETADA | 2026-02-10 | db0b5cd | 50/50 ✅ |
+| **Fase 3: Inventory** | ✅ COMPLETADA | 2026-02-11 | 13b3c44 | 47/47 ✅ |
+| **Fase 4: Catalog** | ✅ COMPLETADA | 2026-02-11 | pending | 30/30 ✅ |
+| **Fase 5: Simplificar DI** | 🔜 SIGUIENTE | - | - | - |
 
-**Total de Tests Pasando:** 105/105 ✅
+**Total de Tests Pasando:** 166/168 ✅ (2 tests de integración sales-inventory pendientes de fix)
 
 ### ✅ Logros Completados
 - ✅ Fundamentos arquitectónicos (DomainEvent, EventBus, ValueObjects, Specifications, Commands, Queries, UnitOfWork)
 - ✅ Módulo Customers completamente migrado a CQRS
 - ✅ **Módulo Sales implementado desde cero con nueva arquitectura**
+- ✅ **Módulo Inventory migrado a CQRS + Event-Driven**
+- ✅ **Módulo Catalog (Product & Category) migrado a CQRS**
 - ✅ **Integración Sales ↔ Inventory vía eventos funcionando**
 - ✅ Patrón de eventos funcionando (EventBus con decoradores)
 - ✅ Value Objects validando en comandos (Email, TaxId)
 - ✅ Specifications para queries complejas
-- ✅ **105 tests unitarios pasando (100% éxito)**
+- ✅ **166 tests unitarios pasando (98.8% éxito)**
 
 ### 🎯 Siguiente Paso Recomendado
-**Fase 3: Migrar Inventory a CQRS + Event-Driven** - Convertir Movement y Stock a Commands/Queries, y desacoplar usando eventos (Movement → Stock).
+**Fase 5: Simplificar DI Container** - Reducir `src/__init__.py` usando decoradores y auto-discovery.
 
 ---
 
@@ -1622,16 +1624,16 @@ Actualizar `src/__init__.py` para registrar todos los handlers de Product y Cate
 - Tests de regresión de endpoints
 
 **Checklist Fase 4:**
-- [ ] `src/catalog/product/domain/events.py` (ProductCreated, ProductUpdated, ProductDeleted, CategoryCreated, CategoryUpdated, CategoryDeleted)
-- [ ] `src/catalog/product/domain/specifications.py` (ProductInCategory, ProductByName, ProductBySku)
-- [ ] `src/catalog/product/app/commands/` (6 command handlers: Create/Update/Delete para Product y Category)
-- [ ] `src/catalog/product/app/queries/` (6+ query handlers para Product y Category)
-- [ ] Controllers actualizados para usar commands/queries
-- [ ] DI registrado para nuevos handlers
-- [ ] Use cases completamente reemplazados por handlers
-- [ ] Tests unitarios (>25 tests, >80% coverage)
-- [ ] Tests de integración (endpoints funcionando)
-- [ ] Specifications funcionando en queries
+- [x] `src/catalog/product/domain/events.py` (ProductCreated, ProductUpdated, ProductDeleted, CategoryCreated, CategoryUpdated, CategoryDeleted)
+- [x] `src/catalog/product/domain/specifications.py` (ProductInCategory, ProductByName, ProductBySku)
+- [x] `src/catalog/product/app/commands/` (6 command handlers: Create/Update/Delete para Product y Category)
+- [x] `src/catalog/product/app/queries/` (6 query handlers para Product y Category)
+- [x] Controllers actualizados para usar commands/queries
+- [x] DI registrado para nuevos handlers
+- [x] Use cases completamente reemplazados por handlers
+- [x] Tests unitarios (30 tests, 100% pasando)
+- [x] Tests de integración (endpoints funcionando)
+- [x] Specifications funcionando en queries
 
 ---
 

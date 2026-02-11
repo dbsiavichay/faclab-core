@@ -3,17 +3,19 @@ import uuid
 from fastapi import Depends
 
 from config import config
-from src.catalog.product.app.use_cases import (
-    CreateCategoryUseCase,
-    CreateProductUseCase,
-    DeleteCategoryUseCase,
-    DeleteProductUseCase,
-    GetAllCategoriesUseCase,
-    GetAllProductsUseCase,
-    GetCategoryByIdUseCase,
-    GetProductByIdUseCase,
-    UpdateCategoryUseCase,
-    UpdateProductUseCase,
+from src.catalog.product.app.commands import (
+    CreateCategoryCommandHandler,
+    CreateProductCommandHandler,
+    DeleteCategoryCommandHandler,
+    DeleteProductCommandHandler,
+    UpdateCategoryCommandHandler,
+    UpdateProductCommandHandler,
+)
+from src.catalog.product.app.queries import (
+    GetAllCategoriesQueryHandler,
+    GetAllProductsQueryHandler,
+    GetCategoryByIdQueryHandler,
+    GetProductByIdQueryHandler,
 )
 from src.catalog.product.domain.entities import Category, Product
 from src.catalog.product.infra.controllers import CategoryController, ProductController
@@ -241,19 +243,11 @@ def init_repositories() -> None:
 
 
 def init_use_cases() -> None:
-    """Initializes all use cases."""
-    # Register the category use cases
+    """Initializes all use cases and command/query handlers."""
+    # Register Category command handlers
     container.register(
-        CreateCategoryUseCase,
-        factory=lambda c, scope_id=None: CreateCategoryUseCase(
-            c.resolve_scoped(Repository[Category], scope_id)
-            if scope_id
-            else c.resolve(Repository[Category])
-        ),
-    )
-    container.register(
-        UpdateCategoryUseCase,
-        factory=lambda c, scope_id=None: UpdateCategoryUseCase(
+        CreateCategoryCommandHandler,
+        factory=lambda c, scope_id=None: CreateCategoryCommandHandler(
             c.resolve_scoped(Repository[Category], scope_id)
             if scope_id
             else c.resolve(Repository[Category])
@@ -261,8 +255,8 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        DeleteCategoryUseCase,
-        factory=lambda c, scope_id=None: DeleteCategoryUseCase(
+        UpdateCategoryCommandHandler,
+        factory=lambda c, scope_id=None: UpdateCategoryCommandHandler(
             c.resolve_scoped(Repository[Category], scope_id)
             if scope_id
             else c.resolve(Repository[Category])
@@ -270,8 +264,18 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        GetAllCategoriesUseCase,
-        factory=lambda c, scope_id=None: GetAllCategoriesUseCase(
+        DeleteCategoryCommandHandler,
+        factory=lambda c, scope_id=None: DeleteCategoryCommandHandler(
+            c.resolve_scoped(Repository[Category], scope_id)
+            if scope_id
+            else c.resolve(Repository[Category])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register Category query handlers
+    container.register(
+        GetAllCategoriesQueryHandler,
+        factory=lambda c, scope_id=None: GetAllCategoriesQueryHandler(
             c.resolve_scoped(Repository[Category], scope_id)
             if scope_id
             else c.resolve(Repository[Category])
@@ -279,26 +283,18 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        GetCategoryByIdUseCase,
-        factory=lambda c, scope_id=None: GetCategoryByIdUseCase(
+        GetCategoryByIdQueryHandler,
+        factory=lambda c, scope_id=None: GetCategoryByIdQueryHandler(
             c.resolve_scoped(Repository[Category], scope_id)
             if scope_id
             else c.resolve(Repository[Category])
         ),
         scope=LifetimeScope.SCOPED,
     )
-    # Register the product use cases
+    # Register Product command handlers
     container.register(
-        CreateProductUseCase,
-        factory=lambda c, scope_id=None: CreateProductUseCase(
-            c.resolve_scoped(Repository[Product], scope_id)
-            if scope_id
-            else c.resolve(Repository[Product])
-        ),
-    )
-    container.register(
-        UpdateProductUseCase,
-        factory=lambda c, scope_id=None: UpdateProductUseCase(
+        CreateProductCommandHandler,
+        factory=lambda c, scope_id=None: CreateProductCommandHandler(
             c.resolve_scoped(Repository[Product], scope_id)
             if scope_id
             else c.resolve(Repository[Product])
@@ -306,8 +302,8 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        DeleteProductUseCase,
-        factory=lambda c, scope_id=None: DeleteProductUseCase(
+        UpdateProductCommandHandler,
+        factory=lambda c, scope_id=None: UpdateProductCommandHandler(
             c.resolve_scoped(Repository[Product], scope_id)
             if scope_id
             else c.resolve(Repository[Product])
@@ -315,8 +311,18 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        GetAllProductsUseCase,
-        factory=lambda c, scope_id=None: GetAllProductsUseCase(
+        DeleteProductCommandHandler,
+        factory=lambda c, scope_id=None: DeleteProductCommandHandler(
+            c.resolve_scoped(Repository[Product], scope_id)
+            if scope_id
+            else c.resolve(Repository[Product])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register Product query handlers
+    container.register(
+        GetAllProductsQueryHandler,
+        factory=lambda c, scope_id=None: GetAllProductsQueryHandler(
             c.resolve_scoped(Repository[Product], scope_id)
             if scope_id
             else c.resolve(Repository[Product])
@@ -324,8 +330,8 @@ def init_use_cases() -> None:
         scope=LifetimeScope.SCOPED,
     )
     container.register(
-        GetProductByIdUseCase,
-        factory=lambda c, scope_id=None: GetProductByIdUseCase(
+        GetProductByIdQueryHandler,
+        factory=lambda c, scope_id=None: GetProductByIdQueryHandler(
             c.resolve_scoped(Repository[Product], scope_id)
             if scope_id
             else c.resolve(Repository[Product])
@@ -627,42 +633,43 @@ def init_controllers() -> None:
     container.register(
         CategoryController,
         factory=lambda c, scope_id=None: CategoryController(
-            c.resolve_scoped(CreateCategoryUseCase, scope_id)
+            c.resolve_scoped(CreateCategoryCommandHandler, scope_id)
             if scope_id
-            else c.resolve(CreateCategoryUseCase),
-            c.resolve_scoped(UpdateCategoryUseCase, scope_id)
+            else c.resolve(CreateCategoryCommandHandler),
+            c.resolve_scoped(UpdateCategoryCommandHandler, scope_id)
             if scope_id
-            else c.resolve(UpdateCategoryUseCase),
-            c.resolve_scoped(DeleteCategoryUseCase, scope_id)
+            else c.resolve(UpdateCategoryCommandHandler),
+            c.resolve_scoped(DeleteCategoryCommandHandler, scope_id)
             if scope_id
-            else c.resolve(DeleteCategoryUseCase),
-            c.resolve_scoped(GetAllCategoriesUseCase, scope_id)
+            else c.resolve(DeleteCategoryCommandHandler),
+            c.resolve_scoped(GetAllCategoriesQueryHandler, scope_id)
             if scope_id
-            else c.resolve(GetAllCategoriesUseCase),
-            c.resolve_scoped(GetCategoryByIdUseCase, scope_id)
+            else c.resolve(GetAllCategoriesQueryHandler),
+            c.resolve_scoped(GetCategoryByIdQueryHandler, scope_id)
             if scope_id
-            else c.resolve(GetCategoryByIdUseCase),
+            else c.resolve(GetCategoryByIdQueryHandler),
         ),
+        scope=LifetimeScope.SCOPED,
     )
     # Register the product controller
     container.register(
         ProductController,
         factory=lambda c, scope_id=None: ProductController(
-            c.resolve_scoped(CreateProductUseCase, scope_id)
+            c.resolve_scoped(CreateProductCommandHandler, scope_id)
             if scope_id
-            else c.resolve(CreateProductUseCase),
-            c.resolve_scoped(UpdateProductUseCase, scope_id)
+            else c.resolve(CreateProductCommandHandler),
+            c.resolve_scoped(UpdateProductCommandHandler, scope_id)
             if scope_id
-            else c.resolve(UpdateProductUseCase),
-            c.resolve_scoped(DeleteProductUseCase, scope_id)
+            else c.resolve(UpdateProductCommandHandler),
+            c.resolve_scoped(DeleteProductCommandHandler, scope_id)
             if scope_id
-            else c.resolve(DeleteProductUseCase),
-            c.resolve_scoped(GetAllProductsUseCase, scope_id)
+            else c.resolve(DeleteProductCommandHandler),
+            c.resolve_scoped(GetAllProductsQueryHandler, scope_id)
             if scope_id
-            else c.resolve(GetAllProductsUseCase),
-            c.resolve_scoped(GetProductByIdUseCase, scope_id)
+            else c.resolve(GetAllProductsQueryHandler),
+            c.resolve_scoped(GetProductByIdQueryHandler, scope_id)
             if scope_id
-            else c.resolve(GetProductByIdUseCase),
+            else c.resolve(GetProductByIdQueryHandler),
         ),
         scope=LifetimeScope.SCOPED,
     )

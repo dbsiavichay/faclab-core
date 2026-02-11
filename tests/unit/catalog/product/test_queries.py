@@ -1,0 +1,151 @@
+"""Unit tests for catalog product query handlers."""
+import pytest
+from unittest.mock import Mock
+
+from src.catalog.product.app.queries import (
+    GetAllProductsQuery,
+    GetAllProductsQueryHandler,
+    GetProductByIdQuery,
+    GetProductByIdQueryHandler,
+    SearchProductsQuery,
+    SearchProductsQueryHandler,
+    GetAllCategoriesQuery,
+    GetAllCategoriesQueryHandler,
+    GetCategoryByIdQuery,
+    GetCategoryByIdQueryHandler,
+)
+from src.catalog.product.domain.entities import Product, Category
+
+
+# Product Query Tests
+def test_get_all_products_query_handler():
+    """Test GetAllProductsQueryHandler returns all products."""
+    mock_repo = Mock()
+    products = [
+        Product(id=1, sku="SKU-001", name="Product 1"),
+        Product(id=2, sku="SKU-002", name="Product 2"),
+    ]
+    mock_repo.filter_by.return_value = products
+
+    handler = GetAllProductsQueryHandler(mock_repo)
+    query = GetAllProductsQuery()
+
+    result = handler.handle(query)
+
+    assert len(result) == 2
+    assert result[0]["id"] == 1
+    assert result[1]["id"] == 2
+    mock_repo.filter_by.assert_called_once()
+
+
+def test_get_all_products_with_category_filter():
+    """Test GetAllProductsQueryHandler filters by category."""
+    mock_repo = Mock()
+    products = [Product(id=1, sku="SKU-001", name="Product 1", category_id=1)]
+    mock_repo.filter_by_spec.return_value = products
+
+    handler = GetAllProductsQueryHandler(mock_repo)
+    query = GetAllProductsQuery(category_id=1)
+
+    result = handler.handle(query)
+
+    assert len(result) == 1
+    assert result[0]["category_id"] == 1
+    mock_repo.filter_by_spec.assert_called_once()
+
+
+def test_get_product_by_id_handler():
+    """Test GetProductByIdQueryHandler returns a product by ID."""
+    mock_repo = Mock()
+    product = Product(id=1, sku="SKU-001", name="Product 1")
+    mock_repo.get_by_id.return_value = product
+
+    handler = GetProductByIdQueryHandler(mock_repo)
+    query = GetProductByIdQuery(product_id=1)
+
+    result = handler.handle(query)
+
+    assert result["id"] == 1
+    assert result["sku"] == "SKU-001"
+    mock_repo.get_by_id.assert_called_once_with(1)
+
+
+def test_get_product_by_id_not_found_returns_none():
+    """Test GetProductByIdQueryHandler returns None when product not found."""
+    mock_repo = Mock()
+    mock_repo.get_by_id.return_value = None
+
+    handler = GetProductByIdQueryHandler(mock_repo)
+    query = GetProductByIdQuery(product_id=999)
+
+    result = handler.handle(query)
+
+    assert result is None
+
+
+def test_search_products_query_handler():
+    """Test SearchProductsQueryHandler searches products by name."""
+    mock_repo = Mock()
+    products = [
+        Product(id=1, sku="SKU-001", name="Laptop Computer"),
+        Product(id=2, sku="SKU-002", name="Computer Mouse"),
+    ]
+    mock_repo.filter_by_spec.return_value = products
+
+    handler = SearchProductsQueryHandler(mock_repo)
+    query = SearchProductsQuery(search_term="Computer")
+
+    result = handler.handle(query)
+
+    assert len(result) == 2
+    mock_repo.filter_by_spec.assert_called_once()
+
+
+# Category Query Tests
+def test_get_all_categories_query_handler():
+    """Test GetAllCategoriesQueryHandler returns all categories."""
+    mock_repo = Mock()
+    categories = [
+        Category(id=1, name="Electronics", description="Electronic items"),
+        Category(id=2, name="Books", description="Book items"),
+    ]
+    mock_repo.filter_by.return_value = categories
+
+    handler = GetAllCategoriesQueryHandler(mock_repo)
+    query = GetAllCategoriesQuery()
+
+    result = handler.handle(query)
+
+    assert len(result) == 2
+    assert result[0]["id"] == 1
+    assert result[1]["id"] == 2
+    mock_repo.filter_by.assert_called_once()
+
+
+def test_get_category_by_id_handler():
+    """Test GetCategoryByIdQueryHandler returns a category by ID."""
+    mock_repo = Mock()
+    category = Category(id=1, name="Electronics", description="Electronic items")
+    mock_repo.get_by_id.return_value = category
+
+    handler = GetCategoryByIdQueryHandler(mock_repo)
+    query = GetCategoryByIdQuery(category_id=1)
+
+    result = handler.handle(query)
+
+    assert result["id"] == 1
+    assert result["name"] == "Electronics"
+    mock_repo.get_by_id.assert_called_once_with(1)
+
+
+def test_get_category_by_id_not_found_returns_none():
+    """Test GetCategoryByIdQueryHandler returns None when category not found."""
+    mock_repo = Mock()
+    mock_repo.get_by_id.return_value = None
+
+    handler = GetCategoryByIdQueryHandler(mock_repo)
+    query = GetCategoryByIdQuery(category_id=999)
+
+    result = handler.handle(query)
+
+    assert result is None
