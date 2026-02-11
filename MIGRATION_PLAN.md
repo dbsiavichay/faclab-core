@@ -2,8 +2,26 @@
 
 **Fecha de creación:** 2026-02-06
 **Última actualización:** 2026-02-10
-**Versión:** 1.1
+**Versión:** 1.2
 **Documento de referencia:** ARCHITECTURE_ANALYSIS.md
+
+---
+
+## 📝 Changelog
+
+### Versión 1.2 (2026-02-10)
+- **CORRECCIÓN ARQUITECTÓNICA**: Fase 3 y 4 ahora son consistentes con CQRS
+  - ✅ Fase 3 detallada con Commands/Queries para Movement y Stock
+  - ✅ Fase 4 detallada con Commands/Queries para Product y Category
+  - ✅ Todas las fases (0-4) siguen el mismo patrón arquitectónico
+  - ✅ Eliminada inconsistencia: ya no se mantienen Use Cases en fases 3-4
+
+### Versión 1.1 (2026-02-10)
+- Fase 2 (Sales) completada exitosamente
+- 105 tests pasando (100% éxito)
+
+### Versión 1.0 (2026-02-06)
+- Documento inicial creado
 
 ---
 
@@ -31,7 +49,7 @@
 - ✅ **105 tests unitarios pasando (100% éxito)**
 
 ### 🎯 Siguiente Paso Recomendado
-**Fase 3: Migrar Inventory a Event-Driven** - Desacoplar CreateMovementUseCase del StockRepository usando eventos.
+**Fase 3: Migrar Inventory a CQRS + Event-Driven** - Convertir Movement y Stock a Commands/Queries, y desacoplar usando eventos (Movement → Stock).
 
 ---
 
@@ -1082,121 +1100,538 @@ make upgrade
 
 ---
 
-### FASE 3: Migrar Inventory a Event-Driven (2 semanas)
+### FASE 3: Migrar Inventory a CQRS + Event-Driven (2 semanas)
 
-**Objetivo**: Desacoplar la lógica de stock del movement use case.
+**Objetivo**: Migrar módulo inventory a arquitectura CQRS y desacoplar la lógica de stock de movement usando eventos.
 
-#### Estado actual del problema
+**Por qué Inventory**: Actualmente tiene acoplamiento directo (CreateMovementUseCase modifica Stock directamente). Es el siguiente paso natural después de Sales.
 
-```python
-# CreateMovementUseCase ACTUALMENTE hace 2 cosas:
-# 1. Crear movement
-# 2. Actualizar stock directamente (acoplamiento)
-```
+#### Semana 1: Commands, Queries y Events
 
-#### Solución
+##### Tarea 3.1: Crear Domain Events para Movement (0.5 día)
 
-1. **CreateMovementUseCase** solo crea el movement y emite `MovementCreated` event
-2. **Nuevo StockEventHandler** escucha `MovementCreated` y actualiza stock
-
-##### Tarea 3.1: Crear evento MovementCreated (0.5 día)
+Crear `src/inventory/movement/domain/events.py`:
 
 ```python
-# src/inventory/movement/domain/events.py
+from dataclasses import dataclass
+from typing import Optional
+from src.shared.domain.events import DomainEvent
+
 @dataclass
 class MovementCreated(DomainEvent):
     movement_id: int = 0
     product_id: int = 0
     quantity: int = 0
     movement_type: str = ""  # IN o OUT
-    reference_type: Optional[str] = None
-    reference_id: Optional[int] = None
+    reason: Optional[str] = None
+
+    def _payload(self) -> dict:
+        return {
+            'movement_id': self.movement_id,
+            'product_id': self.product_id,
+            'quantity': self.quantity,
+            'movement_type': self.movement_type,
+            'reason': self.reason,
+        }
 ```
 
-##### Tarea 3.2: Refactorizar CreateMovementUseCase (1 día)
+##### Tarea 3.2: Convertir Movement a Command Handlers (2 días)
 
-**Antes** (acoplado):
+Crear `src/inventory/movement/app/commands/`:
+
+**1. create_movement.py:**
 ```python
-class CreateMovementUseCase:
-    def __init__(self, movement_repo, stock_repo):
-        # ...
-    def execute(self, data):
-        movement = self.movement_repo.create(...)
-        stock = self.stock_repo.first(...)
-        stock.update_quantity(...)
-        self.stock_repo.update(stock)
-```
+from dataclasses import dataclass
+from typing import Optional
+from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.repositories import Repository
+from src.inventory.movement.domain.entities import Movement
+from src.inventory.movement.domain.events import MovementCreated
+from src.shared.infra.events.event_bus import EventBus
 
-**Después** (desacoplado):
-```python
-class CreateMovementUseCase:
-    def __init__(self, movement_repo):  # Ya no necesita stock_repo
-        self.movement_repo = movement_repo
+@dataclass
+class CreateMovementCommand(Command):
+    product_id: int
+    quantity: int
+    type: str
+    reason: Optional[str] = None
 
-    def execute(self, data):
-        movement = Movement(**data)
-        movement = self.movement_repo.create(movement)
+class CreateMovementCommandHandler(CommandHandler):
+    def __init__(self, repo: Repository[Movement]):
+        self.repo = repo
 
+    def handle(self, command: CreateMovementCommand) -> dict:
+        # Crear el movimiento (YA NO toca stock directamente)
+        movement = Movement(
+            product_id=command.product_id,
+            quantity=command.quantity,
+            type=command.type,
+            reason=command.reason,
+        )
+        movement = self.repo.create(movement)
+
+        # Emitir evento para que Stock reaccione
         EventBus.publish(MovementCreated(
             aggregate_id=movement.id,
             movement_id=movement.id,
             product_id=movement.product_id,
             quantity=movement.quantity,
             movement_type=movement.type,
+            reason=movement.reason,
         ))
+
         return movement.dict()
 ```
 
-##### Tarea 3.3: Crear StockEventHandler (1 día)
+**Cambio clave**: CreateMovementCommandHandler **ya no recibe `stock_repo`**, solo emite el evento.
+
+##### Tarea 3.3: Crear Query Handlers para Movement (1 día)
+
+Crear `src/inventory/movement/app/queries/`:
+
+**1. get_movements.py:**
+```python
+from dataclasses import dataclass
+from typing import Optional, List
+from src.shared.app.queries import Query, QueryHandler
+from src.shared.app.repositories import Repository
+from src.inventory.movement.domain.entities import Movement
+
+@dataclass
+class GetAllMovementsQuery(Query):
+    product_id: Optional[int] = None
+    type: Optional[str] = None
+    limit: Optional[int] = None
+    offset: Optional[int] = None
+
+class GetAllMovementsQueryHandler(QueryHandler):
+    def __init__(self, repo: Repository[Movement]):
+        self.repo = repo
+
+    def handle(self, query: GetAllMovementsQuery) -> List[dict]:
+        filters = {}
+        if query.product_id is not None:
+            filters['product_id'] = query.product_id
+        if query.type is not None:
+            filters['type'] = query.type
+
+        movements = self.repo.filter_by(
+            **filters,
+            limit=query.limit,
+            offset=query.offset
+        )
+        return [m.dict() for m in movements]
+
+@dataclass
+class GetMovementByIdQuery(Query):
+    movement_id: int
+
+class GetMovementByIdQueryHandler(QueryHandler):
+    def __init__(self, repo: Repository[Movement]):
+        self.repo = repo
+
+    def handle(self, query: GetMovementByIdQuery) -> dict:
+        movement = self.repo.get_by_id(query.movement_id)
+        return movement.dict() if movement else None
+```
+
+##### Tarea 3.4: Crear Query Handlers para Stock (1 día)
+
+Crear `src/inventory/stock/app/queries/`:
+
+**1. get_stocks.py:**
+```python
+from dataclasses import dataclass
+from typing import Optional, List
+from src.shared.app.queries import Query, QueryHandler
+from src.shared.app.repositories import Repository
+from src.inventory.stock.domain.entities import Stock
+
+@dataclass
+class GetAllStocksQuery(Query):
+    product_id: Optional[int] = None
+    min_quantity: Optional[int] = None
+    limit: Optional[int] = None
+    offset: Optional[int] = None
+
+class GetAllStocksQueryHandler(QueryHandler):
+    def __init__(self, repo: Repository[Stock]):
+        self.repo = repo
+
+    def handle(self, query: GetAllStocksQuery) -> List[dict]:
+        filters = {}
+        if query.product_id is not None:
+            filters['product_id'] = query.product_id
+
+        stocks = self.repo.filter_by(**filters, limit=query.limit, offset=query.offset)
+
+        # Filtrar por cantidad mínima si se especifica
+        if query.min_quantity is not None:
+            stocks = [s for s in stocks if s.quantity >= query.min_quantity]
+
+        return [s.dict() for s in stocks]
+
+@dataclass
+class GetStockByProductQuery(Query):
+    product_id: int
+
+class GetStockByProductQueryHandler(QueryHandler):
+    def __init__(self, repo: Repository[Stock]):
+        self.repo = repo
+
+    def handle(self, query: GetStockByProductQuery) -> Optional[dict]:
+        stock = self.repo.first(product_id=query.product_id)
+        return stock.dict() if stock else None
+```
+
+**Nota**: Stock no tiene Commands propios porque se modifica solo vía eventos de Movement.
+
+#### Semana 2: Event Handlers y Tests
+
+##### Tarea 3.5: Crear StockEventHandler (1 día)
+
+Crear `src/inventory/stock/infra/event_handlers.py`:
 
 ```python
-# src/inventory/stock/infra/event_handlers.py
+from src.inventory.movement.domain.events import MovementCreated
+from src.shared.infra.events.decorators import event_handler
+from src.inventory.stock.domain.entities import Stock
+from src.shared.app.repositories import Repository
+import logging
+
+logger = logging.getLogger(__name__)
+
 @event_handler(MovementCreated)
 def handle_movement_created(event: MovementCreated) -> None:
+    """
+    Cuando se crea un movimiento, actualizar el stock del producto.
+    Este handler desacopla Movement de Stock.
+    """
+    logger.info(f"Handling MovementCreated for product_id={event.product_id}")
+
     from src import container
     stock_repo = container.resolve(Repository[Stock])
+
+    # Buscar o crear stock
     stock = stock_repo.first(product_id=event.product_id)
     if stock is None:
         stock = Stock(product_id=event.product_id, quantity=event.quantity)
         stock_repo.create(stock)
+        logger.info(f"Created new stock for product_id={event.product_id}, quantity={event.quantity}")
     else:
         stock.update_quantity(event.quantity)
         stock_repo.update(stock)
+        logger.info(f"Updated stock for product_id={event.product_id}, new quantity={stock.quantity}")
 ```
 
-##### Tarea 3.4: Convertir a Command Handlers (2 días)
+##### Tarea 3.6: Actualizar Controllers para usar Commands/Queries (1 día)
 
-Migrar los use cases restantes de inventory a Commands/Queries.
+```python
+# src/inventory/movement/infra/controllers.py
+class MovementController:
+    def __init__(
+        self,
+        create_handler: CreateMovementCommandHandler,
+        get_all_handler: GetAllMovementsQueryHandler,
+        get_by_id_handler: GetMovementByIdQueryHandler,
+    ):
+        self.create_handler = create_handler
+        self.get_all_handler = get_all_handler
+        self.get_by_id_handler = get_by_id_handler
 
-##### Tarea 3.5: Actualizar DI (movement ya no depende de stock_repo) (0.5 día)
+    def create(self, request: MovementInput) -> MovementResponse:
+        command = CreateMovementCommand(**request.model_dump(exclude_none=True))
+        result = self.create_handler.handle(command)
+        return MovementResponse.model_validate(result)
 
-##### Tarea 3.6: Tests (2 días)
+# src/inventory/stock/infra/controllers.py
+class StockController:
+    def __init__(
+        self,
+        get_all_handler: GetAllStocksQueryHandler,
+        get_by_product_handler: GetStockByProductQueryHandler,
+    ):
+        self.get_all_handler = get_all_handler
+        self.get_by_product_handler = get_by_product_handler
+    # ... métodos usando handlers
+```
 
-- Crear movement → stock se actualiza via evento
-- Todo el flujo: venta confirmada → movement creado → stock actualizado
+##### Tarea 3.7: Registrar nuevos componentes en DI (1 día)
+
+Actualizar `src/__init__.py` para:
+- Registrar Command/Query Handlers de Movement
+- Registrar Query Handlers de Stock
+- Importar `src.inventory.stock.infra.event_handlers` para registrar el handler de MovementCreated
+- **Eliminar** la dependencia de stock_repo en CreateMovementUseCase
+
+##### Tarea 3.8: Actualizar event handlers de Sales (0.5 día)
+
+Modificar `src/inventory/infra/event_handlers.py` para usar el nuevo Command:
+
+```python
+@event_handler(SaleConfirmed)
+def handle_sale_confirmed(event: SaleConfirmed) -> None:
+    from src import container
+    from src.inventory.movement.app.commands.create_movement import CreateMovementCommand, CreateMovementCommandHandler
+
+    create_handler = container.resolve(CreateMovementCommandHandler)
+
+    for item in event.items:
+        command = CreateMovementCommand(
+            product_id=item['product_id'],
+            quantity=-abs(item['quantity']),
+            type=MovementType.OUT,
+            reason=f"Sale #{event.sale_id} confirmed"
+        )
+        create_handler.handle(command)
+```
+
+##### Tarea 3.9: Tests completos (3 días)
+
+Tests críticos:
+- **Unit tests**: Command/Query handlers con mocks (15+ tests)
+- **Integration tests**: Crear movement → stock se actualiza vía evento
+- **End-to-end**: SaleConfirmed → Movement creado → Stock actualizado
+- **Regression**: Endpoints existentes siguen funcionando
 
 **Checklist Fase 3:**
-- [ ] `src/inventory/movement/domain/events.py` — MovementCreated
-- [ ] CreateMovementUseCase refactorizado (sin stock_repo)
-- [ ] `src/inventory/stock/infra/event_handlers.py` — actualiza stock
-- [ ] DI actualizado
-- [ ] Tests de integración
-- [ ] Cadena completa: SaleConfirmed → Movement → MovementCreated → Stock updated
+- [ ] `src/inventory/movement/domain/events.py` (MovementCreated)
+- [ ] `src/inventory/movement/app/commands/` (CreateMovementCommand + Handler)
+- [ ] `src/inventory/movement/app/queries/` (GetAllMovements, GetMovementById handlers)
+- [ ] `src/inventory/stock/app/queries/` (GetAllStocks, GetStockByProduct handlers)
+- [ ] `src/inventory/stock/infra/event_handlers.py` (handle_movement_created)
+- [ ] Controllers actualizados para usar commands/queries
+- [ ] Event handlers de Sales actualizados para usar nuevo Command
+- [ ] DI registrado para nuevos handlers
+- [ ] Use cases completamente reemplazados por handlers
+- [ ] Tests unitarios (>20 tests, >80% coverage)
+- [ ] Tests de integración (flujo completo funcionando)
+- [ ] Cadena completa: SaleConfirmed → CreateMovementCommand → MovementCreated → Stock updated ✨
 
 ---
 
-### FASE 4: Migrar Catalog (1 semana)
+### FASE 4: Migrar Catalog a CQRS (1.5 semanas)
 
-**Objetivo**: Convertir product/category a Commands/Queries.
+**Objetivo**: Migrar módulos Product y Category a arquitectura CQRS con Commands/Queries.
 
-##### Tareas:
-- [ ] Crear `src/catalog/product/app/commands/` — CreateProduct, UpdateProduct, DeleteProduct
-- [ ] Crear `src/catalog/product/app/queries/` — GetProducts, SearchProducts, GetProductById
-- [ ] Crear `src/catalog/product/domain/events.py` — ProductCreated, ProductUpdated
-- [ ] Crear `src/catalog/product/domain/specifications.py` — ProductInCategory, ProductByName
-- [ ] Actualizar Controller
-- [ ] Actualizar DI
-- [ ] Tests
+**Por qué Catalog**: Es el módulo fundacional que otros módulos referencian (Sales, Inventory). Completar su migración permite tener toda la base de datos en CQRS.
+
+#### Semana 1: Product
+
+##### Tarea 4.1: Crear Domain Events para Product (0.5 día)
+
+Crear `src/catalog/product/domain/events.py`:
+
+```python
+from dataclasses import dataclass
+from typing import Optional
+from src.shared.domain.events import DomainEvent
+
+@dataclass
+class ProductCreated(DomainEvent):
+    product_id: int = 0
+    sku: str = ""
+    name: str = ""
+    category_id: Optional[int] = None
+
+    def _payload(self) -> dict:
+        return {
+            'product_id': self.product_id,
+            'sku': self.sku,
+            'name': self.name,
+            'category_id': self.category_id,
+        }
+
+@dataclass
+class ProductUpdated(DomainEvent):
+    product_id: int = 0
+    changes: dict = None
+
+    def _payload(self) -> dict:
+        return {
+            'product_id': self.product_id,
+            'changes': self.changes or {},
+        }
+
+@dataclass
+class ProductDeleted(DomainEvent):
+    product_id: int = 0
+
+    def _payload(self) -> dict:
+        return {'product_id': self.product_id}
+```
+
+##### Tarea 4.2: Crear Command Handlers para Product (2 días)
+
+Crear `src/catalog/product/app/commands/`:
+
+**1. create_product.py, 2. update_product.py, 3. delete_product.py**
+
+Ejemplo de CreateProductCommand:
+```python
+from dataclasses import dataclass
+from typing import Optional
+from decimal import Decimal
+from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.repositories import Repository
+from src.catalog.product.domain.entities import Product
+from src.catalog.product.domain.events import ProductCreated
+from src.shared.infra.events.event_bus import EventBus
+
+@dataclass
+class CreateProductCommand(Command):
+    sku: str
+    name: str
+    description: Optional[str] = None
+    price: Optional[Decimal] = None
+    category_id: Optional[int] = None
+
+class CreateProductCommandHandler(CommandHandler):
+    def __init__(self, repo: Repository[Product]):
+        self.repo = repo
+
+    def handle(self, command: CreateProductCommand) -> dict:
+        product = Product(
+            sku=command.sku,
+            name=command.name,
+            description=command.description,
+            price=command.price,
+            category_id=command.category_id,
+        )
+        product = self.repo.create(product)
+
+        EventBus.publish(ProductCreated(
+            aggregate_id=product.id,
+            product_id=product.id,
+            sku=product.sku,
+            name=product.name,
+            category_id=product.category_id,
+        ))
+
+        return product.dict()
+```
+
+##### Tarea 4.3: Crear Specifications para Product (0.5 día)
+
+Crear `src/catalog/product/domain/specifications.py`:
+
+```python
+from src.shared.domain.specifications import Specification
+from src.catalog.product.infra.models import ProductModel
+
+class ProductInCategory(Specification):
+    def __init__(self, category_id: int):
+        self.category_id = category_id
+
+    def is_satisfied_by(self, product) -> bool:
+        return product.category_id == self.category_id
+
+    def to_sql_criteria(self):
+        return [ProductModel.category_id == self.category_id]
+
+class ProductByName(Specification):
+    def __init__(self, name_pattern: str):
+        self.name_pattern = name_pattern
+
+    def is_satisfied_by(self, product) -> bool:
+        return self.name_pattern.lower() in product.name.lower()
+
+    def to_sql_criteria(self):
+        return [ProductModel.name.ilike(f"%{self.name_pattern}%")]
+
+class ProductBySku(Specification):
+    def __init__(self, sku: str):
+        self.sku = sku
+
+    def is_satisfied_by(self, product) -> bool:
+        return product.sku == self.sku
+
+    def to_sql_criteria(self):
+        return [ProductModel.sku == self.sku]
+```
+
+##### Tarea 4.4: Crear Query Handlers para Product (1 día)
+
+Crear `src/catalog/product/app/queries/`:
+
+**1. get_products.py, 2. search_products.py**
+
+```python
+from dataclasses import dataclass
+from typing import Optional, List
+from src.shared.app.queries import Query, QueryHandler
+from src.shared.app.repositories import Repository
+from src.catalog.product.domain.entities import Product
+from src.catalog.product.domain.specifications import ProductInCategory, ProductByName
+
+@dataclass
+class GetAllProductsQuery(Query):
+    category_id: Optional[int] = None
+    limit: Optional[int] = None
+    offset: Optional[int] = None
+
+class GetAllProductsQueryHandler(QueryHandler):
+    def __init__(self, repo: Repository[Product]):
+        self.repo = repo
+
+    def handle(self, query: GetAllProductsQuery) -> List[dict]:
+        if query.category_id is not None:
+            spec = ProductInCategory(query.category_id)
+            products = self.repo.filter_by_spec(spec, limit=query.limit, offset=query.offset)
+        else:
+            products = self.repo.filter_by(limit=query.limit, offset=query.offset)
+        return [p.dict() for p in products]
+
+@dataclass
+class SearchProductsQuery(Query):
+    search_term: str
+    limit: Optional[int] = 20
+
+class SearchProductsQueryHandler(QueryHandler):
+    def __init__(self, repo: Repository[Product]):
+        self.repo = repo
+
+    def handle(self, query: SearchProductsQuery) -> List[dict]:
+        spec = ProductByName(query.search_term)
+        products = self.repo.filter_by_spec(spec, limit=query.limit)
+        return [p.dict() for p in products]
+```
+
+##### Tarea 4.5: Actualizar Controller de Product (0.5 día)
+
+Actualizar `src/catalog/product/infra/controllers.py` para usar handlers.
+
+#### Semana 2: Category
+
+##### Tarea 4.6: Crear Command/Query Handlers para Category (1.5 días)
+
+Crear:
+- `src/catalog/product/domain/events.py` (agregar CategoryCreated, CategoryUpdated, CategoryDeleted)
+- `src/catalog/product/app/commands/` (category commands)
+- `src/catalog/product/app/queries/` (category queries)
+- Actualizar CategoryController
+
+##### Tarea 4.7: Registrar componentes en DI (0.5 día)
+
+Actualizar `src/__init__.py` para registrar todos los handlers de Product y Category.
+
+##### Tarea 4.8: Tests completos (1.5 días)
+
+- Tests unitarios para commands/queries (20+ tests)
+- Tests de integración con specifications
+- Tests de regresión de endpoints
+
+**Checklist Fase 4:**
+- [ ] `src/catalog/product/domain/events.py` (ProductCreated, ProductUpdated, ProductDeleted, CategoryCreated, CategoryUpdated, CategoryDeleted)
+- [ ] `src/catalog/product/domain/specifications.py` (ProductInCategory, ProductByName, ProductBySku)
+- [ ] `src/catalog/product/app/commands/` (6 command handlers: Create/Update/Delete para Product y Category)
+- [ ] `src/catalog/product/app/queries/` (6+ query handlers para Product y Category)
+- [ ] Controllers actualizados para usar commands/queries
+- [ ] DI registrado para nuevos handlers
+- [ ] Use cases completamente reemplazados por handlers
+- [ ] Tests unitarios (>25 tests, >80% coverage)
+- [ ] Tests de integración (endpoints funcionando)
+- [ ] Specifications funcionando en queries
 
 ---
 
@@ -1361,19 +1796,19 @@ module/
 ## Cronograma Visual
 
 ```
-Semana:  1    2    3    4    5    6    7    8    9    10
+Semana:  1    2    3    4    5    6    7    8    9    10   11   12
          ├────┤
-         Fase 0: Fundamentos
+         Fase 0: Fundamentos (CQRS base)
               ├─────────┤
-              Fase 1: Migrar Customers (piloto)
+              Fase 1: Customers CQRS (piloto)
                         ├──────────────┤
-                        Fase 2: Implementar Sales (nuevo)
+                        Fase 2: Sales CQRS (nuevo)
                                        ├─────────┤
-                                       Fase 3: Migrar Inventory
-                                                 ├────┤
-                                                 Fase 4: Migrar Catalog
-                                                      ├────┤
-                                                      Fase 5: Simplificar DI
+                                       Fase 3: Inventory CQRS + Events
+                                                 ├──────┤
+                                                 Fase 4: Catalog CQRS
+                                                         ├────┤
+                                                         Fase 5: Simplificar DI
 ```
 
 ## Riesgos y Mitigaciones

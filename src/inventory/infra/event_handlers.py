@@ -5,7 +5,10 @@ Estos handlers permiten el desacoplamiento entre módulos vía eventos.
 
 import logging
 
-from src.inventory.movement.app.use_cases import CreateMovementUseCase
+from src.inventory.movement.app.commands import (
+    CreateMovementCommand,
+    CreateMovementCommandHandler,
+)
 from src.inventory.movement.domain.constants import MovementType
 from src.sales.domain.events import SaleCancelled, SaleConfirmed
 from src.shared.infra.events.decorators import event_handler
@@ -21,24 +24,24 @@ def handle_sale_confirmed(event: SaleConfirmed) -> None:
     """
     logger.info(f"Handling SaleConfirmed event for sale_id={event.sale_id}")
 
-    # Resolver el use case del container
+    # Resolver el command handler del container
     from src import container
 
     try:
         # Crear movimientos OUT para cada item de la venta
         for item in event.items:
-            # Obtener el use case (SCOPED - con nueva sesión)
-            movement_uc = container.resolve(CreateMovementUseCase)
+            # Obtener el command handler (SCOPED - con nueva sesión)
+            handler = container.resolve(CreateMovementCommandHandler)
 
-            # Crear movimiento OUT (cantidad negativa)
-            movement_data = {
-                "product_id": item["product_id"],
-                "quantity": -abs(item["quantity"]),  # Asegurar que sea negativo
-                "type": MovementType.OUT,
-                "reason": f"Sale #{event.sale_id} confirmed",
-            }
+            # Crear comando de movimiento OUT (cantidad negativa)
+            command = CreateMovementCommand(
+                product_id=item["product_id"],
+                quantity=-abs(item["quantity"]),  # Asegurar que sea negativo
+                type=MovementType.OUT.value,
+                reason=f"Sale #{event.sale_id} confirmed",
+            )
 
-            movement_uc.execute(movement_data)
+            handler.handle(command)
             logger.info(
                 f"Created OUT movement for product_id={item['product_id']}, "
                 f"quantity={item['quantity']}"
@@ -70,24 +73,24 @@ def handle_sale_cancelled(event: SaleCancelled) -> None:
         )
         return
 
-    # Resolver el use case del container
+    # Resolver el command handler del container
     from src import container
 
     try:
         # Crear movimientos IN de reversión para cada item
         for item in event.items:
-            # Obtener el use case
-            movement_uc = container.resolve(CreateMovementUseCase)
+            # Obtener el command handler
+            handler = container.resolve(CreateMovementCommandHandler)
 
-            # Crear movimiento IN (cantidad positiva)
-            movement_data = {
-                "product_id": item["product_id"],
-                "quantity": abs(item["quantity"]),  # Asegurar que sea positivo
-                "type": MovementType.IN,
-                "reason": f"Sale #{event.sale_id} cancelled - reversal",
-            }
+            # Crear comando de movimiento IN (cantidad positiva)
+            command = CreateMovementCommand(
+                product_id=item["product_id"],
+                quantity=abs(item["quantity"]),  # Asegurar que sea positivo
+                type=MovementType.IN.value,
+                reason=f"Sale #{event.sale_id} cancelled - reversal",
+            )
 
-            movement_uc.execute(movement_data)
+            handler.handle(command)
             logger.info(
                 f"Created IN reversal movement for product_id={item['product_id']}, "
                 f"quantity={item['quantity']}"
