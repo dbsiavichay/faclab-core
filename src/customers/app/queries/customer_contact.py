@@ -21,7 +21,7 @@ class GetCustomerContactByIdQueryHandler(
 
     def handle(
         self, query: GetCustomerContactByIdQuery
-    ) -> Optional[CustomerContactOutput]:
+    ) -> CustomerContactOutput | None:
         contact = self.repo.get_by_id(query.id)
         if contact is None:
             return None

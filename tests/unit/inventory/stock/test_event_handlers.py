@@ -1,8 +1,8 @@
 """Unit tests for Stock event handlers"""
 
-import pytest
 from unittest.mock import Mock, patch
-from datetime import datetime
+
+import pytest
 
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.events import MovementCreated

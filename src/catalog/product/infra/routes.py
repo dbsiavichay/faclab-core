@@ -1,4 +1,3 @@
-from typing import List
 
 from fastapi import APIRouter, Depends
 
@@ -28,7 +27,7 @@ class CategoryRouter:
         )(self.update)
         self.router.delete("/{id}", summary="Delete category")(self.delete)
         self.router.get(
-            "", response_model=List[CategoryResponse], summary="Get all categories"
+            "", response_model=list[CategoryResponse], summary="Get all categories"
         )(self.get_all)
         self.router.get(
             "/{id}", response_model=CategoryResponse, summary="Get category by ID"

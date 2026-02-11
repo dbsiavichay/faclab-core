@@ -1,6 +1,5 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -18,7 +17,7 @@ class SaleModel(Base):
         Integer, ForeignKey("customers.id"), nullable=False
     )
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="DRAFT")
-    sale_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    sale_date: Mapped[datetime | None] = mapped_column(DateTime)
     subtotal: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), nullable=False, default=Decimal("0")
     )
@@ -34,20 +33,20 @@ class SaleModel(Base):
     payment_status: Mapped[str] = mapped_column(
         String(16), nullable=False, default="PENDING"
     )
-    notes: Mapped[Optional[str]] = mapped_column(String(512))
-    created_by: Mapped[Optional[str]] = mapped_column(String(64))
+    notes: Mapped[str | None] = mapped_column(String(512))
+    created_by: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now
     )
-    updated_at: Mapped[Optional[datetime]] = mapped_column(
+    updated_at: Mapped[datetime | None] = mapped_column(
         DateTime, onupdate=datetime.now
     )
 
     # Relationships
-    items: Mapped[List["SaleItemModel"]] = relationship(
+    items: Mapped[list["SaleItemModel"]] = relationship(
         back_populates="sale", cascade="all, delete-orphan"
     )
-    payments: Mapped[List["PaymentModel"]] = relationship(
+    payments: Mapped[list["PaymentModel"]] = relationship(
         back_populates="sale", cascade="all, delete-orphan"
     )
 
@@ -85,9 +84,9 @@ class PaymentModel(Base):
     )
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     payment_method: Mapped[str] = mapped_column(String(16), nullable=False)
-    payment_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    reference: Mapped[Optional[str]] = mapped_column(String(128))
-    notes: Mapped[Optional[str]] = mapped_column(String(512))
+    payment_date: Mapped[datetime | None] = mapped_column(DateTime)
+    reference: Mapped[str | None] = mapped_column(String(128))
+    notes: Mapped[str | None] = mapped_column(String(512))
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now
     )

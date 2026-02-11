@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Optional
 
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleItemAdded
@@ -19,7 +18,7 @@ class AddSaleItemCommand(Command):
     product_id: int
     quantity: int
     unit_price: float
-    discount: Optional[float] = 0.0
+    discount: float | None = 0.0
 
 
 class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):

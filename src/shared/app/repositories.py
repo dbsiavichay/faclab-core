@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -18,17 +18,17 @@ class Repository(Generic[T], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_all(self) -> List[T]:
+    def get_all(self) -> list[T]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_id(self, id: int) -> Optional[T]:
+    def get_by_id(self, id: int) -> T | None:
         raise NotImplementedError
 
     @abstractmethod
-    def first(self, **kwargs) -> Optional[T]:
+    def first(self, **kwargs) -> T | None:
         raise NotImplementedError
 
     @abstractmethod
-    def filter_by(self, **kwargs) -> List[T]:
+    def filter_by(self, **kwargs) -> list[T]:
         raise NotImplementedError

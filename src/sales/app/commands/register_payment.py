@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Optional
 
 from src.sales.domain.entities import Payment, PaymentMethod, Sale
 from src.sales.domain.events import PaymentReceived
@@ -17,8 +16,8 @@ class RegisterPaymentCommand(Command):
     sale_id: int
     amount: float
     payment_method: str
-    reference: Optional[str] = None
-    notes: Optional[str] = None
+    reference: str | None = None
+    notes: str | None = None
 
 
 class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]):

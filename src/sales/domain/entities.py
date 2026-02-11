@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
 
 from src.shared.domain.entities import Entity
 
 
-class SaleStatus(str, Enum):
+class SaleStatus(StrEnum):
     """Estado de una venta"""
 
     DRAFT = "DRAFT"
@@ -16,7 +15,7 @@ class SaleStatus(str, Enum):
     CANCELLED = "CANCELLED"
 
 
-class PaymentStatus(str, Enum):
+class PaymentStatus(StrEnum):
     """Estado de pago de una venta"""
 
     PENDING = "PENDING"
@@ -24,7 +23,7 @@ class PaymentStatus(str, Enum):
     PAID = "PAID"
 
 
-class PaymentMethod(str, Enum):
+class PaymentMethod(StrEnum):
     """Método de pago"""
 
     CASH = "CASH"
@@ -42,7 +41,7 @@ class SaleItem(Entity):
     quantity: int
     unit_price: Decimal
     discount: Decimal = Decimal("0")
-    id: Optional[int] = None
+    id: int | None = None
 
     @property
     def subtotal(self) -> Decimal:
@@ -58,17 +57,17 @@ class Sale(Entity):
 
     customer_id: int
     status: SaleStatus = SaleStatus.DRAFT
-    sale_date: Optional[datetime] = None
+    sale_date: datetime | None = None
     subtotal: Decimal = Decimal("0")
     tax: Decimal = Decimal("0")
     discount: Decimal = Decimal("0")
     total: Decimal = Decimal("0")
     payment_status: PaymentStatus = PaymentStatus.PENDING
-    notes: Optional[str] = None
-    created_by: Optional[str] = None
-    id: Optional[int] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    notes: str | None = None
+    created_by: str | None = None
+    id: int | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     def confirm(self) -> None:
         """Confirma la venta (solo si está en DRAFT)"""
@@ -114,11 +113,11 @@ class Payment(Entity):
     sale_id: int
     amount: Decimal
     payment_method: PaymentMethod
-    payment_date: Optional[datetime] = None
-    reference: Optional[str] = None
-    notes: Optional[str] = None
-    id: Optional[int] = None
-    created_at: Optional[datetime] = None
+    payment_date: datetime | None = None
+    reference: str | None = None
+    notes: str | None = None
+    id: int | None = None
+    created_at: datetime | None = None
 
     def __post_init__(self):
         """Valida que el monto sea positivo"""

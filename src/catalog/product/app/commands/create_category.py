@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.catalog.product.domain.entities import Category
 from src.catalog.product.domain.events import CategoryCreated
@@ -11,7 +10,7 @@ from src.shared.infra.events.event_bus import EventBus
 @dataclass
 class CreateCategoryCommand(Command):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class CreateCategoryCommandHandler(CommandHandler[CreateCategoryCommand, dict]):

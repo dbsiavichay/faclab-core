@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any
 
 from src.shared.domain.events import DomainEvent
 
@@ -12,7 +12,7 @@ class SaleCreated(DomainEvent):
     customer_id: int = 0
     total: float = 0.0
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "sale_id": self.sale_id,
             "customer_id": self.customer_id,
@@ -29,12 +29,12 @@ class SaleConfirmed(DomainEvent):
 
     sale_id: int = 0
     customer_id: int = 0
-    items: List[Dict[str, Any]] = field(
+    items: list[dict[str, Any]] = field(
         default_factory=list
     )  # [{product_id, quantity, unit_price}]
     total: float = 0.0
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "sale_id": self.sale_id,
             "customer_id": self.customer_id,
@@ -52,7 +52,7 @@ class SaleCancelled(DomainEvent):
 
     sale_id: int = 0
     customer_id: int = 0
-    items: List[Dict[str, Any]] = field(
+    items: list[dict[str, Any]] = field(
         default_factory=list
     )  # [{product_id, quantity}]
     reason: str = ""
@@ -60,7 +60,7 @@ class SaleCancelled(DomainEvent):
         False  # True si la venta estaba confirmada antes de cancelarse
     )
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "sale_id": self.sale_id,
             "customer_id": self.customer_id,
@@ -79,7 +79,7 @@ class SaleInvoiced(DomainEvent):
     invoice_number: str = ""
     total: float = 0.0
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "sale_id": self.sale_id,
             "customer_id": self.customer_id,
@@ -101,7 +101,7 @@ class PaymentReceived(DomainEvent):
     payment_method: str = ""
     reference: str = ""
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "payment_id": self.payment_id,
             "sale_id": self.sale_id,
@@ -121,7 +121,7 @@ class SaleItemAdded(DomainEvent):
     quantity: int = 0
     unit_price: float = 0.0
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "sale_id": self.sale_id,
             "sale_item_id": self.sale_item_id,
@@ -140,7 +140,7 @@ class SaleItemRemoved(DomainEvent):
     product_id: int = 0
     quantity: int = 0
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "sale_id": self.sale_id,
             "sale_item_id": self.sale_item_id,

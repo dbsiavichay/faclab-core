@@ -1,4 +1,3 @@
-from typing import List
 
 from src.inventory.stock.app.queries import (
     GetAllStocksQuery,
@@ -23,7 +22,7 @@ class StockController:
         self.get_by_id_handler = get_by_id_handler
         self.get_by_product_handler = get_by_product_handler
 
-    def get_all(self, query_params: StockQueryParams) -> List[StockResponse]:
+    def get_all(self, query_params: StockQueryParams) -> list[StockResponse]:
         query = GetAllStocksQuery(**query_params.model_dump(exclude_none=True))
         stocks = self.get_all_handler.handle(query)
         return [StockResponse.model_validate(stock) for stock in stocks]

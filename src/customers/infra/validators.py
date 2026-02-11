@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import List, Optional
 
 from pydantic import AliasChoices, BaseModel, Field
 
@@ -23,27 +22,27 @@ class CustomerInput(BaseModel):
         validation_alias=AliasChoices("tax_type", "taxType"),
         serialization_alias="taxType",
     )
-    email: Optional[str] = Field(None, max_length=128)
-    phone: Optional[str] = Field(None, max_length=32)
-    address: Optional[str] = Field(None, max_length=255)
-    city: Optional[str] = Field(None, max_length=64)
-    state: Optional[str] = Field(None, max_length=64)
-    country: Optional[str] = Field(None, max_length=64)
-    credit_limit: Optional[Decimal] = Field(
+    email: str | None = Field(None, max_length=128)
+    phone: str | None = Field(None, max_length=32)
+    address: str | None = Field(None, max_length=255)
+    city: str | None = Field(None, max_length=64)
+    state: str | None = Field(None, max_length=64)
+    country: str | None = Field(None, max_length=64)
+    credit_limit: Decimal | None = Field(
         None,
         ge=0,
         description="Credit limit",
         validation_alias=AliasChoices("credit_limit", "creditLimit"),
         serialization_alias="creditLimit",
     )
-    payment_terms: Optional[int] = Field(
+    payment_terms: int | None = Field(
         None,
         ge=0,
         description="Payment terms in days",
         validation_alias=AliasChoices("payment_terms", "paymentTerms"),
         serialization_alias="paymentTerms",
     )
-    is_active: Optional[bool] = Field(
+    is_active: bool | None = Field(
         True,
         description="Customer active status",
         validation_alias=AliasChoices("is_active", "isActive"),
@@ -53,9 +52,9 @@ class CustomerInput(BaseModel):
 
 class CustomerContactInput(BaseModel):
     name: str = Field(..., min_length=1, max_length=128, description="Contact name")
-    role: Optional[str] = Field(None, max_length=64)
-    email: Optional[str] = Field(None, max_length=128)
-    phone: Optional[str] = Field(None, max_length=32)
+    role: str | None = Field(None, max_length=64)
+    email: str | None = Field(None, max_length=128)
+    phone: str | None = Field(None, max_length=32)
 
 
 # Customer Responses
@@ -64,14 +63,14 @@ class CustomerResponse(BaseModel):
     name: str
     tax_id: str = Field(serialization_alias="taxId")
     tax_type: int = Field(serialization_alias="taxType")
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    country: Optional[str] = None
-    credit_limit: Optional[Decimal] = Field(None, serialization_alias="creditLimit")
-    payment_terms: Optional[int] = Field(None, serialization_alias="paymentTerms")
+    email: str | None = None
+    phone: str | None = None
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+    country: str | None = None
+    credit_limit: Decimal | None = Field(None, serialization_alias="creditLimit")
+    payment_terms: int | None = Field(None, serialization_alias="paymentTerms")
     is_active: bool = Field(serialization_alias="isActive")
 
 
@@ -81,16 +80,16 @@ class CustomerContactResponse(BaseModel):
         ge=1, description="Customer ID", serialization_alias="customerId"
     )
     name: str
-    role: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    role: str | None = None
+    email: str | None = None
+    phone: str | None = None
 
 
 class CustomersResponse(BaseModel):
-    data: List[CustomerResponse] = Field(..., description="List of customers")
+    data: list[CustomerResponse] = Field(..., description="List of customers")
 
 
 class CustomerContactsResponse(BaseModel):
-    data: List[CustomerContactResponse] = Field(
+    data: list[CustomerContactResponse] = Field(
         ..., description="List of customer contacts"
     )

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.events import ProductUpdated
@@ -13,8 +12,8 @@ class UpdateProductCommand(Command):
     product_id: int
     sku: str
     name: str
-    description: Optional[str] = None
-    category_id: Optional[int] = None
+    description: str | None = None
+    category_id: int | None = None
 
 
 class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):

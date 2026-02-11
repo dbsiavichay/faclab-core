@@ -1,8 +1,9 @@
 """Unit tests for Movement query handlers"""
 
-import pytest
-from unittest.mock import Mock
 from datetime import datetime
+from unittest.mock import Mock
+
+import pytest
 
 from src.inventory.movement.app.queries import (
     GetAllMovementsQuery,

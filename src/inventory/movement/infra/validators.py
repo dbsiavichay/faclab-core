@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
@@ -18,8 +17,8 @@ class MovementBase(BaseModel):
     )
     quantity: int = Field(..., ge=1, description="Quantity")
     type: MovementType
-    reason: Optional[str] = None
-    date: Optional[datetime] = None
+    reason: str | None = None
+    date: datetime | None = None
 
 
 class MovementInput(MovementBase):
@@ -48,11 +47,11 @@ class MovementResponse(MovementBase):
 
 
 class MovementQueryParams(QueryParams):
-    product_id: Optional[int] = Field(
+    product_id: int | None = Field(
         None,
         ge=1,
         alias="productId",
     )
-    type: Optional[MovementType] = None
-    from_date: Optional[datetime] = Field(None, alias="fromDate")
-    to_date: Optional[datetime] = Field(None, alias="toDate")
+    type: MovementType | None = None
+    from_date: datetime | None = Field(None, alias="fromDate")
+    to_date: datetime | None = Field(None, alias="toDate")

@@ -1,12 +1,10 @@
 """Unit tests for catalog product specifications."""
-import pytest
-from unittest.mock import Mock
 
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.specifications import (
-    ProductInCategory,
     ProductByName,
     ProductBySku,
+    ProductInCategory,
 )
 from src.catalog.product.infra.models import ProductModel
 

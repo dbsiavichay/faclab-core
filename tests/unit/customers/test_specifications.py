@@ -3,13 +3,13 @@ from src.customers.domain.specifications import ActiveCustomers, CustomersByType
 
 
 def _make_customer(**overrides) -> Customer:
-    defaults = dict(
-        id=1,
-        name="Test Customer",
-        tax_id="1234567890123",
-        tax_type=TaxType.RUC,
-        is_active=True,
-    )
+    defaults = {
+        "id": 1,
+        "name": "Test Customer",
+        "tax_id": "1234567890123",
+        "tax_type": TaxType.RUC,
+        "is_active": True,
+    }
     defaults.update(overrides)
     return Customer(**defaults)
 

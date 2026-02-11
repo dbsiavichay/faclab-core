@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import DeclarativeBase
@@ -22,7 +22,7 @@ class IsAdult(Specification):
     def is_satisfied_by(self, candidate: Any) -> bool:
         return candidate.get("age", 0) >= 18
 
-    def to_sql_criteria(self) -> List[Any]:
+    def to_sql_criteria(self) -> list[Any]:
         return [UserModel.age >= 18]
 
 
@@ -30,7 +30,7 @@ class IsActive(Specification):
     def is_satisfied_by(self, candidate: Any) -> bool:
         return candidate.get("active", False)
 
-    def to_sql_criteria(self) -> List[Any]:
+    def to_sql_criteria(self) -> list[Any]:
         return [UserModel.active == 1]
 
 

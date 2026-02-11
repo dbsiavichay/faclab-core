@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from src.catalog.product.domain.entities import Category
 from src.shared.app.queries import Query, QueryHandler
@@ -8,15 +8,15 @@ from src.shared.app.repositories import Repository
 
 @dataclass
 class GetAllCategoriesQuery(Query):
-    limit: Optional[int] = None
-    offset: Optional[int] = None
+    limit: int | None = None
+    offset: int | None = None
 
 
-class GetAllCategoriesQueryHandler(QueryHandler[GetAllCategoriesQuery, List[dict]]):
+class GetAllCategoriesQueryHandler(QueryHandler[GetAllCategoriesQuery, list[dict]]):
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
 
-    def handle(self, query: GetAllCategoriesQuery) -> List[dict]:
+    def handle(self, query: GetAllCategoriesQuery) -> list[dict]:
         categories = self.repo.filter_by(limit=query.limit, offset=query.offset)
         return [c.dict() for c in categories]
 
@@ -30,6 +30,6 @@ class GetCategoryByIdQueryHandler(QueryHandler[GetCategoryByIdQuery, Optional[di
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
 
-    def handle(self, query: GetCategoryByIdQuery) -> Optional[dict]:
+    def handle(self, query: GetCategoryByIdQuery) -> dict | None:
         category = self.repo.get_by_id(query.category_id)
         return category.dict() if category else None

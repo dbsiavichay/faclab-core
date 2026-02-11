@@ -18,7 +18,7 @@ tests:  ## Run tests
 	docker compose run --no-deps --rm api pytest --cov='src'
 
 lint:  ## Fix linter errors
-	source .venv/bin/activate && black . && isort . --profile black && flake8 .	
+	source .venv/bin/activate && ruff check --fix . && ruff format .	
 
 migrations:  ## Create a new migration with Alembic
 	docker compose run --no-deps --rm api alembic revision --autogenerate -m "$(m)"

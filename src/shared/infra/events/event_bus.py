@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from typing import Callable, Dict, List, Type
+from collections.abc import Callable
 
 from src.shared.domain.events import DomainEvent
 
@@ -8,10 +8,10 @@ logger = logging.getLogger(__name__)
 
 
 class EventBus:
-    _subscribers: Dict[Type[DomainEvent], List[Callable]] = defaultdict(list)
+    _subscribers: dict[type[DomainEvent], list[Callable]] = defaultdict(list)
 
     @classmethod
-    def subscribe(cls, event_type: Type[DomainEvent], handler: Callable) -> None:
+    def subscribe(cls, event_type: type[DomainEvent], handler: Callable) -> None:
         cls._subscribers[event_type].append(handler)
 
     @classmethod

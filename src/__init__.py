@@ -51,9 +51,7 @@ from src.customers.infra.repositories import (
     CustomerContactRepositoryImpl,
     CustomerRepositoryImpl,
 )
-from src.inventory.movement.app.commands import (
-    CreateMovementCommandHandler,
-)
+from src.inventory.movement.app.commands import CreateMovementCommandHandler
 from src.inventory.movement.app.queries import (
     GetAllMovementsQueryHandler,
     GetMovementByIdQueryHandler,

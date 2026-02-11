@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from src.sales.domain.entities import (
     Payment,
@@ -15,7 +15,7 @@ from src.shared.infra.mappers import Mapper
 class SaleMapper(Mapper[Sale, SaleModel]):
     """Mapper para convertir entre Sale entity y SaleModel"""
 
-    def to_entity(self, model: Optional[SaleModel]) -> Optional[Sale]:
+    def to_entity(self, model: SaleModel | None) -> Sale | None:
         """Convierte un modelo de infraestructura a una entidad de dominio"""
         if not model:
             return None
@@ -36,7 +36,7 @@ class SaleMapper(Mapper[Sale, SaleModel]):
             updated_at=model.updated_at,
         )
 
-    def to_dict(self, entity: Sale) -> Dict[str, Any]:
+    def to_dict(self, entity: Sale) -> dict[str, Any]:
         """Convierte una entidad de dominio a un diccionario para crear un modelo"""
         result = {
             "customer_id": entity.customer_id,
@@ -67,7 +67,7 @@ class SaleMapper(Mapper[Sale, SaleModel]):
 class SaleItemMapper(Mapper[SaleItem, SaleItemModel]):
     """Mapper para convertir entre SaleItem entity y SaleItemModel"""
 
-    def to_entity(self, model: Optional[SaleItemModel]) -> Optional[SaleItem]:
+    def to_entity(self, model: SaleItemModel | None) -> SaleItem | None:
         """Convierte un modelo de infraestructura a una entidad de dominio"""
         if not model:
             return None
@@ -81,7 +81,7 @@ class SaleItemMapper(Mapper[SaleItem, SaleItemModel]):
             discount=model.discount,
         )
 
-    def to_dict(self, entity: SaleItem) -> Dict[str, Any]:
+    def to_dict(self, entity: SaleItem) -> dict[str, Any]:
         """Convierte una entidad de dominio a un diccionario para crear un modelo"""
         result = {
             "sale_id": entity.sale_id,
@@ -101,7 +101,7 @@ class SaleItemMapper(Mapper[SaleItem, SaleItemModel]):
 class PaymentMapper(Mapper[Payment, PaymentModel]):
     """Mapper para convertir entre Payment entity y PaymentModel"""
 
-    def to_entity(self, model: Optional[PaymentModel]) -> Optional[Payment]:
+    def to_entity(self, model: PaymentModel | None) -> Payment | None:
         """Convierte un modelo de infraestructura a una entidad de dominio"""
         if not model:
             return None
@@ -117,7 +117,7 @@ class PaymentMapper(Mapper[Payment, PaymentModel]):
             created_at=model.created_at,
         )
 
-    def to_dict(self, entity: Payment) -> Dict[str, Any]:
+    def to_dict(self, entity: Payment) -> dict[str, Any]:
         """Convierte una entidad de dominio a un diccionario para crear un modelo"""
         result = {
             "sale_id": entity.sale_id,

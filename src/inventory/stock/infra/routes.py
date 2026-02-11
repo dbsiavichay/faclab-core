@@ -1,4 +1,3 @@
-from typing import List
 
 from fastapi import APIRouter, Depends
 
@@ -16,7 +15,7 @@ class StockRouter:
     def _setup_routes(self):
         """Sets up all the routes for the router."""
         self.router.get(
-            "", response_model=List[StockResponse], summary="Get all stocks"
+            "", response_model=list[StockResponse], summary="Get all stocks"
         )(self.get_all)
 
     def get_all(

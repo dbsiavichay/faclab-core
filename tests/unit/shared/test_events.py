@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -11,7 +11,7 @@ from src.shared.infra.events.event_bus import EventBus
 class OrderCreated(DomainEvent):
     order_total: float = 0.0
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {"order_total": self.order_total}
 
 

@@ -1,4 +1,3 @@
-from typing import Optional
 
 from src.customers.domain.entities import Customer, CustomerContact
 from src.customers.infra.models import CustomerContactModel, CustomerModel
@@ -13,7 +12,7 @@ class CustomerRepositoryImpl(BaseRepository[Customer]):
 
     __model__ = CustomerModel
 
-    def get_by_tax_id(self, tax_id: str) -> Optional[Customer]:
+    def get_by_tax_id(self, tax_id: str) -> Customer | None:
         """Get customer by tax ID"""
         model = self.session.query(self.__model__).filter_by(tax_id=tax_id).first()
         return self.mapper.to_entity(model)

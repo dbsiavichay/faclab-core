@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.catalog.product.domain.entities import Category
 from src.catalog.product.domain.events import CategoryUpdated
@@ -12,7 +11,7 @@ from src.shared.infra.events.event_bus import EventBus
 class UpdateCategoryCommand(Command):
     category_id: int
     name: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class UpdateCategoryCommandHandler(CommandHandler[UpdateCategoryCommand, dict]):

@@ -1,3 +1,9 @@
+from .get_categories import (
+    GetAllCategoriesQuery,
+    GetAllCategoriesQueryHandler,
+    GetCategoryByIdQuery,
+    GetCategoryByIdQueryHandler,
+)
 from .get_products import (
     GetAllProductsQuery,
     GetAllProductsQueryHandler,
@@ -5,12 +11,6 @@ from .get_products import (
     GetProductByIdQueryHandler,
     SearchProductsQuery,
     SearchProductsQueryHandler,
-)
-from .get_categories import (
-    GetAllCategoriesQuery,
-    GetAllCategoriesQueryHandler,
-    GetCategoryByIdQuery,
-    GetCategoryByIdQueryHandler,
 )
 
 __all__ = [

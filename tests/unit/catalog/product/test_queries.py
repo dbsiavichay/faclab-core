@@ -1,20 +1,19 @@
 """Unit tests for catalog product query handlers."""
-import pytest
 from unittest.mock import Mock
 
 from src.catalog.product.app.queries import (
+    GetAllCategoriesQuery,
+    GetAllCategoriesQueryHandler,
     GetAllProductsQuery,
     GetAllProductsQueryHandler,
+    GetCategoryByIdQuery,
+    GetCategoryByIdQueryHandler,
     GetProductByIdQuery,
     GetProductByIdQueryHandler,
     SearchProductsQuery,
     SearchProductsQueryHandler,
-    GetAllCategoriesQuery,
-    GetAllCategoriesQueryHandler,
-    GetCategoryByIdQuery,
-    GetCategoryByIdQueryHandler,
 )
-from src.catalog.product.domain.entities import Product, Category
+from src.catalog.product.domain.entities import Category, Product
 
 
 # Product Query Tests

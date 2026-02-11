@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -12,9 +12,9 @@ class CategoryModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(64), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(128))
+    description: Mapped[str | None] = mapped_column(String(128))
 
-    products: Mapped[List["ProductModel"]] = relationship(back_populates="category")
+    products: Mapped[list["ProductModel"]] = relationship(back_populates="category")
 
 
 class ProductModel(Base):
@@ -23,7 +23,7 @@ class ProductModel(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     sku: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now
     )

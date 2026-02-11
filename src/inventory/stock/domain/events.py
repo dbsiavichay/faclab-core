@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any
 
 from src.shared.domain.events import DomainEvent
 
@@ -14,9 +14,9 @@ class StockCreated(DomainEvent):
     aggregate_id: int = 0  # stock_id
     product_id: int = 0
     quantity: int = 0
-    location: Optional[str] = None
+    location: str | None = None
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "stock_id": self.aggregate_id,
             "product_id": self.product_id,
@@ -36,9 +36,9 @@ class StockUpdated(DomainEvent):
     product_id: int = 0
     old_quantity: int = 0
     new_quantity: int = 0
-    location: Optional[str] = None
+    location: str | None = None
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "stock_id": self.aggregate_id,
             "product_id": self.product_id,

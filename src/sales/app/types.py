@@ -1,14 +1,14 @@
 """TypedDicts para input/output de comandos y queries"""
 
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 
 class SaleInput(TypedDict, total=False):
     """Input para crear una venta"""
 
     customer_id: int
-    notes: Optional[str]
-    created_by: Optional[str]
+    notes: str | None
+    created_by: str | None
 
 
 class SaleItemInput(TypedDict, total=False):
@@ -18,7 +18,7 @@ class SaleItemInput(TypedDict, total=False):
     product_id: int
     quantity: int
     unit_price: float
-    discount: Optional[float]
+    discount: float | None
 
 
 class PaymentInput(TypedDict, total=False):
@@ -27,8 +27,8 @@ class PaymentInput(TypedDict, total=False):
     sale_id: int
     amount: float
     payment_method: str
-    reference: Optional[str]
-    notes: Optional[str]
+    reference: str | None
+    notes: str | None
 
 
 class SaleOutput(TypedDict, total=False):
@@ -37,16 +37,16 @@ class SaleOutput(TypedDict, total=False):
     id: int
     customer_id: int
     status: str
-    sale_date: Optional[str]
+    sale_date: str | None
     subtotal: float
     tax: float
     discount: float
     total: float
     payment_status: str
-    notes: Optional[str]
-    created_by: Optional[str]
-    created_at: Optional[str]
-    updated_at: Optional[str]
+    notes: str | None
+    created_by: str | None
+    created_at: str | None
+    updated_at: str | None
 
 
 class SaleItemOutput(TypedDict, total=False):
@@ -68,7 +68,7 @@ class PaymentOutput(TypedDict, total=False):
     sale_id: int
     amount: float
     payment_method: str
-    payment_date: Optional[str]
-    reference: Optional[str]
-    notes: Optional[str]
-    created_at: Optional[str]
+    payment_date: str | None
+    reference: str | None
+    notes: str | None
+    created_at: str | None

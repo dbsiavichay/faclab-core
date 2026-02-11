@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from src.inventory.movement.app.types import MovementOutput
 from src.inventory.movement.domain.entities import Movement
@@ -11,17 +11,17 @@ from src.shared.app.repositories import Repository
 class GetAllMovementsQuery(Query):
     """Query para obtener todos los movimientos con filtros opcionales"""
 
-    product_id: Optional[int] = None
-    type: Optional[str] = None
+    product_id: int | None = None
+    type: str | None = None
 
 
 class GetAllMovementsQueryHandler(
-    QueryHandler[GetAllMovementsQuery, List[MovementOutput]]
+    QueryHandler[GetAllMovementsQuery, list[MovementOutput]]
 ):
     def __init__(self, repo: Repository[Movement]):
         self.repo = repo
 
-    def handle(self, query: GetAllMovementsQuery) -> List[MovementOutput]:
+    def handle(self, query: GetAllMovementsQuery) -> list[MovementOutput]:
         filters = {}
         if query.product_id is not None:
             filters["product_id"] = query.product_id
@@ -45,7 +45,7 @@ class GetMovementByIdQueryHandler(
     def __init__(self, repo: Repository[Movement]):
         self.repo = repo
 
-    def handle(self, query: GetMovementByIdQuery) -> Optional[MovementOutput]:
+    def handle(self, query: GetMovementByIdQuery) -> MovementOutput | None:
         movement = self.repo.get_by_id(query.id)
         if movement is None:
             return None

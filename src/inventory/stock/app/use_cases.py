@@ -1,4 +1,3 @@
-from typing import List
 
 from src.inventory.stock.domain.entities import Stock
 from src.shared.app.repositories import Repository
@@ -10,6 +9,6 @@ class FilterStocksUseCase:
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def execute(self, **params) -> List[StockOutput]:
+    def execute(self, **params) -> list[StockOutput]:
         stocks = self.repo.filter_by(**params)
         return [stock.dict() for stock in stocks]
