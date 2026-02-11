@@ -1,0 +1,35 @@
+from dataclasses import dataclass
+from typing import List, Optional
+
+from src.catalog.product.domain.entities import Category
+from src.shared.app.queries import Query, QueryHandler
+from src.shared.app.repositories import Repository
+
+
+@dataclass
+class GetAllCategoriesQuery(Query):
+    limit: Optional[int] = None
+    offset: Optional[int] = None
+
+
+class GetAllCategoriesQueryHandler(QueryHandler[GetAllCategoriesQuery, List[dict]]):
+    def __init__(self, repo: Repository[Category]):
+        self.repo = repo
+
+    def handle(self, query: GetAllCategoriesQuery) -> List[dict]:
+        categories = self.repo.filter_by(limit=query.limit, offset=query.offset)
+        return [c.dict() for c in categories]
+
+
+@dataclass
+class GetCategoryByIdQuery(Query):
+    category_id: int
+
+
+class GetCategoryByIdQueryHandler(QueryHandler[GetCategoryByIdQuery, Optional[dict]]):
+    def __init__(self, repo: Repository[Category]):
+        self.repo = repo
+
+    def handle(self, query: GetCategoryByIdQuery) -> Optional[dict]:
+        category = self.repo.get_by_id(query.category_id)
+        return category.dict() if category else None
