@@ -49,15 +49,22 @@ from src.customers.infra.repositories import (
     CustomerContactRepositoryImpl,
     CustomerRepositoryImpl,
 )
-from src.inventory.movement.app.use_cases import (
-    CreateMovementUseCase,
-    FilterMovementsUseCase,
+from src.inventory.movement.app.commands import (
+    CreateMovementCommandHandler,
+)
+from src.inventory.movement.app.queries import (
+    GetAllMovementsQueryHandler,
+    GetMovementByIdQueryHandler,
 )
 from src.inventory.movement.domain.entities import Movement
 from src.inventory.movement.infra.controllers import MovementController
 from src.inventory.movement.infra.mappers import MovementMapper
 from src.inventory.movement.infra.repositories import MovementRepositoryImpl
-from src.inventory.stock.app.use_cases import FilterStocksUseCase
+from src.inventory.stock.app.queries import (
+    GetAllStocksQueryHandler,
+    GetStockByIdQueryHandler,
+    GetStockByProductQueryHandler,
+)
 from src.inventory.stock.domain.entities import Stock
 from src.inventory.stock.infra.controllers import StockController
 from src.inventory.stock.infra.mappers import StockMapper
@@ -325,32 +332,57 @@ def init_use_cases() -> None:
         ),
         scope=LifetimeScope.SCOPED,
     )
-    # Register movement use cases
+    # Register Movement command handlers
     container.register(
-        CreateMovementUseCase,
-        factory=lambda c, scope_id=None: CreateMovementUseCase(
-            c.resolve_scoped(Repository[Movement], scope_id)
-            if scope_id
-            else c.resolve(Repository[Movement]),
-            c.resolve_scoped(Repository[Stock], scope_id)
-            if scope_id
-            else c.resolve(Repository[Stock]),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        FilterMovementsUseCase,
-        factory=lambda c, scope_id=None: FilterMovementsUseCase(
+        CreateMovementCommandHandler,
+        factory=lambda c, scope_id=None: CreateMovementCommandHandler(
             c.resolve_scoped(Repository[Movement], scope_id)
             if scope_id
             else c.resolve(Repository[Movement])
         ),
         scope=LifetimeScope.SCOPED,
     )
-    # Register the stock use cases
+    # Register Movement query handlers
     container.register(
-        FilterStocksUseCase,
-        factory=lambda c, scope_id=None: FilterStocksUseCase(
+        GetAllMovementsQueryHandler,
+        factory=lambda c, scope_id=None: GetAllMovementsQueryHandler(
+            c.resolve_scoped(Repository[Movement], scope_id)
+            if scope_id
+            else c.resolve(Repository[Movement])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetMovementByIdQueryHandler,
+        factory=lambda c, scope_id=None: GetMovementByIdQueryHandler(
+            c.resolve_scoped(Repository[Movement], scope_id)
+            if scope_id
+            else c.resolve(Repository[Movement])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    # Register Stock query handlers
+    container.register(
+        GetAllStocksQueryHandler,
+        factory=lambda c, scope_id=None: GetAllStocksQueryHandler(
+            c.resolve_scoped(Repository[Stock], scope_id)
+            if scope_id
+            else c.resolve(Repository[Stock])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetStockByIdQueryHandler,
+        factory=lambda c, scope_id=None: GetStockByIdQueryHandler(
+            c.resolve_scoped(Repository[Stock], scope_id)
+            if scope_id
+            else c.resolve(Repository[Stock])
+        ),
+        scope=LifetimeScope.SCOPED,
+    )
+    container.register(
+        GetStockByProductQueryHandler,
+        factory=lambda c, scope_id=None: GetStockByProductQueryHandler(
             c.resolve_scoped(Repository[Stock], scope_id)
             if scope_id
             else c.resolve(Repository[Stock])
@@ -638,9 +670,15 @@ def init_controllers() -> None:
     container.register(
         StockController,
         factory=lambda c, scope_id=None: StockController(
-            c.resolve_scoped(FilterStocksUseCase, scope_id)
+            c.resolve_scoped(GetAllStocksQueryHandler, scope_id)
             if scope_id
-            else c.resolve(FilterStocksUseCase)
+            else c.resolve(GetAllStocksQueryHandler),
+            c.resolve_scoped(GetStockByIdQueryHandler, scope_id)
+            if scope_id
+            else c.resolve(GetStockByIdQueryHandler),
+            c.resolve_scoped(GetStockByProductQueryHandler, scope_id)
+            if scope_id
+            else c.resolve(GetStockByProductQueryHandler),
         ),
         scope=LifetimeScope.SCOPED,
     )
@@ -648,12 +686,15 @@ def init_controllers() -> None:
     container.register(
         MovementController,
         factory=lambda c, scope_id=None: MovementController(
-            c.resolve_scoped(CreateMovementUseCase, scope_id)
+            c.resolve_scoped(CreateMovementCommandHandler, scope_id)
             if scope_id
-            else c.resolve(CreateMovementUseCase),
-            c.resolve_scoped(FilterMovementsUseCase, scope_id)
+            else c.resolve(CreateMovementCommandHandler),
+            c.resolve_scoped(GetAllMovementsQueryHandler, scope_id)
             if scope_id
-            else c.resolve(FilterMovementsUseCase),
+            else c.resolve(GetAllMovementsQueryHandler),
+            c.resolve_scoped(GetMovementByIdQueryHandler, scope_id)
+            if scope_id
+            else c.resolve(GetMovementByIdQueryHandler),
         ),
         scope=LifetimeScope.SCOPED,
     )
@@ -764,6 +805,7 @@ def initialize() -> None:
 
     # Import event handlers to register them via decorators
     import src.inventory.infra.event_handlers  # noqa: F401
+    import src.inventory.stock.infra.event_handlers  # noqa: F401
 
 
 # Function to generate a unique scope ID for each request
