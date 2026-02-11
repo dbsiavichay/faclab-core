@@ -1,7 +1,8 @@
 """Integration tests for Movement-Stock event-driven flow"""
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import patch, Mock
 
 from src.inventory.movement.app.commands import (
     CreateMovementCommand,
@@ -13,7 +14,7 @@ from src.inventory.movement.domain.events import MovementCreated
 from src.inventory.stock.domain.entities import Stock
 from src.inventory.stock.domain.events import StockCreated, StockUpdated
 from src.inventory.stock.infra.event_handlers import handle_movement_created
-from src.sales.domain.events import SaleConfirmed, SaleCancelled
+from src.sales.domain.events import SaleCancelled, SaleConfirmed
 from src.shared.infra.events.event_bus import EventBus
 
 

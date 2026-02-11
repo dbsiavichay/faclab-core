@@ -1,6 +1,5 @@
 """Controllers para el módulo Sales"""
 
-from typing import List, Optional
 
 from src.sales.app.commands import (
     AddSaleItemCommand,
@@ -75,11 +74,11 @@ class SaleController:
 
     def get_all(
         self,
-        customer_id: Optional[int] = None,
-        status: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-    ) -> List[SaleResponse]:
+        customer_id: int | None = None,
+        status: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[SaleResponse]:
         """Obtiene todas las ventas con filtros opcionales"""
         query = GetAllSalesQuery(
             customer_id=customer_id,
@@ -113,7 +112,7 @@ class SaleController:
         result = self.remove_item_handler.handle(command)
         return result
 
-    def get_items(self, sale_id: int) -> List[SaleItemResponse]:
+    def get_items(self, sale_id: int) -> list[SaleItemResponse]:
         """Obtiene los items de una venta"""
         query = GetSaleItemsQuery(sale_id=sale_id)
         results = self.get_items_handler.handle(query)
@@ -126,7 +125,7 @@ class SaleController:
         return SaleResponse.model_validate(result)
 
     def cancel(
-        self, sale_id: int, request: Optional[CancelSaleInput] = None
+        self, sale_id: int, request: CancelSaleInput | None = None
     ) -> SaleResponse:
         """Cancela una venta (revierte movimientos si estaba confirmada)"""
         reason = request.reason if request else None
@@ -143,7 +142,7 @@ class SaleController:
         result = self.register_payment_handler.handle(command)
         return PaymentResponse.model_validate(result)
 
-    def get_payments(self, sale_id: int) -> List[PaymentResponse]:
+    def get_payments(self, sale_id: int) -> list[PaymentResponse]:
         """Obtiene los pagos de una venta"""
         query = GetSalePaymentsQuery(sale_id=sale_id)
         results = self.get_payments_handler.handle(query)

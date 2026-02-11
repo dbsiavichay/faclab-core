@@ -1,4 +1,3 @@
-from typing import List
 
 from src.catalog.product.app.commands import (
     CreateCategoryCommand,
@@ -66,7 +65,7 @@ class CategoryController:
         command = DeleteCategoryCommand(category_id=id)
         self.delete_handler.handle(command)
 
-    def get_all(self) -> List[CategoryResponse]:
+    def get_all(self) -> list[CategoryResponse]:
         query = GetAllCategoriesQuery()
         categories = self.get_all_handler.handle(query)
         return [CategoryResponse.model_validate(category) for category in categories]

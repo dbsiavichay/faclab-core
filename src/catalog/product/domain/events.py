@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.shared.domain.events import DomainEvent
 
@@ -9,7 +8,7 @@ class ProductCreated(DomainEvent):
     product_id: int = 0
     sku: str = ""
     name: str = ""
-    category_id: Optional[int] = None
+    category_id: int | None = None
 
     def _payload(self) -> dict:
         return {

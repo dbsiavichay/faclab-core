@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -20,8 +19,8 @@ class SaleInput(BaseModel):
     """Schema para crear una venta"""
 
     customer_id: int = Field(..., gt=0, description="ID del cliente")
-    notes: Optional[str] = Field(None, max_length=512, description="Notas adicionales")
-    created_by: Optional[str] = Field(
+    notes: str | None = Field(None, max_length=512, description="Notas adicionales")
+    created_by: str | None = Field(
         None, max_length=64, description="Usuario que crea"
     )
 
@@ -31,16 +30,16 @@ class PaymentInput(BaseModel):
 
     amount: float = Field(..., gt=0, description="Monto del pago")
     payment_method: str = Field(..., description="Método de pago")
-    reference: Optional[str] = Field(
+    reference: str | None = Field(
         None, max_length=128, description="Referencia del pago"
     )
-    notes: Optional[str] = Field(None, max_length=512, description="Notas del pago")
+    notes: str | None = Field(None, max_length=512, description="Notas del pago")
 
 
 class CancelSaleInput(BaseModel):
     """Schema para cancelar una venta"""
 
-    reason: Optional[str] = Field(
+    reason: str | None = Field(
         None, max_length=512, description="Razón de la cancelación"
     )
 
@@ -67,10 +66,10 @@ class PaymentResponse(BaseModel):
     sale_id: int
     amount: Decimal
     payment_method: str
-    payment_date: Optional[datetime]
-    reference: Optional[str]
-    notes: Optional[str]
-    created_at: Optional[datetime]
+    payment_date: datetime | None
+    reference: str | None
+    notes: str | None
+    created_at: datetime | None
 
     class Config:
         from_attributes = True
@@ -82,16 +81,16 @@ class SaleResponse(BaseModel):
     id: int
     customer_id: int
     status: str
-    sale_date: Optional[datetime]
+    sale_date: datetime | None
     subtotal: Decimal
     tax: Decimal
     discount: Decimal
     total: Decimal
     payment_status: str
-    notes: Optional[str]
-    created_by: Optional[str]
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
+    notes: str | None
+    created_by: str | None
+    created_at: datetime | None
+    updated_at: datetime | None
 
     class Config:
         from_attributes = True
@@ -100,8 +99,8 @@ class SaleResponse(BaseModel):
 class SaleDetailResponse(SaleResponse):
     """Schema para respuesta de una venta con items y pagos"""
 
-    items: List[SaleItemResponse] = []
-    payments: List[PaymentResponse] = []
+    items: list[SaleItemResponse] = []
+    payments: list[PaymentResponse] = []
 
     class Config:
         from_attributes = True

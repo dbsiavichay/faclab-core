@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.events import ProductCreated
@@ -12,8 +11,8 @@ from src.shared.infra.events.event_bus import EventBus
 class CreateProductCommand(Command):
     sku: str
     name: str
-    description: Optional[str] = None
-    category_id: Optional[int] = None
+    description: str | None = None
+    category_id: int | None = None
 
 
 class CreateProductCommandHandler(CommandHandler[CreateProductCommand, dict]):

@@ -1,4 +1,3 @@
-from typing import Optional
 
 from pydantic import AliasChoices, BaseModel, Field
 
@@ -15,8 +14,8 @@ class StockResponse(BaseModel):
         serialization_alias="productId",
     )
     quantity: int
-    location: Optional[str] = None
+    location: str | None = None
 
 
 class StockQueryParams(QueryParams):
-    product_id: Optional[int] = Field(None, ge=1, alias="productId")
+    product_id: int | None = Field(None, ge=1, alias="productId")

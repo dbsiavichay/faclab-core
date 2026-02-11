@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from src.inventory.stock.app.types import StockOutput
 from src.inventory.stock.domain.entities import Stock
@@ -11,14 +11,14 @@ from src.shared.app.repositories import Repository
 class GetAllStocksQuery(Query):
     """Query para obtener todos los stocks con filtros opcionales"""
 
-    product_id: Optional[int] = None
+    product_id: int | None = None
 
 
-class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, List[StockOutput]]):
+class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, list[StockOutput]]):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def handle(self, query: GetAllStocksQuery) -> List[StockOutput]:
+    def handle(self, query: GetAllStocksQuery) -> list[StockOutput]:
         if query.product_id is not None:
             stocks = self.repo.filter_by(product_id=query.product_id)
         else:
@@ -39,7 +39,7 @@ class GetStockByIdQueryHandler(
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def handle(self, query: GetStockByIdQuery) -> Optional[StockOutput]:
+    def handle(self, query: GetStockByIdQuery) -> StockOutput | None:
         stock = self.repo.get_by_id(query.id)
         if stock is None:
             return None
@@ -59,7 +59,7 @@ class GetStockByProductQueryHandler(
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def handle(self, query: GetStockByProductQuery) -> Optional[StockOutput]:
+    def handle(self, query: GetStockByProductQuery) -> StockOutput | None:
         stock = self.repo.first(product_id=query.product_id)
         if stock is None:
             return None

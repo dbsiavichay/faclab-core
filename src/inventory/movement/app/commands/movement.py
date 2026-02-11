@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from src.inventory.movement.app.types import MovementOutput
 from src.inventory.movement.domain.constants import MovementType
@@ -16,8 +15,8 @@ class CreateMovementCommand(Command):
     product_id: int = 0
     quantity: int = 0
     type: str = ""  # "in" or "out" string value
-    reason: Optional[str] = None
-    date: Optional[datetime] = None
+    reason: str | None = None
+    date: datetime | None = None
 
 
 class CreateMovementCommandHandler(

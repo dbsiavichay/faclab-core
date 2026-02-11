@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from enum import IntEnum
-from typing import Optional
 
 from src.shared.domain.entities import Entity
 
@@ -19,24 +18,24 @@ class Customer(Entity):
     name: str
     tax_id: str
     tax_type: TaxType = TaxType.RUC
-    id: Optional[int] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    country: Optional[str] = None
-    credit_limit: Optional[Decimal] = None
-    payment_terms: Optional[int] = None  # Days
+    id: int | None = None
+    email: str | None = None
+    phone: str | None = None
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+    country: str | None = None
+    credit_limit: Decimal | None = None
+    payment_terms: int | None = None  # Days
     is_active: bool = True
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
 
 @dataclass
 class CustomerContact(Entity):
     customer_id: int
     name: str
-    id: Optional[int] = None
-    role: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    id: int | None = None
+    role: str | None = None
+    email: str | None = None
+    phone: str | None = None

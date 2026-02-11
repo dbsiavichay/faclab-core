@@ -14,7 +14,7 @@ class StructLogger(Logger):
 
     def __new__(cls, level: str = "INFO") -> "StructLogger":
         if cls._instance is None:
-            cls._instance = super(StructLogger, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             cls._level = level
             cls._instance.__initialize__()
 

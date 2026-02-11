@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Any
 
 
 class Specification(ABC):
@@ -8,7 +8,7 @@ class Specification(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def to_sql_criteria(self) -> List[Any]:
+    def to_sql_criteria(self) -> list[Any]:
         raise NotImplementedError
 
     def __and__(self, other: "Specification") -> "AndSpecification":
@@ -31,7 +31,7 @@ class AndSpecification(Specification):
             candidate
         )
 
-    def to_sql_criteria(self) -> List[Any]:
+    def to_sql_criteria(self) -> list[Any]:
         return self.left.to_sql_criteria() + self.right.to_sql_criteria()
 
 
@@ -45,7 +45,7 @@ class OrSpecification(Specification):
             candidate
         )
 
-    def to_sql_criteria(self) -> List[Any]:
+    def to_sql_criteria(self) -> list[Any]:
         from sqlalchemy import or_
 
         left_criteria = self.left.to_sql_criteria()
@@ -60,7 +60,7 @@ class NotSpecification(Specification):
     def is_satisfied_by(self, candidate: Any) -> bool:
         return not self.spec.is_satisfied_by(candidate)
 
-    def to_sql_criteria(self) -> List[Any]:
+    def to_sql_criteria(self) -> list[Any]:
         from sqlalchemy import and_, not_
 
         criteria = self.spec.to_sql_criteria()

@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from pydantic import AliasChoices, BaseModel, Field
 
@@ -6,14 +5,14 @@ from pydantic import AliasChoices, BaseModel, Field
 # Inputs
 class CategoryInput(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class ProductInput(BaseModel):
     name: str
     sku: str
-    description: Optional[str] = None
-    category_id: Optional[int] = Field(
+    description: str | None = None
+    category_id: int | None = Field(
         None,
         ge=1,
         description="Category ID (must be a positive integer)",
@@ -32,4 +31,4 @@ class ProductResponse(ProductInput):
 
 
 class ProductsResponse(BaseModel):
-    data: List[ProductResponse] = Field(..., description="List of products")
+    data: list[ProductResponse] = Field(..., description="List of products")

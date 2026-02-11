@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.inventory.stock.domain.exceptions import InsufficientStock
 from src.shared.domain.entities import Entity
@@ -9,8 +8,8 @@ from src.shared.domain.entities import Entity
 class Stock(Entity):
     product_id: int
     quantity: int
-    id: Optional[int] = None
-    location: Optional[str] = None
+    id: int | None = None
+    location: str | None = None
 
     def update_quantity(self, quantity: int):
         new_quantity = self.quantity + quantity

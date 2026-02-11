@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.sales.domain.entities import Sale, SaleItem, SaleStatus
 from src.sales.domain.events import SaleCancelled
@@ -14,7 +13,7 @@ class CancelSaleCommand(Command):
     """Comando para cancelar una venta"""
 
     sale_id: int
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 class CancelSaleCommandHandler(CommandHandler[CancelSaleCommand, dict]):

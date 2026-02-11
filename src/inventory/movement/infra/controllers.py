@@ -1,4 +1,3 @@
-from typing import List
 
 from src.inventory.movement.app.commands import (
     CreateMovementCommand,
@@ -31,7 +30,7 @@ class MovementController:
         result = self.create_handler.handle(command)
         return MovementResponse.model_validate(result)
 
-    def get_all(self, query_params: MovementQueryParams) -> List[MovementResponse]:
+    def get_all(self, query_params: MovementQueryParams) -> list[MovementResponse]:
         query = GetAllMovementsQuery(**query_params.model_dump(exclude_none=True))
         movements = self.get_all_handler.handle(query)
         return [MovementResponse.model_validate(movement) for movement in movements]

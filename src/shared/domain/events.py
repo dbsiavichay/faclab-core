@@ -2,7 +2,7 @@ import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 
 @dataclass
@@ -12,10 +12,10 @@ class DomainEvent(ABC):
     occurred_at: datetime = field(default_factory=datetime.utcnow)
 
     @abstractmethod
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         raise NotImplementedError
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "event_id": self.event_id,
             "event_type": self.__class__.__name__,

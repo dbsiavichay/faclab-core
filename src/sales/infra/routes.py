@@ -1,6 +1,5 @@
 """Routes para el módulo Sales"""
 
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, status
 
@@ -29,14 +28,14 @@ class SaleRouter:
         self.router.post(
             "", response_model=SaleResponse, status_code=status.HTTP_201_CREATED
         )(self.create_sale)
-        self.router.get("", response_model=List[SaleResponse])(self.get_all_sales)
+        self.router.get("", response_model=list[SaleResponse])(self.get_all_sales)
         self.router.get("/{sale_id}", response_model=SaleResponse)(self.get_sale)
         self.router.post(
             "/{sale_id}/items",
             response_model=SaleItemResponse,
             status_code=status.HTTP_201_CREATED,
         )(self.add_sale_item)
-        self.router.get("/{sale_id}/items", response_model=List[SaleItemResponse])(
+        self.router.get("/{sale_id}/items", response_model=list[SaleItemResponse])(
             self.get_sale_items
         )
         self.router.delete("/{sale_id}/items/{item_id}")(self.remove_sale_item)
@@ -51,7 +50,7 @@ class SaleRouter:
             response_model=PaymentResponse,
             status_code=status.HTTP_201_CREATED,
         )(self.register_payment)
-        self.router.get("/{sale_id}/payments", response_model=List[PaymentResponse])(
+        self.router.get("/{sale_id}/payments", response_model=list[PaymentResponse])(
             self.get_sale_payments
         )
 
@@ -65,12 +64,12 @@ class SaleRouter:
 
     def get_all_sales(
         self,
-        customer_id: Optional[int] = None,
-        status: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        customer_id: int | None = None,
+        status: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
         controller: SaleController = Depends(get_sale_controller),
-    ) -> List[SaleResponse]:
+    ) -> list[SaleResponse]:
         """Get all sales with optional filters"""
         return controller.get_all(
             customer_id=customer_id,
@@ -100,7 +99,7 @@ class SaleRouter:
         self,
         sale_id: int,
         controller: SaleController = Depends(get_sale_controller),
-    ) -> List[SaleItemResponse]:
+    ) -> list[SaleItemResponse]:
         """Get all items of a sale"""
         return controller.get_items(sale_id)
 
@@ -127,7 +126,7 @@ class SaleRouter:
     def cancel_sale(
         self,
         sale_id: int,
-        cancel_input: Optional[CancelSaleInput] = None,
+        cancel_input: CancelSaleInput | None = None,
         controller: SaleController = Depends(get_sale_controller),
     ) -> SaleResponse:
         """
@@ -149,6 +148,6 @@ class SaleRouter:
         self,
         sale_id: int,
         controller: SaleController = Depends(get_sale_controller),
-    ) -> List[PaymentResponse]:
+    ) -> list[PaymentResponse]:
         """Get all payments for a sale"""
         return controller.get_payments(sale_id)

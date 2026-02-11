@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from src.customers.domain.entities import Customer, CustomerContact, TaxType
 from src.customers.infra.models import CustomerContactModel, CustomerModel
@@ -6,7 +6,7 @@ from src.shared.infra.mappers import Mapper
 
 
 class CustomerMapper(Mapper[Customer, CustomerModel]):
-    def to_entity(self, model: Optional[CustomerModel]) -> Optional[Customer]:
+    def to_entity(self, model: CustomerModel | None) -> Customer | None:
         """Converts an infrastructure model to a domain entity"""
         if not model:
             return None
@@ -28,7 +28,7 @@ class CustomerMapper(Mapper[Customer, CustomerModel]):
             created_at=model.created_at,
         )
 
-    def to_dict(self, entity: Customer) -> Dict[str, Any]:
+    def to_dict(self, entity: Customer) -> dict[str, Any]:
         """Converts a domain entity to a dictionary for creating a model"""
         result = {
             "name": entity.name,
@@ -54,8 +54,8 @@ class CustomerMapper(Mapper[Customer, CustomerModel]):
 
 class CustomerContactMapper(Mapper[CustomerContact, CustomerContactModel]):
     def to_entity(
-        self, model: Optional[CustomerContactModel]
-    ) -> Optional[CustomerContact]:
+        self, model: CustomerContactModel | None
+    ) -> CustomerContact | None:
         """Converts an infrastructure model to a domain entity"""
         if not model:
             return None
@@ -69,7 +69,7 @@ class CustomerContactMapper(Mapper[CustomerContact, CustomerContactModel]):
             phone=model.phone,
         )
 
-    def to_dict(self, entity: CustomerContact) -> Dict[str, Any]:
+    def to_dict(self, entity: CustomerContact) -> dict[str, Any]:
         """Converts a domain entity to a dictionary for creating a model"""
         result = {
             "customer_id": entity.customer_id,

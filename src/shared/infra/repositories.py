@@ -1,4 +1,4 @@
-from typing import Any, ClassVar, Generic, List, Optional, TypeVar, Union
+from typing import Any, ClassVar, Generic, TypeVar, Union
 
 from sqlalchemy import asc, desc, func
 from sqlalchemy.orm import Session
@@ -14,7 +14,7 @@ from .db import Base
 M = TypeVar("T", bound="Base")
 E = TypeVar("E", bound="Entity")
 
-Criteria = List[Union[BinaryExpression, BooleanClauseList, Any]]
+Criteria = list[BinaryExpression | BooleanClauseList | Any]
 OrderCriteria = Union[str, Any]
 
 
@@ -62,7 +62,7 @@ class BaseRepository(Repository[E], Generic[E]):
             self.session.delete(model)
             self.session.commit()
 
-    def get_by_id(self, id: int) -> Optional[E]:
+    def get_by_id(self, id: int) -> E | None:
         """
         Retrieves an entity by its ID.
         Args:
@@ -73,7 +73,7 @@ class BaseRepository(Repository[E], Generic[E]):
         model = self.session.query(self.__model__).get(id)
         return self.mapper.to_entity(model)
 
-    def get_all(self) -> List[E]:
+    def get_all(self) -> list[E]:
         """
         Retrieves all entities.
         Returns:
@@ -82,7 +82,7 @@ class BaseRepository(Repository[E], Generic[E]):
         models = self.session.query(self.__model__).all()
         return [self.mapper.to_entity(model) for model in models]
 
-    def first(self, **kwargs) -> Optional[E]:
+    def first(self, **kwargs) -> E | None:
         """
         Retrieves the first entity that matches the given criteria.
         Args:
@@ -99,11 +99,11 @@ class BaseRepository(Repository[E], Generic[E]):
     def filter(
         self,
         criteria: Criteria,
-        order_by: Optional[OrderCriteria] = None,
+        order_by: OrderCriteria | None = None,
         desc_order: bool = False,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-    ) -> List[E]:
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[E]:
         """
         Filters entities according to given criteria
 
@@ -137,7 +137,7 @@ class BaseRepository(Repository[E], Generic[E]):
         models = query.all()
         return [self.mapper.to_entity(model) for model in models]
 
-    def filter_by(self, limit=None, offset=None, **kwargs) -> List[E]:
+    def filter_by(self, limit=None, offset=None, **kwargs) -> list[E]:
         """
         Filters entities by given keyword arguments.
         Args:
@@ -155,11 +155,11 @@ class BaseRepository(Repository[E], Generic[E]):
     def filter_by_spec(
         self,
         spec: Specification,
-        order_by: Optional[OrderCriteria] = None,
+        order_by: OrderCriteria | None = None,
         desc_order: bool = False,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-    ) -> List[E]:
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[E]:
         criteria = spec.to_sql_criteria()
         return self.filter(
             criteria=criteria,

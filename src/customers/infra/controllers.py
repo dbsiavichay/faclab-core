@@ -1,4 +1,3 @@
-from typing import List
 
 from src.customers.app.commands import (
     ActivateCustomerCommand,
@@ -73,7 +72,7 @@ class CustomerController:
     def delete(self, id: int) -> None:
         self.delete_handler.handle(DeleteCustomerCommand(id=id))
 
-    def get_all(self) -> List[CustomerResponse]:
+    def get_all(self) -> list[CustomerResponse]:
         customers = self.get_all_handler.handle(GetAllCustomersQuery())
         return [CustomerResponse.model_validate(customer) for customer in customers]
 
@@ -140,7 +139,7 @@ class CustomerContactController:
             raise NotFoundException("Customer contact not found")
         return CustomerContactResponse.model_validate(contact)
 
-    def get_by_customer_id(self, customer_id: int) -> List[CustomerContactResponse]:
+    def get_by_customer_id(self, customer_id: int) -> list[CustomerContactResponse]:
         contacts = self.get_by_customer_id_handler.handle(
             GetContactsByCustomerIdQuery(customer_id=customer_id)
         )

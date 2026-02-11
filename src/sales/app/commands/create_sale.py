@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.sales.domain.entities import Sale
 from src.sales.domain.events import SaleCreated
@@ -13,8 +12,8 @@ class CreateSaleCommand(Command):
     """Comando para crear una nueva venta"""
 
     customer_id: int
-    notes: Optional[str] = None
-    created_by: Optional[str] = None
+    notes: str | None = None
+    created_by: str | None = None
 
 
 class CreateSaleCommandHandler(CommandHandler[CreateSaleCommand, dict]):

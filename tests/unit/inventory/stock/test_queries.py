@@ -1,7 +1,8 @@
 """Unit tests for Stock query handlers"""
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
 
 from src.inventory.stock.app.queries import (
     GetAllStocksQuery,

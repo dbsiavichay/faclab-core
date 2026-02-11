@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from src.catalog.product.domain.entities import Category, Product
 from src.catalog.product.infra.models import CategoryModel, ProductModel
@@ -6,7 +6,7 @@ from src.shared.infra.mappers import Mapper
 
 
 class CategoryMapper(Mapper[Category, CategoryModel]):
-    def to_entity(self, model: Optional[CategoryModel]) -> Optional[Category]:
+    def to_entity(self, model: CategoryModel | None) -> Category | None:
         """Converts an infrastructure model to a domain entity"""
         if not model:
             return None
@@ -17,7 +17,7 @@ class CategoryMapper(Mapper[Category, CategoryModel]):
             description=model.description,
         )
 
-    def to_dict(self, entity: Category) -> Dict[str, Any]:
+    def to_dict(self, entity: Category) -> dict[str, Any]:
         """Converts a domain entity to a dictionary for creating a model"""
         # Exclude id and created_at if they are None (for creation)
         result = {
@@ -33,7 +33,7 @@ class CategoryMapper(Mapper[Category, CategoryModel]):
 
 
 class ProductMapper(Mapper[Product, ProductModel]):
-    def to_entity(self, model: Optional[ProductModel]) -> Optional[Product]:
+    def to_entity(self, model: ProductModel | None) -> Product | None:
         """Converts an infrastructure model to a domain entity"""
         if not model:
             return None
@@ -47,7 +47,7 @@ class ProductMapper(Mapper[Product, ProductModel]):
             created_at=model.created_at,
         )
 
-    def to_dict(self, entity: Product) -> Dict[str, Any]:
+    def to_dict(self, entity: Product) -> dict[str, Any]:
         """Converts a domain entity to a dictionary for creating a model"""
         # Exclude id and created_at if they are None (for creation)
         result = {

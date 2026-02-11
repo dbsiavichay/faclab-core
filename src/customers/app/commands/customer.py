@@ -1,6 +1,5 @@
 from dataclasses import dataclass, replace
 from decimal import Decimal
-from typing import Optional
 
 from src.customers.app.types import CustomerOutput
 from src.customers.domain.entities import Customer, TaxType
@@ -21,14 +20,14 @@ class CreateCustomerCommand(Command):
     name: str = ""
     tax_id: str = ""
     tax_type: int = 1
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    country: Optional[str] = None
-    credit_limit: Optional[Decimal] = None
-    payment_terms: Optional[int] = None
+    email: str | None = None
+    phone: str | None = None
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+    country: str | None = None
+    credit_limit: Decimal | None = None
+    payment_terms: int | None = None
     is_active: bool = True
 
 
@@ -76,14 +75,14 @@ class UpdateCustomerCommand(Command):
     name: str = ""
     tax_id: str = ""
     tax_type: int = 1
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    country: Optional[str] = None
-    credit_limit: Optional[Decimal] = None
-    payment_terms: Optional[int] = None
+    email: str | None = None
+    phone: str | None = None
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+    country: str | None = None
+    credit_limit: Decimal | None = None
+    payment_terms: int | None = None
     is_active: bool = True
 
 

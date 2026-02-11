@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 from src.shared.domain.events import DomainEvent
 
@@ -10,7 +10,7 @@ class CustomerCreated(DomainEvent):
     name: str = ""
     tax_id: str = ""
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "customer_id": self.customer_id,
             "name": self.name,
@@ -23,7 +23,7 @@ class CustomerUpdated(DomainEvent):
     customer_id: int = 0
     name: str = ""
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "customer_id": self.customer_id,
             "name": self.name,
@@ -34,7 +34,7 @@ class CustomerUpdated(DomainEvent):
 class CustomerActivated(DomainEvent):
     customer_id: int = 0
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {"customer_id": self.customer_id}
 
 
@@ -43,7 +43,7 @@ class CustomerDeactivated(DomainEvent):
     customer_id: int = 0
     reason: str = ""
 
-    def _payload(self) -> Dict[str, Any]:
+    def _payload(self) -> dict[str, Any]:
         return {
             "customer_id": self.customer_id,
             "reason": self.reason,

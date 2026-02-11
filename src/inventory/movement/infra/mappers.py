@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from src.inventory.movement.domain.entities import Movement
 from src.shared.infra.mappers import Mapper
@@ -7,7 +7,7 @@ from .models import MovementModel
 
 
 class MovementMapper(Mapper[MovementModel, Movement]):
-    def to_entity(self, model: Optional[MovementModel]) -> Optional[Movement]:
+    def to_entity(self, model: MovementModel | None) -> Movement | None:
         """Converts an infrastructure model to a domain entity"""
         if model is None:
             return None
@@ -21,7 +21,7 @@ class MovementMapper(Mapper[MovementModel, Movement]):
             date=model.date,
         )
 
-    def to_dict(self, entity: Movement) -> Dict[str, Any]:
+    def to_dict(self, entity: Movement) -> dict[str, Any]:
         """Converts a domain entity to a dictionary for creating a model"""
         result = {
             "product_id": entity.product_id,

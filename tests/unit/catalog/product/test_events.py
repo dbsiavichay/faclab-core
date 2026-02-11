@@ -1,14 +1,12 @@
 """Unit tests for catalog product domain events."""
-import pytest
-from datetime import datetime
 
 from src.catalog.product.domain.events import (
-    ProductCreated,
-    ProductUpdated,
-    ProductDeleted,
     CategoryCreated,
-    CategoryUpdated,
     CategoryDeleted,
+    CategoryUpdated,
+    ProductCreated,
+    ProductDeleted,
+    ProductUpdated,
 )
 
 

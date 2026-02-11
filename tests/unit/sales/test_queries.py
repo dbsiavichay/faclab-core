@@ -15,37 +15,37 @@ from src.sales.domain.entities import Payment, PaymentMethod, Sale, SaleItem, Sa
 
 
 def _make_sale(**overrides) -> Sale:
-    defaults = dict(
-        id=1,
-        customer_id=10,
-        status=SaleStatus.DRAFT,
-        subtotal=Decimal("0"),
-        total=Decimal("0"),
-    )
+    defaults = {
+        "id": 1,
+        "customer_id": 10,
+        "status": SaleStatus.DRAFT,
+        "subtotal": Decimal("0"),
+        "total": Decimal("0"),
+    }
     defaults.update(overrides)
     return Sale(**defaults)
 
 
 def _make_sale_item(**overrides) -> SaleItem:
-    defaults = dict(
-        id=1,
-        sale_id=1,
-        product_id=100,
-        quantity=10,
-        unit_price=Decimal("100.00"),
-        discount=Decimal("0"),
-    )
+    defaults = {
+        "id": 1,
+        "sale_id": 1,
+        "product_id": 100,
+        "quantity": 10,
+        "unit_price": Decimal("100.00"),
+        "discount": Decimal("0"),
+    }
     defaults.update(overrides)
     return SaleItem(**defaults)
 
 
 def _make_payment(**overrides) -> Payment:
-    defaults = dict(
-        id=1,
-        sale_id=1,
-        amount=Decimal("500.00"),
-        payment_method=PaymentMethod.CASH,
-    )
+    defaults = {
+        "id": 1,
+        "sale_id": 1,
+        "amount": Decimal("500.00"),
+        "payment_method": PaymentMethod.CASH,
+    }
     defaults.update(overrides)
     return Payment(**defaults)
 

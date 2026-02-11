@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from src.shared.domain.entities import Entity
 
@@ -13,10 +12,10 @@ class Movement(Entity):
     product_id: int
     quantity: int
     type: MovementType
-    id: Optional[int] = None
-    reason: Optional[str] = None
-    date: Optional[datetime] = None
-    created_at: Optional[datetime] = None
+    id: int | None = None
+    reason: str | None = None
+    date: datetime | None = None
+    created_at: datetime | None = None
 
     def __post_init__(self):
         if self.quantity == 0:

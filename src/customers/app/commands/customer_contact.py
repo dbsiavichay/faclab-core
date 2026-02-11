@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.customers.app.types import CustomerContactOutput
 from src.customers.domain.entities import CustomerContact
@@ -11,9 +10,9 @@ from src.shared.app.repositories import Repository
 class CreateCustomerContactCommand(Command):
     customer_id: int = 0
     name: str = ""
-    role: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    role: str | None = None
+    email: str | None = None
+    phone: str | None = None
 
 
 class CreateCustomerContactCommandHandler(
@@ -39,9 +38,9 @@ class UpdateCustomerContactCommand(Command):
     id: int = 0
     customer_id: int = 0
     name: str = ""
-    role: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    role: str | None = None
+    email: str | None = None
+    phone: str | None = None
 
 
 class UpdateCustomerContactCommandHandler(

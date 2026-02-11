@@ -1,30 +1,24 @@
 """Unit tests for catalog product command handlers."""
-import pytest
 from unittest.mock import Mock
 
+import pytest
+
 from src.catalog.product.app.commands import (
-    CreateProductCommand,
-    CreateProductCommandHandler,
-    UpdateProductCommand,
-    UpdateProductCommandHandler,
-    DeleteProductCommand,
-    DeleteProductCommandHandler,
     CreateCategoryCommand,
     CreateCategoryCommandHandler,
-    UpdateCategoryCommand,
-    UpdateCategoryCommandHandler,
+    CreateProductCommand,
+    CreateProductCommandHandler,
     DeleteCategoryCommand,
     DeleteCategoryCommandHandler,
+    DeleteProductCommand,
+    DeleteProductCommandHandler,
+    UpdateCategoryCommand,
+    UpdateCategoryCommandHandler,
+    UpdateProductCommand,
+    UpdateProductCommandHandler,
 )
-from src.catalog.product.domain.entities import Product, Category
-from src.catalog.product.domain.events import (
-    ProductCreated,
-    ProductUpdated,
-    ProductDeleted,
-    CategoryCreated,
-    CategoryUpdated,
-    CategoryDeleted,
-)
+from src.catalog.product.domain.entities import Category, Product
+from src.catalog.product.domain.events import CategoryCreated, ProductCreated
 from src.shared.infra.events.event_bus import EventBus
 
 

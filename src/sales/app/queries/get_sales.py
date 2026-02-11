@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from src.sales.domain.entities import Sale
 from src.shared.app.queries import Query, QueryHandler
@@ -10,19 +10,19 @@ from src.shared.app.repositories import Repository
 class GetAllSalesQuery(Query):
     """Query para obtener todas las ventas con filtros opcionales"""
 
-    customer_id: Optional[int] = None
-    status: Optional[str] = None
-    limit: Optional[int] = None
-    offset: Optional[int] = None
+    customer_id: int | None = None
+    status: str | None = None
+    limit: int | None = None
+    offset: int | None = None
 
 
-class GetAllSalesQueryHandler(QueryHandler[GetAllSalesQuery, List[dict]]):
+class GetAllSalesQueryHandler(QueryHandler[GetAllSalesQuery, list[dict]]):
     """Handler para obtener todas las ventas"""
 
     def __init__(self, repo: Repository[Sale]):
         self.repo = repo
 
-    def handle(self, query: GetAllSalesQuery) -> List[dict]:
+    def handle(self, query: GetAllSalesQuery) -> list[dict]:
         """Obtiene las ventas con los filtros especificados"""
         # Preparar filtros
         filters = {}
@@ -57,7 +57,7 @@ class GetSaleByIdQueryHandler(QueryHandler[GetSaleByIdQuery, Optional[dict]]):
     def __init__(self, repo: Repository[Sale]):
         self.repo = repo
 
-    def handle(self, query: GetSaleByIdQuery) -> Optional[dict]:
+    def handle(self, query: GetSaleByIdQuery) -> dict | None:
         """Obtiene una venta específica por ID"""
         sale = self.repo.get_by_id(query.sale_id)
         return sale.dict() if sale else None

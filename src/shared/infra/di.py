@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from enum import Enum, auto
-from typing import Callable, Dict, Generic, Optional, Type, TypeVar, cast
+from typing import Generic, TypeVar, cast
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -23,14 +24,14 @@ class DependencyRegistration(Generic[T]):
     ):
         self.factory = factory
         self.scope = scope
-        self.instance: Optional[T] = None
+        self.instance: T | None = None
 
 
 class DependencyContainer:
     def __init__(self):
-        self._registrations: Dict[Type, DependencyRegistration] = {}
+        self._registrations: dict[type, DependencyRegistration] = {}
         self._session_factory = None
-        self._scoped_instances: Dict[Type, Dict[str, object]] = {}
+        self._scoped_instances: dict[type, dict[str, object]] = {}
 
     def configure_db(self, connection_string: str) -> None:
         """Configures the database connection."""
@@ -83,7 +84,7 @@ class DependencyContainer:
             # Remove all instances from this scope
             del self._scoped_instances[scope_id]
 
-    def resolve_scoped(self, interface_type: Type[T], scope_id: str) -> T:
+    def resolve_scoped(self, interface_type: type[T], scope_id: str) -> T:
         """
         Resolves an implementation for an interface within a specific scope.
         """
@@ -115,9 +116,9 @@ class DependencyContainer:
 
     def register(
         self,
-        interface_type: Type[T],
-        implementation: Optional[T] = None,
-        factory: Optional[Callable[["DependencyContainer"], T]] = None,
+        interface_type: type[T],
+        implementation: T | None = None,
+        factory: Callable[["DependencyContainer"], T] | None = None,
         scope: LifetimeScope = LifetimeScope.SINGLETON,
     ) -> None:
         """
@@ -146,7 +147,7 @@ class DependencyContainer:
 
         self._registrations[interface_type] = DependencyRegistration(factory_fn, scope)
 
-    def resolve(self, interface_type: Type[T]) -> T:
+    def resolve(self, interface_type: type[T]) -> T:
         """Resolves an implementation for an interface."""
         if interface_type not in self._registrations:
             raise ValueError(

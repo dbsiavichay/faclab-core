@@ -1,4 +1,3 @@
-from typing import List
 
 from src.inventory.movement.app.types import MovementInput, MovementOutput
 from src.inventory.movement.domain.entities import Movement
@@ -30,6 +29,6 @@ class FilterMovementsUseCase:
     def __init__(self, movement_repo: Repository[Movement]):
         self.movement_repo = movement_repo
 
-    def execute(self, **params) -> List[MovementOutput]:
+    def execute(self, **params) -> list[MovementOutput]:
         movements = self.movement_repo.filter_by(**params)
         return [movement.dict() for movement in movements]
