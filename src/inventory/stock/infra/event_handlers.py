@@ -35,65 +35,69 @@ def handle_movement_created(event: MovementCreated) -> None:
     # Resolver el repositorio del wireup container
     from src import wireup_container
 
-    try:
-        # Obtener repositorio de Stock (SCOPED - nueva sesión por evento)
-        stock_repo = wireup_container.get(Repository[Stock])
+    # Crear un scope para resolver injectables SCOPED
+    # Los event handlers se ejecutan fuera del contexto de request HTTP,
+    # por lo que necesitamos crear un scope manualmente
+    with wireup_container.enter_scope() as scope:
+        try:
+            # Obtener repositorio de Stock dentro del scope
+            stock_repo = scope.get(Repository[Stock])
 
-        # Buscar stock existente
-        stock = stock_repo.first(product_id=event.product_id)
+            # Buscar stock existente
+            stock = stock_repo.first(product_id=event.product_id)
 
-        if stock is None:
-            # Crear nuevo stock
-            logger.info(
-                f"No existing stock for product_id={event.product_id}, creating new stock"
-            )
-            stock = Stock(product_id=event.product_id, quantity=event.quantity)
-            stock = stock_repo.create(stock)
-
-            # Publicar evento StockCreated
-            EventBus.publish(
-                StockCreated(
-                    aggregate_id=stock.id,
-                    product_id=stock.product_id,
-                    quantity=stock.quantity,
-                    location=stock.location,
+            if stock is None:
+                # Crear nuevo stock
+                logger.info(
+                    f"No existing stock for product_id={event.product_id}, creating new stock"
                 )
-            )
-            logger.info(
-                f"Created stock: stock_id={stock.id}, "
-                f"product_id={stock.product_id}, quantity={stock.quantity}"
-            )
-        else:
-            # Actualizar stock existente
-            logger.info(
-                f"Updating existing stock: stock_id={stock.id}, "
-                f"current_quantity={stock.quantity}, delta={event.quantity}"
-            )
-            old_quantity = stock.quantity
+                stock = Stock(product_id=event.product_id, quantity=event.quantity)
+                stock = stock_repo.create(stock)
 
-            # update_quantity valida stock insuficiente (raises InsufficientStock)
-            stock.update_quantity(event.quantity)
-            stock = stock_repo.update(stock)
-
-            # Publicar evento StockUpdated
-            EventBus.publish(
-                StockUpdated(
-                    aggregate_id=stock.id,
-                    product_id=stock.product_id,
-                    old_quantity=old_quantity,
-                    new_quantity=stock.quantity,
-                    location=stock.location,
+                # Publicar evento StockCreated
+                EventBus.publish(
+                    StockCreated(
+                        aggregate_id=stock.id,
+                        product_id=stock.product_id,
+                        quantity=stock.quantity,
+                        location=stock.location,
+                    )
                 )
-            )
-            logger.info(
-                f"Updated stock: stock_id={stock.id}, "
-                f"old_quantity={old_quantity}, new_quantity={stock.quantity}"
-            )
+                logger.info(
+                    f"Created stock: stock_id={stock.id}, "
+                    f"product_id={stock.product_id}, quantity={stock.quantity}"
+                )
+            else:
+                # Actualizar stock existente
+                logger.info(
+                    f"Updating existing stock: stock_id={stock.id}, "
+                    f"current_quantity={stock.quantity}, delta={event.quantity}"
+                )
+                old_quantity = stock.quantity
 
-    except Exception as e:
-        logger.error(
-            f"Error handling MovementCreated event for "
-            f"movement_id={event.aggregate_id}, product_id={event.product_id}: {e}"
-        )
-        # En producción, aquí se podría implementar retry logic o dead letter queue
-        raise
+                # update_quantity valida stock insuficiente (raises InsufficientStock)
+                stock.update_quantity(event.quantity)
+                stock = stock_repo.update(stock)
+
+                # Publicar evento StockUpdated
+                EventBus.publish(
+                    StockUpdated(
+                        aggregate_id=stock.id,
+                        product_id=stock.product_id,
+                        old_quantity=old_quantity,
+                        new_quantity=stock.quantity,
+                        location=stock.location,
+                    )
+                )
+                logger.info(
+                    f"Updated stock: stock_id={stock.id}, "
+                    f"old_quantity={old_quantity}, new_quantity={stock.quantity}"
+                )
+
+        except Exception as e:
+            logger.error(
+                f"Error handling MovementCreated event for "
+                f"movement_id={event.aggregate_id}, product_id={event.product_id}: {e}"
+            )
+            # En producción, aquí se podría implementar retry logic o dead letter queue
+            raise

@@ -31,7 +31,10 @@ def test_handle_movement_created_creates_new_stock(mock_container):
     new_stock = Stock(id=1, product_id=10, quantity=5)
     mock_repo.create.return_value = new_stock
 
-    mock_container.get.return_value = mock_repo
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_repo
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     events_received = []
 
@@ -80,7 +83,10 @@ def test_handle_movement_created_updates_existing_stock(mock_container):
     updated_stock = Stock(id=1, product_id=10, quantity=105)
     mock_repo.update.return_value = updated_stock
 
-    mock_container.get.return_value = mock_repo
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_repo
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     events_received = []
 
@@ -128,7 +134,10 @@ def test_handle_movement_created_decreases_stock_on_out(mock_container):
     updated_stock = Stock(id=1, product_id=10, quantity=95)
     mock_repo.update.return_value = updated_stock
 
-    mock_container.get.return_value = mock_repo
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_repo
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     event = MovementCreated(
         aggregate_id=3,
@@ -157,7 +166,10 @@ def test_handle_movement_created_insufficient_stock_raises(mock_container):
     mock_repo = Mock()
     mock_repo.first.return_value = existing_stock
 
-    mock_container.get.return_value = mock_repo
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_repo
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     event = MovementCreated(
         aggregate_id=4,
@@ -185,7 +197,10 @@ def test_handle_movement_created_publishes_stock_created_event(mock_container):
     new_stock = Stock(id=1, product_id=10, quantity=5, location="A1")
     mock_repo.create.return_value = new_stock
 
-    mock_container.get.return_value = mock_repo
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_repo
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     events_received = []
 
@@ -224,7 +239,10 @@ def test_handle_movement_created_publishes_stock_updated_event(mock_container):
     updated_stock = Stock(id=1, product_id=10, quantity=105)
     mock_repo.update.return_value = updated_stock
 
-    mock_container.get.return_value = mock_repo
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_repo
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     events_received = []
 
@@ -262,7 +280,10 @@ def test_handle_movement_created_with_location(mock_container):
     new_stock = Stock(id=1, product_id=10, quantity=5, location="Warehouse A")
     mock_repo.create.return_value = new_stock
 
-    mock_container.get.return_value = mock_repo
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_repo
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     event = MovementCreated(
         aggregate_id=1,
