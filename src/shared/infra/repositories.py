@@ -43,24 +43,34 @@ class BaseRepository(Repository[E], Generic[E]):
         Updates an entity.
         Args:
             entity: Entity to update
+        Returns:
+            Updated entity
+        Raises:
+            ValueError: If entity with given ID does not exist
         """
         model = self.session.query(self.__model__).get(entity.id)
-        if model:
-            for key, value in self.mapper.to_dict(entity).items():
-                setattr(model, key, value)
-            self.session.commit()
+        if not model:
+            raise ValueError(f"Entity with id {entity.id} not found")
+
+        for key, value in self.mapper.to_dict(entity).items():
+            setattr(model, key, value)
+        self.session.commit()
         return self.mapper.to_entity(model)
 
     def delete(self, id: int) -> None:
         """
         Deletes an entity.
         Args:
-            entity: Entity to delete
+            id: ID of the entity to delete
+        Raises:
+            ValueError: If entity with given ID does not exist
         """
         model = self.session.query(self.__model__).get(id)
-        if model:
-            self.session.delete(model)
-            self.session.commit()
+        if not model:
+            raise ValueError(f"Entity with id {id} not found")
+
+        self.session.delete(model)
+        self.session.commit()
 
     def get_by_id(self, id: int) -> E | None:
         """

@@ -59,7 +59,7 @@ class RemoveSaleItemCommandHandler(CommandHandler[RemoveSaleItemCommand, dict]):
         item_dict = sale_item.dict()
 
         # Eliminar el item
-        self.sale_item_repo.delete(sale_item)
+        self.sale_item_repo.delete(sale_item.id)
 
         # Recalcular totales de la venta
         items = self.sale_item_repo.filter_by(sale_id=command.sale_id)

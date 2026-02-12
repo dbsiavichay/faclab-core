@@ -27,32 +27,36 @@ def handle_sale_confirmed(event: SaleConfirmed) -> None:
     # Resolver el command handler del container
     from src import wireup_container
 
-    try:
-        # Crear movimientos OUT para cada item de la venta
-        for item in event.items:
-            # Obtener el command handler (SCOPED - con nueva sesión)
-            handler = wireup_container.get(CreateMovementCommandHandler)
+    # Crear un scope para resolver injectables SCOPED
+    # Los event handlers se ejecutan fuera del contexto de request HTTP,
+    # por lo que necesitamos crear un scope manualmente
+    with wireup_container.enter_scope() as scope:
+        try:
+            # Crear movimientos OUT para cada item de la venta
+            for item in event.items:
+                # Obtener el command handler dentro del scope
+                handler = scope.get(CreateMovementCommandHandler)
 
-            # Crear comando de movimiento OUT (cantidad negativa)
-            command = CreateMovementCommand(
-                product_id=item["product_id"],
-                quantity=-abs(item["quantity"]),  # Asegurar que sea negativo
-                type=MovementType.OUT.value,
-                reason=f"Sale #{event.sale_id} confirmed",
+                # Crear comando de movimiento OUT (cantidad negativa)
+                command = CreateMovementCommand(
+                    product_id=item["product_id"],
+                    quantity=-abs(item["quantity"]),  # Asegurar que sea negativo
+                    type=MovementType.OUT.value,
+                    reason=f"Sale #{event.sale_id} confirmed",
+                )
+
+                handler.handle(command)
+                logger.info(
+                    f"Created OUT movement for product_id={item['product_id']}, "
+                    f"quantity={item['quantity']}"
+                )
+
+        except Exception as e:
+            logger.error(
+                f"Error handling SaleConfirmed event for sale_id={event.sale_id}: {e}"
             )
-
-            handler.handle(command)
-            logger.info(
-                f"Created OUT movement for product_id={item['product_id']}, "
-                f"quantity={item['quantity']}"
-            )
-
-    except Exception as e:
-        logger.error(
-            f"Error handling SaleConfirmed event for sale_id={event.sale_id}: {e}"
-        )
-        # En producción, aquí se podría implementar retry logic o dead letter queue
-        raise
+            # En producción, aquí se podría implementar retry logic o dead letter queue
+            raise
 
 
 @event_handler(SaleCancelled)
@@ -76,28 +80,32 @@ def handle_sale_cancelled(event: SaleCancelled) -> None:
     # Resolver el command handler del container
     from src import wireup_container
 
-    try:
-        # Crear movimientos IN de reversión para cada item
-        for item in event.items:
-            # Obtener el command handler
-            handler = wireup_container.get(CreateMovementCommandHandler)
+    # Crear un scope para resolver injectables SCOPED
+    # Los event handlers se ejecutan fuera del contexto de request HTTP,
+    # por lo que necesitamos crear un scope manualmente
+    with wireup_container.enter_scope() as scope:
+        try:
+            # Crear movimientos IN de reversión para cada item
+            for item in event.items:
+                # Obtener el command handler dentro del scope
+                handler = scope.get(CreateMovementCommandHandler)
 
-            # Crear comando de movimiento IN (cantidad positiva)
-            command = CreateMovementCommand(
-                product_id=item["product_id"],
-                quantity=abs(item["quantity"]),  # Asegurar que sea positivo
-                type=MovementType.IN.value,
-                reason=f"Sale #{event.sale_id} cancelled - reversal",
+                # Crear comando de movimiento IN (cantidad positiva)
+                command = CreateMovementCommand(
+                    product_id=item["product_id"],
+                    quantity=abs(item["quantity"]),  # Asegurar que sea positivo
+                    type=MovementType.IN.value,
+                    reason=f"Sale #{event.sale_id} cancelled - reversal",
+                )
+
+                handler.handle(command)
+                logger.info(
+                    f"Created IN reversal movement for product_id={item['product_id']}, "
+                    f"quantity={item['quantity']}"
+                )
+
+        except Exception as e:
+            logger.error(
+                f"Error handling SaleCancelled event for sale_id={event.sale_id}: {e}"
             )
-
-            handler.handle(command)
-            logger.info(
-                f"Created IN reversal movement for product_id={item['product_id']}, "
-                f"quantity={item['quantity']}"
-            )
-
-    except Exception as e:
-        logger.error(
-            f"Error handling SaleCancelled event for sale_id={event.sale_id}: {e}"
-        )
-        raise
+            raise
