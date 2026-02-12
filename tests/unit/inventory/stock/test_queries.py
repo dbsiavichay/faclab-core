@@ -29,7 +29,7 @@ def test_get_all_stocks_query_handler(mock_stock_repo):
         Stock(id=1, product_id=1, quantity=100, location="A1"),
         Stock(id=2, product_id=2, quantity=50, location="B2"),
     ]
-    mock_stock_repo.get_all.return_value = stocks
+    mock_stock_repo.filter_by.return_value = stocks
 
     query = GetAllStocksQuery()
     handler = GetAllStocksQueryHandler(mock_stock_repo)
@@ -43,7 +43,7 @@ def test_get_all_stocks_query_handler(mock_stock_repo):
     assert result[0]["quantity"] == 100
     assert result[1]["id"] == 2
     assert result[1]["quantity"] == 50
-    mock_stock_repo.get_all.assert_called_once()
+    mock_stock_repo.filter_by.assert_called_once_with(limit=None, offset=None)
 
 
 def test_get_all_stocks_with_product_filter(mock_stock_repo):
@@ -64,13 +64,15 @@ def test_get_all_stocks_with_product_filter(mock_stock_repo):
     assert len(result) == 1
     assert result[0]["product_id"] == 1
     assert result[0]["quantity"] == 100
-    mock_stock_repo.filter_by.assert_called_once_with(product_id=1)
+    mock_stock_repo.filter_by.assert_called_once_with(
+        limit=None, offset=None, product_id=1
+    )
 
 
 def test_get_all_stocks_empty(mock_stock_repo):
     """Test getting all stocks when none exist"""
     # Arrange
-    mock_stock_repo.get_all.return_value = []
+    mock_stock_repo.filter_by.return_value = []
 
     query = GetAllStocksQuery()
     handler = GetAllStocksQueryHandler(mock_stock_repo)
@@ -80,7 +82,27 @@ def test_get_all_stocks_empty(mock_stock_repo):
 
     # Assert
     assert len(result) == 0
-    mock_stock_repo.get_all.assert_called_once()
+    mock_stock_repo.filter_by.assert_called_once_with(limit=None, offset=None)
+
+
+def test_get_all_stocks_with_pagination(mock_stock_repo):
+    """Test getting stocks with pagination"""
+    # Arrange
+    stocks = [
+        Stock(id=1, product_id=1, quantity=100, location="A1"),
+        Stock(id=2, product_id=2, quantity=50, location="B2"),
+    ]
+    mock_stock_repo.filter_by.return_value = stocks
+
+    query = GetAllStocksQuery(limit=10, offset=5)
+    handler = GetAllStocksQueryHandler(mock_stock_repo)
+
+    # Act
+    result = handler.handle(query)
+
+    # Assert
+    assert len(result) == 2
+    mock_stock_repo.filter_by.assert_called_once_with(limit=10, offset=5)
 
 
 def test_get_stock_by_id_handler(mock_stock_repo):
