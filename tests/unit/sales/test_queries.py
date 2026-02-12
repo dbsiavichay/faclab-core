@@ -87,9 +87,7 @@ def test_get_all_sales_with_customer_filter():
     query = GetAllSalesQuery(customer_id=10)
     result = handler.handle(query)
 
-    repo.filter_by.assert_called_once_with(
-        limit=None, offset=None, customer_id=10
-    )
+    repo.filter_by.assert_called_once_with(limit=None, offset=None, customer_id=10)
     assert len(result) == 1
     assert result[0]["customer_id"] == 10
 
@@ -103,9 +101,7 @@ def test_get_all_sales_with_status_filter():
     query = GetAllSalesQuery(status="CONFIRMED")
     result = handler.handle(query)
 
-    repo.filter_by.assert_called_once_with(
-        limit=None, offset=None, status="CONFIRMED"
-    )
+    repo.filter_by.assert_called_once_with(limit=None, offset=None, status="CONFIRMED")
     assert len(result) == 1
 
 

@@ -51,7 +51,10 @@ def test_create_movement_triggers_stock_update_via_event(mock_stock_container):
     new_stock = Stock(id=1, product_id=10, quantity=10)
     mock_stock_repo.create.return_value = new_stock
 
-    mock_stock_container.get.return_value = mock_stock_repo
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_stock_repo
+    mock_stock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     # Movement to create
     created_movement = Movement(
@@ -158,6 +161,11 @@ def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
 
     mock_container.get.side_effect = resolve_side_effect
 
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_stock_repo
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+
     # Track events
     stock_events = []
 
@@ -254,6 +262,11 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
         raise ValueError(f"Unexpected resolve: {type_class}")
 
     mock_container.get.side_effect = resolve_side_effect
+
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_stock_repo
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     # Track events
     stock_events = []
@@ -352,7 +365,10 @@ def test_multiple_movements_accumulate_stock(mock_stock_container):
         Stock(id=1, product_id=10, quantity=15),
     ]
 
-    mock_stock_container.get.return_value = mock_stock_repo
+    # Mock the scope context manager
+    mock_scope = Mock()
+    mock_scope.get.return_value = mock_stock_repo
+    mock_stock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     handler = CreateMovementCommandHandler(mock_movement_repo)
 
