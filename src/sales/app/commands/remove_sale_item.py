@@ -8,6 +8,7 @@ from src.sales.domain.events import SaleItemRemoved
 from src.sales.domain.exceptions import InvalidSaleStatusError
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import DomainError
 from src.shared.infra.events.event_bus import EventBus
 from src.shared.infra.exceptions import NotFoundError
 
@@ -32,7 +33,7 @@ class RemoveSaleItemCommandHandler(CommandHandler[RemoveSaleItemCommand, dict]):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
 
-    def handle(self, command: RemoveSaleItemCommand) -> dict:
+    def _handle(self, command: RemoveSaleItemCommand) -> dict:
         """Elimina un item de la venta y recalcula los totales"""
         # Obtener la venta
         sale = self.sale_repo.get_by_id(command.sale_id)
@@ -50,7 +51,7 @@ class RemoveSaleItemCommandHandler(CommandHandler[RemoveSaleItemCommand, dict]):
 
         # Verificar que el item pertenece a la venta
         if sale_item.sale_id != command.sale_id:
-            raise ValueError(
+            raise DomainError(
                 f"Sale item {command.sale_item_id} does not belong to "
                 f"sale {command.sale_id}"
             )

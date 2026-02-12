@@ -18,7 +18,7 @@ class GetAllCategoriesQueryHandler(QueryHandler[GetAllCategoriesQuery, list[dict
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
 
-    def handle(self, query: GetAllCategoriesQuery) -> list[dict]:
+    def _handle(self, query: GetAllCategoriesQuery) -> list[dict]:
         categories = self.repo.filter_by(limit=query.limit, offset=query.offset)
         return [c.dict() for c in categories]
 
@@ -33,6 +33,6 @@ class GetCategoryByIdQueryHandler(QueryHandler[GetCategoryByIdQuery, dict | None
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
 
-    def handle(self, query: GetCategoryByIdQuery) -> dict | None:
+    def _handle(self, query: GetCategoryByIdQuery) -> dict | None:
         category = self.repo.get_by_id(query.category_id)
         return category.dict() if category else None

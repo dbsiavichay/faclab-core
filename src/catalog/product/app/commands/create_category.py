@@ -20,7 +20,7 @@ class CreateCategoryCommandHandler(CommandHandler[CreateCategoryCommand, dict]):
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
 
-    def handle(self, command: CreateCategoryCommand) -> dict:
+    def _handle(self, command: CreateCategoryCommand) -> dict:
         category = Category(
             name=command.name,
             description=command.description,

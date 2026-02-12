@@ -1,5 +1,6 @@
 import logging
 
+import structlog
 from fastapi import FastAPI
 from opentelemetry import trace
 from opentelemetry._logs import set_logger_provider
@@ -14,9 +15,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from src.config import OpenTelemetryConfig
 
-from . import StructLogger
-
-logger = StructLogger()
+logger = structlog.get_logger(__name__)
 
 
 class OpenTelemetry:
@@ -41,7 +40,7 @@ class OpenTelemetry:
 
     def instrument(self, app: FastAPI, config: OpenTelemetryConfig):
         if self._initialized:
-            logger.info("OpenTelemetry instrumentation already initialized")
+            logger.info("otel_already_initialized")
             return
 
         try:
@@ -66,6 +65,6 @@ class OpenTelemetry:
             FastAPIInstrumentor.instrument_app(app)
 
             self._initialized = True
-            logger.info("OpenTelemetry instrumentation initialized")
+            logger.info("otel_initialized")
         except Exception as e:
-            logger.error(f"Failed to initialize OpenTelemetry instrumentation: {e}")
+            logger.error("otel_initialization_failed", error=str(e))

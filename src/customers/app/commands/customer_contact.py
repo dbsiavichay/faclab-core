@@ -24,7 +24,7 @@ class CreateCustomerContactCommandHandler(
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def handle(self, command: CreateCustomerContactCommand) -> CustomerContactOutput:
+    def _handle(self, command: CreateCustomerContactCommand) -> CustomerContactOutput:
         contact = CustomerContact(
             customer_id=command.customer_id,
             name=command.name,
@@ -53,7 +53,7 @@ class UpdateCustomerContactCommandHandler(
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def handle(self, command: UpdateCustomerContactCommand) -> CustomerContactOutput:
+    def _handle(self, command: UpdateCustomerContactCommand) -> CustomerContactOutput:
         contact = CustomerContact(
             id=command.id,
             customer_id=command.customer_id,
@@ -78,5 +78,5 @@ class DeleteCustomerContactCommandHandler(
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def handle(self, command: DeleteCustomerContactCommand) -> None:
+    def _handle(self, command: DeleteCustomerContactCommand) -> None:
         self.repo.delete(command.id)

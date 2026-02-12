@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 
+from src.sales.domain.exceptions import InvalidSaleStatusError
 from src.shared.domain.entities import Entity
 
 
@@ -72,9 +73,7 @@ class Sale(Entity):
     def confirm(self) -> None:
         """Confirma la venta (solo si está en DRAFT)"""
         if self.status != SaleStatus.DRAFT:
-            raise ValueError(
-                f"Only DRAFT sales can be confirmed. Current status: {self.status}"
-            )
+            raise InvalidSaleStatusError(self.status, "confirm")
         self.status = SaleStatus.CONFIRMED
         if self.sale_date is None:
             self.sale_date = datetime.now()
@@ -82,18 +81,13 @@ class Sale(Entity):
     def cancel(self) -> None:
         """Cancela la venta (solo si está en DRAFT o CONFIRMED)"""
         if self.status not in (SaleStatus.DRAFT, SaleStatus.CONFIRMED):
-            raise ValueError(
-                f"Only DRAFT or CONFIRMED sales can be cancelled. "
-                f"Current status: {self.status}"
-            )
+            raise InvalidSaleStatusError(self.status, "cancel")
         self.status = SaleStatus.CANCELLED
 
     def invoice(self) -> None:
         """Marca la venta como facturada (solo si está CONFIRMED)"""
         if self.status != SaleStatus.CONFIRMED:
-            raise ValueError(
-                f"Only CONFIRMED sales can be invoiced. Current status: {self.status}"
-            )
+            raise InvalidSaleStatusError(self.status, "invoice")
         self.status = SaleStatus.INVOICED
 
     def update_payment_status(self, total_paid: Decimal) -> None:

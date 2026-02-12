@@ -21,7 +21,7 @@ class GetAllCustomersQueryHandler(
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def handle(self, query: GetAllCustomersQuery) -> list[CustomerOutput]:
+    def _handle(self, query: GetAllCustomersQuery) -> list[CustomerOutput]:
         customers = self.repo.get_all()
         return [customer.dict() for customer in customers]
 
@@ -38,7 +38,7 @@ class GetCustomerByIdQueryHandler(
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def handle(self, query: GetCustomerByIdQuery) -> CustomerOutput | None:
+    def _handle(self, query: GetCustomerByIdQuery) -> CustomerOutput | None:
         customer = self.repo.get_by_id(query.id)
         if customer is None:
             return None
@@ -57,7 +57,7 @@ class GetCustomerByTaxIdQueryHandler(
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def handle(self, query: GetCustomerByTaxIdQuery) -> CustomerOutput | None:
+    def _handle(self, query: GetCustomerByTaxIdQuery) -> CustomerOutput | None:
         if isinstance(self.repo, CustomerRepositoryImpl):
             customer = self.repo.get_by_tax_id(query.tax_id)
             if customer is None:

@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from environs import Env
 
 from .base import OpenTelemetryConfig
@@ -7,7 +6,7 @@ from .base import OpenTelemetryConfig
 __all__ = ["OpenTelemetryConfig"]
 
 env = Env()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 environment = env("ENVIRONMENT", "local")
 
@@ -20,6 +19,6 @@ elif environment == "production":
 else:
     raise ValueError("Invalid environment specified.")
 
-logger.info(f"Run environment: {environment}")
+logger.info("environment_loaded", environment=environment)
 
 config = Config()

@@ -22,7 +22,7 @@ class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, list[StockOutput]
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def handle(self, query: GetAllStocksQuery) -> list[StockOutput]:
+    def _handle(self, query: GetAllStocksQuery) -> list[StockOutput]:
         # Build filter kwargs
         filter_kwargs = {}
         if query.product_id is not None:
@@ -47,7 +47,7 @@ class GetStockByIdQueryHandler(QueryHandler[GetStockByIdQuery, StockOutput | Non
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def handle(self, query: GetStockByIdQuery) -> StockOutput | None:
+    def _handle(self, query: GetStockByIdQuery) -> StockOutput | None:
         stock = self.repo.get_by_id(query.id)
         if stock is None:
             return None
@@ -68,7 +68,7 @@ class GetStockByProductQueryHandler(
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def handle(self, query: GetStockByProductQuery) -> StockOutput | None:
+    def _handle(self, query: GetStockByProductQuery) -> StockOutput | None:
         stock = self.repo.first(product_id=query.product_id)
         if stock is None:
             return None

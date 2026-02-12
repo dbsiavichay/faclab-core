@@ -24,7 +24,7 @@ class GetAllSalesQueryHandler(QueryHandler[GetAllSalesQuery, list[dict]]):
     def __init__(self, repo: Repository[Sale]):
         self.repo = repo
 
-    def handle(self, query: GetAllSalesQuery) -> list[dict]:
+    def _handle(self, query: GetAllSalesQuery) -> list[dict]:
         """Obtiene las ventas con los filtros especificados"""
         # Preparar filtros
         filters = {}
@@ -57,7 +57,7 @@ class GetSaleByIdQueryHandler(QueryHandler[GetSaleByIdQuery, dict | None]):
     def __init__(self, repo: Repository[Sale]):
         self.repo = repo
 
-    def handle(self, query: GetSaleByIdQuery) -> dict | None:
+    def _handle(self, query: GetSaleByIdQuery) -> dict | None:
         """Obtiene una venta específica por ID"""
         sale = self.repo.get_by_id(query.sale_id)
         return sale.dict() if sale else None

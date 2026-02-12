@@ -33,7 +33,7 @@ class CreateMovementCommandHandler(
     def __init__(self, repo: Repository[Movement]):
         self.repo = repo
 
-    def handle(self, command: CreateMovementCommand) -> MovementOutput:
+    def _handle(self, command: CreateMovementCommand) -> MovementOutput:
         # Convert string type to enum
         movement_type = MovementType(command.type)
 

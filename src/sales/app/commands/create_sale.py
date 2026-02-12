@@ -25,7 +25,7 @@ class CreateSaleCommandHandler(CommandHandler[CreateSaleCommand, dict]):
     def __init__(self, repo: Repository[Sale]):
         self.repo = repo
 
-    def handle(self, command: CreateSaleCommand) -> dict:
+    def _handle(self, command: CreateSaleCommand) -> dict:
         """Crea una nueva venta en estado DRAFT"""
         sale = Sale(
             customer_id=command.customer_id,

@@ -21,7 +21,7 @@ class UpdateCategoryCommandHandler(CommandHandler[UpdateCategoryCommand, dict]):
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
 
-    def handle(self, command: UpdateCategoryCommand) -> dict:
+    def _handle(self, command: UpdateCategoryCommand) -> dict:
         # Get existing category to track changes
         existing = self.repo.get_by_id(command.category_id)
 
