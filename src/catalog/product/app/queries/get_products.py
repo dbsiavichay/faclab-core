@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.specifications import ProductByName, ProductInCategory
@@ -34,7 +33,7 @@ class GetProductByIdQuery(Query):
     product_id: int
 
 
-class GetProductByIdQueryHandler(QueryHandler[GetProductByIdQuery, Optional[dict]]):
+class GetProductByIdQueryHandler(QueryHandler[GetProductByIdQuery, dict | None]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
 

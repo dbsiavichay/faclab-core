@@ -240,8 +240,8 @@ def init_repositories() -> None:
     )
 
 
-def init_use_cases() -> None:
-    """Initializes all use cases and command/query handlers."""
+def init_handlers() -> None:
+    """Initializes all command and query handlers for CQRS architecture."""
     # Register Category command handlers
     container.register(
         CreateCategoryCommandHandler,
@@ -805,7 +805,7 @@ def initialize() -> None:
 
     init_mappers()
     init_repositories()
-    init_use_cases()
+    init_handlers()
     init_controllers()
 
     # Import event handlers to register them via decorators

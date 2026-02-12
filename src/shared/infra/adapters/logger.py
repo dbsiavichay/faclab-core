@@ -1,4 +1,3 @@
-from typing import Optional
 
 import structlog
 from structlog.processors import TimeStamper, add_log_level
@@ -9,7 +8,7 @@ from src.shared.domain.ports import Logger
 
 class StructLogger(Logger):
     _level: str = "NOSET"
-    _instance: Optional["StructLogger"] = None
+    _instance: "StructLogger" | None = None
     _logger = None
 
     def __new__(cls, level: str = "INFO") -> "StructLogger":

@@ -1,4 +1,4 @@
-from typing import Any, ClassVar, Generic, TypeVar, Union
+from typing import Any, ClassVar, Generic, TypeVar
 
 from sqlalchemy import asc, desc, func
 from sqlalchemy.orm import Session
@@ -15,7 +15,7 @@ M = TypeVar("T", bound="Base")
 E = TypeVar("E", bound="Entity")
 
 Criteria = list[BinaryExpression | BooleanClauseList | Any]
-OrderCriteria = Union[str, Any]
+OrderCriteria = str | Any
 
 
 class BaseRepository(Repository[E], Generic[E]):

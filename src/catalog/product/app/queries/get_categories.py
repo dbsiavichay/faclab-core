@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.catalog.product.domain.entities import Category
 from src.shared.app.queries import Query, QueryHandler
@@ -26,7 +25,7 @@ class GetCategoryByIdQuery(Query):
     category_id: int
 
 
-class GetCategoryByIdQueryHandler(QueryHandler[GetCategoryByIdQuery, Optional[dict]]):
+class GetCategoryByIdQueryHandler(QueryHandler[GetCategoryByIdQuery, dict | None]):
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
 

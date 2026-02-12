@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -29,7 +28,7 @@ class ProductModel(Base):
     )
 
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=True)
-    category: Mapped[Optional["CategoryModel"]] = relationship(
+    category: Mapped["CategoryModel | None"] = relationship(
         back_populates="products"
     )
     movements: Mapped[list["MovementModel"]] = relationship(  # NOQA: F821

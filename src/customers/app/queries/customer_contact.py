@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.customers.app.types import CustomerContactOutput
 from src.customers.domain.entities import CustomerContact
@@ -14,7 +13,7 @@ class GetCustomerContactByIdQuery(Query):
 
 
 class GetCustomerContactByIdQueryHandler(
-    QueryHandler[GetCustomerContactByIdQuery, Optional[CustomerContactOutput]]
+    QueryHandler[GetCustomerContactByIdQuery, CustomerContactOutput | None]
 ):
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
