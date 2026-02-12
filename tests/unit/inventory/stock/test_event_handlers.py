@@ -8,7 +8,7 @@ from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.events import MovementCreated
 from src.inventory.stock.domain.entities import Stock
 from src.inventory.stock.domain.events import StockCreated, StockUpdated
-from src.inventory.stock.domain.exceptions import InsufficientStock
+from src.inventory.stock.domain.exceptions import InsufficientStockError
 from src.inventory.stock.infra.event_handlers import handle_movement_created
 from src.shared.infra.events.event_bus import EventBus
 
@@ -167,10 +167,10 @@ def test_handle_movement_created_insufficient_stock_raises(mock_container):
     )
 
     # Act & Assert
-    with pytest.raises(InsufficientStock) as exc_info:
+    with pytest.raises(InsufficientStockError) as exc_info:
         handle_movement_created(event)
 
-    # InsufficientStock stores product_id in data dict
+    # InsufficientStockError stores product_id in data dict
     assert exc_info.value.data["product_id"] == 10
     mock_repo.update.assert_not_called()
 

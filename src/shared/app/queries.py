@@ -4,7 +4,7 @@ from typing import Generic, TypeVar
 
 
 @dataclass
-class Query(ABC):
+class Query:
     pass
 
 

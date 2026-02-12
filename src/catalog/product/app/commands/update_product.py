@@ -40,13 +40,19 @@ class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
         changes = {}
         if existing:
             if existing.sku != product.sku:
-                changes['sku'] = {'old': existing.sku, 'new': product.sku}
+                changes["sku"] = {"old": existing.sku, "new": product.sku}
             if existing.name != product.name:
-                changes['name'] = {'old': existing.name, 'new': product.name}
+                changes["name"] = {"old": existing.name, "new": product.name}
             if existing.description != product.description:
-                changes['description'] = {'old': existing.description, 'new': product.description}
+                changes["description"] = {
+                    "old": existing.description,
+                    "new": product.description,
+                }
             if existing.category_id != product.category_id:
-                changes['category_id'] = {'old': existing.category_id, 'new': product.category_id}
+                changes["category_id"] = {
+                    "old": existing.category_id,
+                    "new": product.category_id,
+                }
 
         EventBus.publish(
             ProductUpdated(

@@ -12,7 +12,9 @@ from src.catalog.product.infra.models import ProductModel
 def test_product_in_category_spec():
     """Test ProductInCategory specification with entity."""
     product_in_category = Product(id=1, sku="SKU-001", name="Product 1", category_id=1)
-    product_not_in_category = Product(id=2, sku="SKU-002", name="Product 2", category_id=2)
+    product_not_in_category = Product(
+        id=2, sku="SKU-002", name="Product 2", category_id=2
+    )
 
     spec = ProductInCategory(category_id=1)
 
@@ -84,7 +86,9 @@ def test_product_by_sku_sql_criteria():
 def test_combined_specifications():
     """Test combining specifications with AND operator."""
     product_match = Product(id=1, sku="SKU-001", name="Laptop Computer", category_id=1)
-    product_no_match = Product(id=2, sku="SKU-002", name="Laptop Computer", category_id=2)
+    product_no_match = Product(
+        id=2, sku="SKU-002", name="Laptop Computer", category_id=2
+    )
 
     spec = ProductInCategory(category_id=1) & ProductByName(name_pattern="Laptop")
 

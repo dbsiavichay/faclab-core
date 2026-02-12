@@ -12,10 +12,10 @@ class ProductCreated(DomainEvent):
 
     def _payload(self) -> dict:
         return {
-            'product_id': self.product_id,
-            'sku': self.sku,
-            'name': self.name,
-            'category_id': self.category_id,
+            "product_id": self.product_id,
+            "sku": self.sku,
+            "name": self.name,
+            "category_id": self.category_id,
         }
 
 
@@ -26,8 +26,8 @@ class ProductUpdated(DomainEvent):
 
     def _payload(self) -> dict:
         return {
-            'product_id': self.product_id,
-            'changes': self.changes or {},
+            "product_id": self.product_id,
+            "changes": self.changes or {},
         }
 
 
@@ -36,7 +36,7 @@ class ProductDeleted(DomainEvent):
     product_id: int = 0
 
     def _payload(self) -> dict:
-        return {'product_id': self.product_id}
+        return {"product_id": self.product_id}
 
 
 @dataclass
@@ -46,8 +46,8 @@ class CategoryCreated(DomainEvent):
 
     def _payload(self) -> dict:
         return {
-            'category_id': self.category_id,
-            'name': self.name,
+            "category_id": self.category_id,
+            "name": self.name,
         }
 
 
@@ -58,8 +58,8 @@ class CategoryUpdated(DomainEvent):
 
     def _payload(self) -> dict:
         return {
-            'category_id': self.category_id,
-            'changes': self.changes or {},
+            "category_id": self.category_id,
+            "changes": self.changes or {},
         }
 
 
@@ -68,4 +68,4 @@ class CategoryDeleted(DomainEvent):
     category_id: int = 0
 
     def _payload(self) -> dict:
-        return {'category_id': self.category_id}
+        return {"category_id": self.category_id}

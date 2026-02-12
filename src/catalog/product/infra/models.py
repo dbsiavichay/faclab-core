@@ -28,9 +28,7 @@ class ProductModel(Base):
     )
 
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=True)
-    category: Mapped["CategoryModel | None"] = relationship(
-        back_populates="products"
-    )
+    category: Mapped["CategoryModel | None"] = relationship(back_populates="products")
     movements: Mapped[list["MovementModel"]] = relationship(  # NOQA: F821
         back_populates="product", cascade="all, delete-orphan"
     )

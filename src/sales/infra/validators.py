@@ -20,9 +20,7 @@ class SaleInput(BaseModel):
 
     customer_id: int = Field(..., gt=0, description="ID del cliente")
     notes: str | None = Field(None, max_length=512, description="Notas adicionales")
-    created_by: str | None = Field(
-        None, max_length=64, description="Usuario que crea"
-    )
+    created_by: str | None = Field(None, max_length=64, description="Usuario que crea")
 
 
 class PaymentInput(BaseModel):

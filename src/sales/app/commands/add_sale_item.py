@@ -5,11 +5,11 @@ from wireup import injectable
 
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleItemAdded
-from src.sales.domain.exceptions import InvalidSaleStatusException
+from src.sales.domain.exceptions import InvalidSaleStatusError
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
 from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 
 @dataclass
@@ -40,11 +40,11 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
         # Obtener la venta
         sale = self.sale_repo.get_by_id(command.sale_id)
         if not sale:
-            raise NotFoundException(f"Sale with id {command.sale_id} not found")
+            raise NotFoundError(f"Sale with id {command.sale_id} not found")
 
         # Validar que la venta esté en DRAFT
         if sale.status.value != "DRAFT":
-            raise InvalidSaleStatusException(sale.status.value, "add items to")
+            raise InvalidSaleStatusError(sale.status.value, "add items to")
 
         # Crear el item
         sale_item = SaleItem(

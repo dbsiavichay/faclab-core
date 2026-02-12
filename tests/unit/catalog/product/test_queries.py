@@ -1,4 +1,5 @@
 """Unit tests for catalog product query handlers."""
+
 from unittest.mock import Mock
 
 from src.catalog.product.app.queries import (

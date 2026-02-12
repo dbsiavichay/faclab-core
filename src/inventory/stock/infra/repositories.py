@@ -14,9 +14,7 @@ class StockRepositoryImpl(BaseRepository[Stock]):
 
 
 @injectable(lifetime="scoped", as_type=Repository[Stock])
-def create_stock_repository(
-    session: Session, mapper: StockMapper
-) -> Repository[Stock]:
+def create_stock_repository(session: Session, mapper: StockMapper) -> Repository[Stock]:
     """Factory function for creating StockRepository with generic type binding.
 
     Args:

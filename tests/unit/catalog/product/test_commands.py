@@ -1,4 +1,5 @@
 """Unit tests for catalog product command handlers."""
+
 from unittest.mock import Mock
 
 import pytest
@@ -38,9 +39,7 @@ def test_create_product_command_handler():
     mock_repo.create.return_value = created_product
 
     handler = CreateProductCommandHandler(mock_repo)
-    command = CreateProductCommand(
-        sku="TEST-001", name="Test Product", category_id=1
-    )
+    command = CreateProductCommand(sku="TEST-001", name="Test Product", category_id=1)
 
     result = handler.handle(command)
 
@@ -82,9 +81,7 @@ def test_update_product_command_handler():
     mock_repo.update.return_value = updated_product
 
     handler = UpdateProductCommandHandler(mock_repo)
-    command = UpdateProductCommand(
-        product_id=1, sku="NEW-001", name="New Name"
-    )
+    command = UpdateProductCommand(product_id=1, sku="NEW-001", name="New Name")
 
     result = handler.handle(command)
 
@@ -111,7 +108,9 @@ def test_delete_product_command_handler():
 def test_create_category_command_handler():
     """Test CreateCategoryCommandHandler creates a category and publishes event."""
     mock_repo = Mock()
-    created_category = Category(id=1, name="Electronics", description="Electronic items")
+    created_category = Category(
+        id=1, name="Electronics", description="Electronic items"
+    )
     mock_repo.create.return_value = created_category
 
     handler = CreateCategoryCommandHandler(mock_repo)
@@ -128,7 +127,9 @@ def test_create_category_command_handler():
 def test_create_category_publishes_event():
     """Test that CreateCategoryCommandHandler publishes CategoryCreated event."""
     mock_repo = Mock()
-    created_category = Category(id=1, name="Electronics", description="Electronic items")
+    created_category = Category(
+        id=1, name="Electronics", description="Electronic items"
+    )
     mock_repo.create.return_value = created_category
 
     published_events = []

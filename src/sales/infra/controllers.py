@@ -35,7 +35,7 @@ from src.sales.infra.validators import (
     SaleItemResponse,
     SaleResponse,
 )
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 
 @injectable(lifetime="scoped")
@@ -96,7 +96,7 @@ class SaleController:
         query = GetSaleByIdQuery(sale_id=sale_id)
         result = self.get_by_id_handler.handle(query)
         if not result:
-            raise NotFoundException(f"Sale with id {sale_id} not found")
+            raise NotFoundError(f"Sale with id {sale_id} not found")
         return SaleResponse.model_validate(result)
 
     def add_item(self, sale_id: int, request: SaleItemInput) -> SaleItemResponse:

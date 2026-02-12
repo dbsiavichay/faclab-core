@@ -57,9 +57,7 @@ class CustomerMapper(Mapper[Customer, CustomerModel]):
 
 @injectable
 class CustomerContactMapper(Mapper[CustomerContact, CustomerContactModel]):
-    def to_entity(
-        self, model: CustomerContactModel | None
-    ) -> CustomerContact | None:
+    def to_entity(self, model: CustomerContactModel | None) -> CustomerContact | None:
         """Converts an infrastructure model to a domain entity"""
         if not model:
             return None

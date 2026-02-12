@@ -18,9 +18,9 @@ from src.sales.app.commands import (
     RemoveSaleItemCommandHandler,
 )
 from src.sales.domain.entities import Payment, PaymentMethod, Sale, SaleItem, SaleStatus
-from src.sales.domain.exceptions import SaleHasNoItemsException
+from src.sales.domain.exceptions import InvalidSaleStatusError, SaleHasNoItemsError
 from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 
 @pytest.fixture(autouse=True)
@@ -144,7 +144,7 @@ def test_add_sale_item_only_draft():
         sale_id=1, product_id=100, quantity=10, unit_price=100.0
     )
 
-    with pytest.raises(Exception):  # InvalidSaleStatusException
+    with pytest.raises(InvalidSaleStatusError):
         handler.handle(command)
 
 
@@ -159,7 +159,7 @@ def test_add_sale_item_sale_not_found():
         sale_id=999, product_id=100, quantity=10, unit_price=100.0
     )
 
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundError):
         handler.handle(command)
 
 
@@ -203,7 +203,7 @@ def test_confirm_sale_without_items_fails():
 
     command = ConfirmSaleCommand(sale_id=1)
 
-    with pytest.raises(SaleHasNoItemsException):
+    with pytest.raises(SaleHasNoItemsError):
         handler.handle(command)
 
 
@@ -216,7 +216,7 @@ def test_confirm_sale_not_found():
 
     command = ConfirmSaleCommand(sale_id=999)
 
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundError):
         handler.handle(command)
 
 
@@ -296,5 +296,5 @@ def test_register_payment_sale_not_found():
 
     command = RegisterPaymentCommand(sale_id=999, amount=500.0, payment_method="CASH")
 
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundError):
         handler.handle(command)

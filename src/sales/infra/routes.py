@@ -1,6 +1,5 @@
 """Routes para el módulo Sales"""
 
-
 from fastapi import APIRouter, status
 from wireup import Injected
 

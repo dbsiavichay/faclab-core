@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from src.shared.domain.exceptions import BaseException
+from src.shared.domain.exceptions import BaseError
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
                     "request_id": request_id,
                 },
             )
-        except BaseException as exc:
+        except BaseError as exc:
             logger.exception(
                 "REQUEST_ERROR :: %s :: %s",
                 exc.__class__.__name__,

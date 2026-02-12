@@ -61,9 +61,7 @@ class PaymentRepositoryImpl(BaseRepository[Payment]):
 
 
 @injectable(lifetime="scoped", as_type=Repository[Sale])
-def create_sale_repository(
-    session: Session, mapper: SaleMapper
-) -> Repository[Sale]:
+def create_sale_repository(session: Session, mapper: SaleMapper) -> Repository[Sale]:
     """Factory function for creating SaleRepository with generic type binding."""
     return SaleRepositoryImpl(session, mapper)
 

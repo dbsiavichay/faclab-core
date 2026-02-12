@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
+
 from src.inventory.movement.infra.validators import (
     MovementInput,
     MovementQueryParams,

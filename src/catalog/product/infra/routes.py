@@ -100,9 +100,7 @@ class ProductRouter:
         """Updates a product."""
         return controller.update(id, product)
 
-    def delete(
-        self, id: int, controller: Injected[ProductController]
-    ):
+    def delete(self, id: int, controller: Injected[ProductController]):
         """Deletes a product."""
         return controller.delete(id)
 
@@ -110,8 +108,6 @@ class ProductRouter:
         """Retrieves all products."""
         return controller.get_all()
 
-    def get_by_id(
-        self, id: int, controller: Injected[ProductController]
-    ):
+    def get_by_id(self, id: int, controller: Injected[ProductController]):
         """Retrieves a specific product by its ID."""
         return controller.get_by_id(id)

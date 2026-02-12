@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
 from src.inventory.movement.domain.constants import MovementType
-from src.inventory.movement.domain.exceptions import InvalidMovementTypeException
+from src.inventory.movement.domain.exceptions import InvalidMovementTypeError
 from src.shared.infra.validators import QueryParams
 
 
@@ -26,17 +26,17 @@ class MovementInput(MovementBase):
     @classmethod
     def validate_quantity_not_zero(cls, v):
         if v == 0:
-            raise InvalidMovementTypeException("La cantidad no puede ser cero")
+            raise InvalidMovementTypeError("La cantidad no puede ser cero")
         return v
 
     @model_validator(mode="after")
     def validate_quantity_by_movement_type(self) -> "MovementInput":
         if self.type == MovementType.IN and self.quantity < 0:
-            raise InvalidMovementTypeException(
+            raise InvalidMovementTypeError(
                 "La cantidad debe ser positiva para movimientos de entrada"
             )
         elif self.type == MovementType.OUT and self.quantity > 0:
-            raise InvalidMovementTypeException(
+            raise InvalidMovementTypeError(
                 "La cantidad debe ser negativa para movimientos de salida"
             )
         return self

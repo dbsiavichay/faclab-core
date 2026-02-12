@@ -36,7 +36,7 @@ from src.customers.infra.validators import (
     CustomerInput,
     CustomerResponse,
 )
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 
 @injectable(lifetime="scoped")
@@ -81,7 +81,7 @@ class CustomerController:
     def get_by_id(self, id: int) -> CustomerResponse:
         customer = self.get_by_id_handler.handle(GetCustomerByIdQuery(id=id))
         if customer is None:
-            raise NotFoundException("Customer not found")
+            raise NotFoundError("Customer not found")
         return CustomerResponse.model_validate(customer)
 
     def get_by_tax_id(self, tax_id: str) -> CustomerResponse:
@@ -89,7 +89,7 @@ class CustomerController:
             GetCustomerByTaxIdQuery(tax_id=tax_id)
         )
         if customer is None:
-            raise NotFoundException(f"Customer with tax_id {tax_id} not found")
+            raise NotFoundError(f"Customer with tax_id {tax_id} not found")
         return CustomerResponse.model_validate(customer)
 
     def activate(self, id: int) -> CustomerResponse:
@@ -139,7 +139,7 @@ class CustomerContactController:
     def get_by_id(self, id: int) -> CustomerContactResponse:
         contact = self.get_by_id_handler.handle(GetCustomerContactByIdQuery(id=id))
         if contact is None:
-            raise NotFoundException("Customer contact not found")
+            raise NotFoundError("Customer contact not found")
         return CustomerContactResponse.model_validate(contact)
 
     def get_by_customer_id(self, customer_id: int) -> list[CustomerContactResponse]:

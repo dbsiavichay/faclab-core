@@ -36,9 +36,12 @@ class UpdateCategoryCommandHandler(CommandHandler[UpdateCategoryCommand, dict]):
         changes = {}
         if existing:
             if existing.name != category.name:
-                changes['name'] = {'old': existing.name, 'new': category.name}
+                changes["name"] = {"old": existing.name, "new": category.name}
             if existing.description != category.description:
-                changes['description'] = {'old': existing.description, 'new': category.description}
+                changes["description"] = {
+                    "old": existing.description,
+                    "new": category.description,
+                }
 
         EventBus.publish(
             CategoryUpdated(

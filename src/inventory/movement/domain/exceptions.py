@@ -1,7 +1,7 @@
-from src.shared.domain.exceptions import BaseException
+from src.shared.domain.exceptions import BaseError
 
 
-class InvalidMovementTypeException(BaseException):
+class InvalidMovementTypeError(BaseError):
     def __init__(self, detail: str):
         self.code = 400
         self.message = "El tipo de movimiento no es válido"

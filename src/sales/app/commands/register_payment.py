@@ -8,7 +8,7 @@ from src.sales.domain.events import PaymentReceived
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
 from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 
 @dataclass
@@ -39,7 +39,7 @@ class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]
         # Obtener la venta
         sale = self.sale_repo.get_by_id(command.sale_id)
         if not sale:
-            raise NotFoundException(f"Sale with id {command.sale_id} not found")
+            raise NotFoundError(f"Sale with id {command.sale_id} not found")
 
         # Validar el método de pago
         try:
@@ -48,7 +48,7 @@ class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]
             raise ValueError(
                 f"Invalid payment method: {command.payment_method}. "
                 f"Valid methods: {[m.value for m in PaymentMethod]}"
-            )
+            ) from None
 
         # Crear el pago
         payment = Payment(

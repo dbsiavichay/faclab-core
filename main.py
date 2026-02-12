@@ -21,9 +21,10 @@ origins = ["http://localhost:3000", "http://localhost:5173"]
 wireup_container = create_wireup_container()
 src.wireup_container = wireup_container
 
-app = FastAPI()
+app = FastAPI(
+    title="Faclab core API", version="1.0.0", description="API for Faclab core services"
+)
 
-wireup_fastapi_setup(wireup_container, app)
 
 category_router = CategoryRouter()
 product_router = ProductRouter()
@@ -58,6 +59,9 @@ app.include_router(sale_router.router, prefix="/sales", tags=["sales"])
 @app.get("/")
 async def root():
     return RedirectResponse("/docs")
+
+
+wireup_fastapi_setup(wireup_container, app)
 
 
 if __name__ == "__main__":

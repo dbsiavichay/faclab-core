@@ -7,7 +7,7 @@ from src.sales.domain.events import SaleCancelled
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
 from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 
 @dataclass
@@ -38,7 +38,7 @@ class CancelSaleCommandHandler(CommandHandler[CancelSaleCommand, dict]):
         # Obtener la venta
         sale = self.sale_repo.get_by_id(command.sale_id)
         if not sale:
-            raise NotFoundException(f"Sale with id {command.sale_id} not found")
+            raise NotFoundError(f"Sale with id {command.sale_id} not found")
 
         # Verificar si estaba confirmada (para revertir inventario)
         was_confirmed = sale.status == SaleStatus.CONFIRMED
