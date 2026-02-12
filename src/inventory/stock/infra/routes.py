@@ -1,7 +1,6 @@
 
 from fastapi import APIRouter, Depends
-
-from src import get_stock_controller
+from wireup import Injected
 
 from .controllers import StockController
 from .validators import StockQueryParams, StockResponse
@@ -9,6 +8,7 @@ from .validators import StockQueryParams, StockResponse
 
 class StockRouter:
     def __init__(self):
+        """StockRouter using wireup Injected[] pattern for scoped controller."""
         self.router = APIRouter()
         self._setup_routes()
 
@@ -20,8 +20,8 @@ class StockRouter:
 
     def get_all(
         self,
+        controller: Injected[StockController],
         query_params: StockQueryParams = Depends(),
-        controller: StockController = Depends(get_stock_controller),
     ):
         """Gets all products stock."""
         return controller.get_all(query_params)

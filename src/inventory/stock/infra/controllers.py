@@ -1,3 +1,4 @@
+from wireup import injectable
 
 from src.inventory.stock.app.queries import (
     GetAllStocksQuery,
@@ -11,6 +12,7 @@ from src.inventory.stock.infra.validators import StockQueryParams, StockResponse
 from src.shared.infra.exceptions import NotFoundException
 
 
+@injectable(lifetime="scoped")
 class StockController:
     def __init__(
         self,

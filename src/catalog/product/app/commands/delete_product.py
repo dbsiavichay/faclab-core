@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.events import ProductDeleted
 from src.shared.app.commands import Command, CommandHandler
@@ -12,6 +14,7 @@ class DeleteProductCommand(Command):
     product_id: int
 
 
+@injectable(lifetime="scoped")
 class DeleteProductCommandHandler(CommandHandler[DeleteProductCommand, None]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo

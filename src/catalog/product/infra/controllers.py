@@ -80,6 +80,7 @@ class CategoryController:
         return CategoryResponse.model_validate(category)
 
 
+@injectable(lifetime="scoped")
 class ProductController:
     def __init__(
         self,

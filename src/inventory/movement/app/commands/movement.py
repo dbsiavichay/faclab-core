@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from wireup import injectable
+
 from src.inventory.movement.app.types import MovementOutput
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
@@ -19,6 +21,7 @@ class CreateMovementCommand(Command):
     date: datetime | None = None
 
 
+@injectable(lifetime="scoped")
 class CreateMovementCommandHandler(
     CommandHandler[CreateMovementCommand, MovementOutput]
 ):

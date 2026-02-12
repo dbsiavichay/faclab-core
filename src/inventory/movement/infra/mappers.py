@@ -1,11 +1,14 @@
 from typing import Any
 
+from wireup import injectable
+
 from src.inventory.movement.domain.entities import Movement
 from src.shared.infra.mappers import Mapper
 
 from .models import MovementModel
 
 
+@injectable  # Singleton by default (stateless mapper)
 class MovementMapper(Mapper[MovementModel, Movement]):
     def to_entity(self, model: MovementModel | None) -> Movement | None:
         """Converts an infrastructure model to a domain entity"""

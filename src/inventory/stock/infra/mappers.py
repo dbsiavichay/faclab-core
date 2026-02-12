@@ -1,10 +1,13 @@
 from typing import Any
 
+from wireup import injectable
+
 from src.inventory.stock.domain.entities import Stock
 from src.inventory.stock.infra.models import StockModel
 from src.shared.infra.mappers import Mapper
 
 
+@injectable  # Singleton by default (stateless mapper)
 class StockMapper(Mapper[Stock, StockModel]):
     def to_entity(self, model: StockModel | None) -> Stock | None:
         """Converts an infrastructure model to a domain entity"""

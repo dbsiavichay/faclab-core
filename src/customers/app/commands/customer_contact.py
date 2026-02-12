@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.customers.app.types import CustomerContactOutput
 from src.customers.domain.entities import CustomerContact
 from src.shared.app.commands import Command, CommandHandler
@@ -15,6 +17,7 @@ class CreateCustomerContactCommand(Command):
     phone: str | None = None
 
 
+@injectable(lifetime="scoped")
 class CreateCustomerContactCommandHandler(
     CommandHandler[CreateCustomerContactCommand, CustomerContactOutput]
 ):
@@ -43,6 +46,7 @@ class UpdateCustomerContactCommand(Command):
     phone: str | None = None
 
 
+@injectable(lifetime="scoped")
 class UpdateCustomerContactCommandHandler(
     CommandHandler[UpdateCustomerContactCommand, CustomerContactOutput]
 ):
@@ -67,6 +71,7 @@ class DeleteCustomerContactCommand(Command):
     id: int = 0
 
 
+@injectable(lifetime="scoped")
 class DeleteCustomerContactCommandHandler(
     CommandHandler[DeleteCustomerContactCommand, None]
 ):

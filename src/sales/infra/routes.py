@@ -1,9 +1,9 @@
 """Routes para el módulo Sales"""
 
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
+from wireup import Injected
 
-from src import get_sale_controller
 from src.sales.infra.controllers import SaleController
 from src.sales.infra.validators import (
     CancelSaleInput,
@@ -17,7 +17,7 @@ from src.sales.infra.validators import (
 
 
 class SaleRouter:
-    """Router para el módulo de Sales"""
+    """SaleRouter using wireup Injected[] pattern for scoped controller."""
 
     def __init__(self):
         self.router = APIRouter()
@@ -56,19 +56,19 @@ class SaleRouter:
 
     def create_sale(
         self,
+        controller: Injected[SaleController],
         sale: SaleInput,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> SaleResponse:
         """Create a new sale in DRAFT status"""
         return controller.create(sale)
 
     def get_all_sales(
         self,
+        controller: Injected[SaleController],
         customer_id: int | None = None,
         status: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> list[SaleResponse]:
         """Get all sales with optional filters"""
         return controller.get_all(
@@ -80,42 +80,42 @@ class SaleRouter:
 
     def get_sale(
         self,
+        controller: Injected[SaleController],
         sale_id: int,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> SaleResponse:
         """Get a specific sale by ID"""
         return controller.get_by_id(sale_id)
 
     def add_sale_item(
         self,
+        controller: Injected[SaleController],
         sale_id: int,
         item: SaleItemInput,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> SaleItemResponse:
         """Add a new item to a sale (only in DRAFT status)"""
         return controller.add_item(sale_id, item)
 
     def get_sale_items(
         self,
+        controller: Injected[SaleController],
         sale_id: int,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> list[SaleItemResponse]:
         """Get all items of a sale"""
         return controller.get_items(sale_id)
 
     def remove_sale_item(
         self,
+        controller: Injected[SaleController],
         sale_id: int,
         item_id: int,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> dict:
         """Remove an item from a sale (only in DRAFT status)"""
         return controller.remove_item(sale_id, item_id)
 
     def confirm_sale(
         self,
+        controller: Injected[SaleController],
         sale_id: int,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> SaleResponse:
         """
         Confirm a sale (only DRAFT sales can be confirmed).
@@ -125,9 +125,9 @@ class SaleRouter:
 
     def cancel_sale(
         self,
+        controller: Injected[SaleController],
         sale_id: int,
         cancel_input: CancelSaleInput | None = None,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> SaleResponse:
         """
         Cancel a sale (only DRAFT or CONFIRMED sales can be cancelled).
@@ -137,17 +137,17 @@ class SaleRouter:
 
     def register_payment(
         self,
+        controller: Injected[SaleController],
         sale_id: int,
         payment: PaymentInput,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> PaymentResponse:
         """Register a payment for a sale"""
         return controller.register_payment(sale_id, payment)
 
     def get_sale_payments(
         self,
+        controller: Injected[SaleController],
         sale_id: int,
-        controller: SaleController = Depends(get_sale_controller),
     ) -> list[PaymentResponse]:
         """Get all payments for a sale"""
         return controller.get_payments(sale_id)

@@ -35,6 +35,7 @@ class CategoryMapper(Mapper[Category, CategoryModel]):
         return result
 
 
+@injectable  # Singleton by default (stateless mapper)
 class ProductMapper(Mapper[Product, ProductModel]):
     def to_entity(self, model: ProductModel | None) -> Product | None:
         """Converts an infrastructure model to a domain entity"""

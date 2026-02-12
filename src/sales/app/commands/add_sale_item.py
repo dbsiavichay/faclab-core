@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from wireup import injectable
+
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleItemAdded
 from src.sales.domain.exceptions import InvalidSaleStatusException
@@ -21,6 +23,7 @@ class AddSaleItemCommand(Command):
     discount: float | None = 0.0
 
 
+@injectable(lifetime="scoped")
 class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
     """Handler para agregar un item a una venta y recalcular totales"""
 

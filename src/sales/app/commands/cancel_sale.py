@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.sales.domain.entities import Sale, SaleItem, SaleStatus
 from src.sales.domain.events import SaleCancelled
 from src.shared.app.commands import Command, CommandHandler
@@ -16,6 +18,7 @@ class CancelSaleCommand(Command):
     reason: str | None = None
 
 
+@injectable(lifetime="scoped")
 class CancelSaleCommandHandler(CommandHandler[CancelSaleCommand, dict]):
     """
     Handler para cancelar una venta.

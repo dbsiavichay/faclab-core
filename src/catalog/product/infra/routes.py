@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from wireup import Injected
 
-from src import get_product_controller
 from src.catalog.product.infra.controllers import CategoryController, ProductController
 from src.catalog.product.infra.validators import (
     CategoryInput,
@@ -66,6 +65,7 @@ class CategoryRouter:
 
 class ProductRouter:
     def __init__(self):
+        """ProductRouter using wireup Injected[] pattern for scoped controller."""
         self.router = APIRouter()
         self._setup_routes()
 
@@ -88,7 +88,7 @@ class ProductRouter:
     def create(
         self,
         new_product: ProductInput,
-        controller: ProductController = Depends(get_product_controller),
+        controller: Injected[ProductController],
     ):
         """Saves a product."""
         return controller.create(new_product)
@@ -97,23 +97,23 @@ class ProductRouter:
         self,
         id: int,
         product: ProductInput,
-        controller: ProductController = Depends(get_product_controller),
+        controller: Injected[ProductController],
     ):
         """Updates a product."""
         return controller.update(id, product)
 
     def delete(
-        self, id: int, controller: ProductController = Depends(get_product_controller)
+        self, id: int, controller: Injected[ProductController]
     ):
         """Deletes a product."""
         return controller.delete(id)
 
-    def get_all(self, controller: ProductController = Depends(get_product_controller)):
+    def get_all(self, controller: Injected[ProductController]):
         """Retrieves all products."""
         return controller.get_all()
 
     def get_by_id(
-        self, id: int, controller: ProductController = Depends(get_product_controller)
+        self, id: int, controller: Injected[ProductController]
     ):
         """Retrieves a specific product by its ID."""
         return controller.get_by_id(id)

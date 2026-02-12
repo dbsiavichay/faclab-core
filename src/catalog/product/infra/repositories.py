@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from wireup import injectable
 
 from src.catalog.product.domain.entities import Category, Product
-from src.catalog.product.infra.mappers import CategoryMapper
+from src.catalog.product.infra.mappers import CategoryMapper, ProductMapper
 from src.catalog.product.infra.models import CategoryModel, ProductModel
 from src.shared.app.repositories import Repository
 from src.shared.infra.repositories import BaseRepository
@@ -34,6 +34,7 @@ def create_category_repository(
     return CategoryRepositoryImpl(session, mapper)
 
 
+@injectable(lifetime="scoped")
 class ProductRepositoryImpl(BaseRepository[Product]):
     """Implementation of the ProductRepository interface using SQLAlchemy
 
@@ -42,3 +43,19 @@ class ProductRepositoryImpl(BaseRepository[Product]):
     """
 
     __model__ = ProductModel
+
+
+@injectable(lifetime="scoped", as_type=Repository[Product])
+def create_product_repository(
+    session: Session, mapper: ProductMapper
+) -> Repository[Product]:
+    """Factory function for creating ProductRepository with generic type binding.
+
+    Args:
+        session: Scoped database session (injected by wireup)
+        mapper: ProductMapper instance (injected by wireup)
+
+    Returns:
+        Repository[Product]: Product repository implementation
+    """
+    return ProductRepositoryImpl(session, mapper)

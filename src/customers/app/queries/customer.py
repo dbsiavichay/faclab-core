@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.customers.app.types import CustomerOutput
 from src.customers.domain.entities import Customer
 from src.customers.infra.repositories import CustomerRepositoryImpl
@@ -12,6 +14,7 @@ class GetAllCustomersQuery(Query):
     pass
 
 
+@injectable(lifetime="scoped")
 class GetAllCustomersQueryHandler(
     QueryHandler[GetAllCustomersQuery, list[CustomerOutput]]
 ):
@@ -28,6 +31,7 @@ class GetCustomerByIdQuery(Query):
     id: int = 0
 
 
+@injectable(lifetime="scoped")
 class GetCustomerByIdQueryHandler(
     QueryHandler[GetCustomerByIdQuery, CustomerOutput | None]
 ):
@@ -46,6 +50,7 @@ class GetCustomerByTaxIdQuery(Query):
     tax_id: str = ""
 
 
+@injectable(lifetime="scoped")
 class GetCustomerByTaxIdQueryHandler(
     QueryHandler[GetCustomerByTaxIdQuery, CustomerOutput | None]
 ):

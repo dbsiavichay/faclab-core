@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.customers.app.types import CustomerContactOutput
 from src.customers.domain.entities import CustomerContact
 from src.customers.infra.repositories import CustomerContactRepositoryImpl
@@ -12,6 +14,7 @@ class GetCustomerContactByIdQuery(Query):
     id: int = 0
 
 
+@injectable(lifetime="scoped")
 class GetCustomerContactByIdQueryHandler(
     QueryHandler[GetCustomerContactByIdQuery, CustomerContactOutput | None]
 ):
@@ -32,6 +35,7 @@ class GetContactsByCustomerIdQuery(Query):
     customer_id: int = 0
 
 
+@injectable(lifetime="scoped")
 class GetContactsByCustomerIdQueryHandler(
     QueryHandler[GetContactsByCustomerIdQuery, list[CustomerContactOutput]]
 ):

@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Query
+from wireup import Injected
 
-from src import get_customer_contact_controller, get_customer_controller
 from src.customers.infra.controllers import (
     CustomerContactController,
     CustomerController,
@@ -16,6 +16,8 @@ from src.customers.infra.validators import (
 
 
 class CustomerRouter:
+    """CustomerRouter using wireup Injected[] pattern for scoped controller."""
+
     def __init__(self):
         self.router = APIRouter()
         self._setup_routes()
@@ -63,79 +65,75 @@ class CustomerRouter:
 
     def create(
         self,
+        controller: Injected[CustomerController],
         new_customer: CustomerInput,
-        controller: CustomerController = Depends(get_customer_controller),
     ):
         """Creates a new customer."""
         return controller.create(new_customer)
 
     def update(
         self,
+        controller: Injected[CustomerController],
         id: int,
         customer: CustomerInput,
-        controller: CustomerController = Depends(get_customer_controller),
     ):
         """Updates a customer."""
         return controller.update(id, customer)
 
     def delete(
         self,
+        controller: Injected[CustomerController],
         id: int,
-        controller: CustomerController = Depends(get_customer_controller),
     ):
         """Deletes a customer."""
         return controller.delete(id)
 
     def get_all(
-        self, controller: CustomerController = Depends(get_customer_controller)
+        self, controller: Injected[CustomerController]
     ):
         """Retrieves all customers."""
         customers = controller.get_all()
         return CustomersResponse(data=customers)
 
     def get_by_id(
-        self, id: int, controller: CustomerController = Depends(get_customer_controller)
+        self, controller: Injected[CustomerController], id: int
     ):
         """Retrieves a specific customer by its ID."""
         return controller.get_by_id(id)
 
     def get_by_tax_id(
         self,
+        controller: Injected[CustomerController],
         tax_id: str = Query(..., description="Tax ID to search for"),
-        controller: CustomerController = Depends(get_customer_controller),
     ):
         """Retrieves a customer by tax ID."""
         return controller.get_by_tax_id(tax_id)
 
     def activate(
-        self, id: int, controller: CustomerController = Depends(get_customer_controller)
+        self, controller: Injected[CustomerController], id: int
     ):
         """Activates a customer."""
         return controller.activate(id)
 
     def deactivate(
-        self, id: int, controller: CustomerController = Depends(get_customer_controller)
+        self, controller: Injected[CustomerController], id: int
     ):
         """Deactivates a customer."""
         return controller.deactivate(id)
 
     def create_contact(
         self,
+        controller: Injected[CustomerContactController],
         customer_id: int,
         new_contact: CustomerContactInput,
-        controller: CustomerContactController = Depends(
-            get_customer_contact_controller
-        ),
     ):
         """Creates a new contact for a customer."""
         return controller.create(customer_id, new_contact)
 
     def get_customer_contacts(
         self,
+        controller: Injected[CustomerContactController],
         customer_id: int,
-        controller: CustomerContactController = Depends(
-            get_customer_contact_controller
-        ),
     ):
         """Retrieves all contacts for a customer."""
         contacts = controller.get_by_customer_id(customer_id)
@@ -143,6 +141,8 @@ class CustomerRouter:
 
 
 class CustomerContactRouter:
+    """CustomerContactRouter using wireup Injected[] pattern for scoped controller."""
+
     def __init__(self):
         self.router = APIRouter()
         self._setup_routes()
@@ -163,31 +163,25 @@ class CustomerContactRouter:
 
     def update(
         self,
+        controller: Injected[CustomerContactController],
         id: int,
         contact: CustomerContactInput,
-        controller: CustomerContactController = Depends(
-            get_customer_contact_controller
-        ),
     ):
         """Updates a customer contact."""
         return controller.update(id, contact)
 
     def delete(
         self,
+        controller: Injected[CustomerContactController],
         id: int,
-        controller: CustomerContactController = Depends(
-            get_customer_contact_controller
-        ),
     ):
         """Deletes a customer contact."""
         return controller.delete(id)
 
     def get_by_id(
         self,
+        controller: Injected[CustomerContactController],
         id: int,
-        controller: CustomerContactController = Depends(
-            get_customer_contact_controller
-        ),
     ):
         """Retrieves a specific customer contact by its ID."""
         return controller.get_by_id(id)
