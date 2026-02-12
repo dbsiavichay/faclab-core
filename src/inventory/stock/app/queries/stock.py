@@ -13,6 +13,8 @@ class GetAllStocksQuery(Query):
     """Query para obtener todos los stocks con filtros opcionales"""
 
     product_id: int | None = None
+    limit: int | None = None
+    offset: int | None = None
 
 
 @injectable(lifetime="scoped")
@@ -21,10 +23,15 @@ class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, list[StockOutput]
         self.repo = repo
 
     def handle(self, query: GetAllStocksQuery) -> list[StockOutput]:
+        # Build filter kwargs
+        filter_kwargs = {}
         if query.product_id is not None:
-            stocks = self.repo.filter_by(product_id=query.product_id)
-        else:
-            stocks = self.repo.get_all()
+            filter_kwargs["product_id"] = query.product_id
+
+        # Apply pagination
+        stocks = self.repo.filter_by(
+            limit=query.limit, offset=query.offset, **filter_kwargs
+        )
         return [stock.dict() for stock in stocks]
 
 

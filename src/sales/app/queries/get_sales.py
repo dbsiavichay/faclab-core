@@ -33,15 +33,12 @@ class GetAllSalesQueryHandler(QueryHandler[GetAllSalesQuery, list[dict]]):
         if query.status is not None:
             filters["status"] = query.status
 
-        # Aplicar filtros
-        if filters:
-            sales = self.repo.filter_by(
-                limit=query.limit,
-                offset=query.offset,
-                **filters,
-            )
-        else:
-            sales = self.repo.get_all()
+        # Aplicar filtros con paginación
+        sales = self.repo.filter_by(
+            limit=query.limit,
+            offset=query.offset,
+            **filters,
+        )
 
         return [sale.dict() for sale in sales]
 
