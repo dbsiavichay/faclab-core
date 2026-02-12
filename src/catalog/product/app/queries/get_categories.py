@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.catalog.product.domain.entities import Category
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
@@ -11,6 +13,7 @@ class GetAllCategoriesQuery(Query):
     offset: int | None = None
 
 
+@injectable(lifetime="scoped")
 class GetAllCategoriesQueryHandler(QueryHandler[GetAllCategoriesQuery, list[dict]]):
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
@@ -25,6 +28,7 @@ class GetCategoryByIdQuery(Query):
     category_id: int
 
 
+@injectable(lifetime="scoped")
 class GetCategoryByIdQueryHandler(QueryHandler[GetCategoryByIdQuery, dict | None]):
     def __init__(self, repo: Repository[Category]):
         self.repo = repo

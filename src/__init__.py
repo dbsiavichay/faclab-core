@@ -98,19 +98,14 @@ container = DependencyContainer()
 
 
 def init_mappers() -> None:
-    """Initializes all mappers."""
+    """Initializes all mappers (legacy custom DI)."""
     # Register the movement mapper
     container.register(
         MovementMapper,
         factory=lambda c: MovementMapper(),
         scope=LifetimeScope.SINGLETON,
     )
-    # Register the category mapper
-    container.register(
-        CategoryMapper,
-        factory=lambda c: CategoryMapper(),
-        scope=LifetimeScope.SINGLETON,
-    )
+    # Category mapper removed - now registered in wireup (Phase 1)
     # Register the product mapper
     container.register(
         ProductMapper,
@@ -156,16 +151,8 @@ def init_mappers() -> None:
 
 
 def init_repositories() -> None:
-    """Initializes all repositories."""
-    # Register the category repository
-    container.register(
-        Repository[Category],
-        factory=lambda c, scope_id=None: CategoryRepositoryImpl(
-            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
-            c.resolve(CategoryMapper),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
+    """Initializes all repositories (legacy custom DI)."""
+    # Category repository removed - now registered in wireup (Phase 1)
     # Register the product repository
     container.register(
         Repository[Product],
@@ -241,54 +228,8 @@ def init_repositories() -> None:
 
 
 def init_handlers() -> None:
-    """Initializes all command and query handlers for CQRS architecture."""
-    # Register Category command handlers
-    container.register(
-        CreateCategoryCommandHandler,
-        factory=lambda c, scope_id=None: CreateCategoryCommandHandler(
-            c.resolve_scoped(Repository[Category], scope_id)
-            if scope_id
-            else c.resolve(Repository[Category])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        UpdateCategoryCommandHandler,
-        factory=lambda c, scope_id=None: UpdateCategoryCommandHandler(
-            c.resolve_scoped(Repository[Category], scope_id)
-            if scope_id
-            else c.resolve(Repository[Category])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        DeleteCategoryCommandHandler,
-        factory=lambda c, scope_id=None: DeleteCategoryCommandHandler(
-            c.resolve_scoped(Repository[Category], scope_id)
-            if scope_id
-            else c.resolve(Repository[Category])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register Category query handlers
-    container.register(
-        GetAllCategoriesQueryHandler,
-        factory=lambda c, scope_id=None: GetAllCategoriesQueryHandler(
-            c.resolve_scoped(Repository[Category], scope_id)
-            if scope_id
-            else c.resolve(Repository[Category])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetCategoryByIdQueryHandler,
-        factory=lambda c, scope_id=None: GetCategoryByIdQueryHandler(
-            c.resolve_scoped(Repository[Category], scope_id)
-            if scope_id
-            else c.resolve(Repository[Category])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
+    """Initializes all command and query handlers for CQRS architecture (legacy custom DI)."""
+    # Category handlers removed - now registered in wireup (Phase 1)
     # Register Product command handlers
     container.register(
         CreateProductCommandHandler,
@@ -626,29 +567,8 @@ def init_handlers() -> None:
 
 
 def init_controllers() -> None:
-    """Initializes all controllers."""
-    # Register the category controller
-    container.register(
-        CategoryController,
-        factory=lambda c, scope_id=None: CategoryController(
-            c.resolve_scoped(CreateCategoryCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(CreateCategoryCommandHandler),
-            c.resolve_scoped(UpdateCategoryCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(UpdateCategoryCommandHandler),
-            c.resolve_scoped(DeleteCategoryCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(DeleteCategoryCommandHandler),
-            c.resolve_scoped(GetAllCategoriesQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetAllCategoriesQueryHandler),
-            c.resolve_scoped(GetCategoryByIdQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetCategoryByIdQueryHandler),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
+    """Initializes all controllers (legacy custom DI)."""
+    # CategoryController removed - now registered in wireup (Phase 1)
     # Register the product controller
     container.register(
         ProductController,
@@ -795,8 +715,72 @@ def init_controllers() -> None:
     )
 
 
+def create_wireup_container():
+    """Creates and configures wireup container with all injectables.
+
+    This function will be populated during Phase 1+ migration with decorated
+    classes from each module. For Phase 0, it establishes the infrastructure.
+
+    Returns:
+        Container: Configured wireup dependency injection container
+    """
+    from wireup import create_sync_container
+
+    from src.shared.infra.db_session import configure_session_factory, get_db_session
+
+    # Phase 1: Import category module components
+    from src.catalog.product.app.commands.create_category import (
+        CreateCategoryCommandHandler,
+    )
+    from src.catalog.product.app.commands.delete_category import (
+        DeleteCategoryCommandHandler,
+    )
+    from src.catalog.product.app.commands.update_category import (
+        UpdateCategoryCommandHandler,
+    )
+    from src.catalog.product.app.queries.get_categories import (
+        GetAllCategoriesQueryHandler,
+        GetCategoryByIdQueryHandler,
+    )
+    from src.catalog.product.infra.controllers import CategoryController
+    from src.catalog.product.infra.mappers import CategoryMapper
+    from src.catalog.product.infra.repositories import create_category_repository
+
+    # Configure DB connection for wireup session factory
+    db_connection_string = config.DB_CONNECTION_STRING
+    if not db_connection_string:
+        raise ValueError("Database connection string not found in environment")
+
+    configure_session_factory(db_connection_string)
+
+    # Create container with injectables
+    # Phase 0: Only DB session factory registered
+    # Phase 1: Category module components added (router uses Injected[] pattern)
+    # Phase 2+: Will add remaining modules
+    container = create_sync_container(
+        injectables=[
+            # Shared infrastructure
+            get_db_session,  # Scoped session factory with generator cleanup
+            # Category module (Phase 1)
+            CategoryMapper,  # Singleton mapper
+            create_category_repository,  # Scoped repository factory
+            CreateCategoryCommandHandler,  # Scoped command handler
+            UpdateCategoryCommandHandler,  # Scoped command handler
+            DeleteCategoryCommandHandler,  # Scoped command handler
+            GetAllCategoriesQueryHandler,  # Scoped query handler
+            GetCategoryByIdQueryHandler,  # Scoped query handler
+            CategoryController,  # Scoped controller
+        ]
+    )
+
+    return container
+
+
 def initialize() -> None:
-    """Initializes all application dependencies."""
+    """Initializes all application dependencies (custom DI - legacy).
+
+    Note: This function will be removed in Phase 3 after full wireup migration.
+    """
 
     db_connection_string = config.DB_CONNECTION_STRING
     if not db_connection_string:
@@ -818,18 +802,7 @@ def get_request_scope_id():
     return str(uuid.uuid4())
 
 
-# Dependency to get the category controller in a request scope
-def get_category_controller(
-    scope_id: str = Depends(get_request_scope_id),
-) -> CategoryController:
-    """Gets the category controller for a specific request."""
-    controller = container.resolve_scoped(CategoryController, scope_id)
-    try:
-        yield controller
-    finally:
-        # Close the scope when the request ends
-        container.close_scope(scope_id)
-
+# get_category_controller removed - CategoryRouter now uses wireup (Phase 1)
 
 # Dependency to get the product controller in a request scope
 def get_product_controller(

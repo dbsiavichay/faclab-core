@@ -1,7 +1,7 @@
-
 from fastapi import APIRouter, Depends
+from wireup import Injected
 
-from src import get_category_controller, get_product_controller
+from src import get_product_controller
 from src.catalog.product.infra.controllers import CategoryController, ProductController
 from src.catalog.product.infra.validators import (
     CategoryInput,
@@ -14,6 +14,7 @@ from src.catalog.product.infra.validators import (
 
 class CategoryRouter:
     def __init__(self):
+        """CategoryRouter using wireup Injected[] pattern for scoped controller."""
         self.router = APIRouter()
         self._setup_routes()
 
@@ -36,7 +37,7 @@ class CategoryRouter:
     def create(
         self,
         new_category: CategoryInput,
-        controller: CategoryController = Depends(get_category_controller),
+        controller: Injected[CategoryController],
     ):
         """Saves a category."""
         return controller.create(new_category)
@@ -45,28 +46,20 @@ class CategoryRouter:
         self,
         id: int,
         category: CategoryInput,
-        controller: CategoryController = Depends(get_category_controller),
+        controller: Injected[CategoryController],
     ):
         """Updates a category."""
         return controller.update(id, category)
 
-    def delete(
-        self,
-        id: int,
-        controller: CategoryController = Depends(get_category_controller),
-    ):
+    def delete(self, id: int, controller: Injected[CategoryController]):
         """Deletes a category."""
         return controller.delete(id)
 
-    def get_all(
-        self, controller: CategoryController = Depends(get_category_controller)
-    ):
+    def get_all(self, controller: Injected[CategoryController]):
         """Retrieves all categories."""
         return controller.get_all()
 
-    def get_by_id(
-        self, id: int, controller: CategoryController = Depends(get_category_controller)
-    ):
+    def get_by_id(self, id: int, controller: Injected[CategoryController]):
         """Retrieves a specific category by its ID."""
         return controller.get_by_id(id)
 

@@ -1,3 +1,4 @@
+from wireup import injectable
 
 from src.catalog.product.app.commands import (
     CreateCategoryCommand,
@@ -34,6 +35,7 @@ from src.catalog.product.infra.validators import (
 from src.shared.infra.exceptions import NotFoundException
 
 
+@injectable(lifetime="scoped")
 class CategoryController:
     def __init__(
         self,

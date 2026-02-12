@@ -3,8 +3,9 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from wireup.integration.fastapi import setup as wireup_fastapi_setup
 
-from src import initialize
+from src import create_wireup_container, initialize
 from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.movement.infra.routes import MovementRouter
@@ -12,7 +13,21 @@ from src.inventory.stock.infra.routes import StockRouter
 from src.sales.infra.routes import SaleRouter
 from src.shared.infra.middlewares import ErrorHandlingMiddleware
 
+logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
+
+origins = ["http://localhost:3000", "http://localhost:5173"]
+
+# Phase 0: Initialize custom DI (legacy - will be removed in Phase 3)
+initialize()
+
+# Phase 0: Initialize wireup container
+wireup_container = create_wireup_container()
+
+# Phase 1: CategoryRouter uses wireup Injected[] pattern for scoped controller
 category_router = CategoryRouter()
+
+# Phase 0: Other routers still use custom DI via Depends(get_*_controller)
+# Phase 2+: Will migrate remaining routers to wireup
 product_router = ProductRouter()
 stock_router = StockRouter()
 movement_router = MovementRouter()
@@ -20,15 +35,11 @@ customer_router = CustomerRouter()
 customer_contact_router = CustomerContactRouter()
 sale_router = SaleRouter()
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
-
-
-origins = ["http://localhost:3000", "http://localhost:5173"]
-
-initialize()
-
 app = FastAPI()
 
+# Setup wireup FastAPI integration for scope management
+# This establishes request-scoped lifecycle for wireup dependencies
+wireup_fastapi_setup(wireup_container, app)
 
 app.add_middleware(
     CORSMiddleware,
