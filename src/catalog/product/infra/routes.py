@@ -13,7 +13,6 @@ from src.catalog.product.infra.validators import (
 
 class CategoryRouter:
     def __init__(self):
-        """CategoryRouter using wireup Injected[] pattern for scoped controller."""
         self.router = APIRouter()
         self._setup_routes()
 
@@ -65,7 +64,6 @@ class CategoryRouter:
 
 class ProductRouter:
     def __init__(self):
-        """ProductRouter using wireup Injected[] pattern for scoped controller."""
         self.router = APIRouter()
         self._setup_routes()
 

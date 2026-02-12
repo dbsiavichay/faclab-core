@@ -8,7 +8,6 @@ from .validators import StockQueryParams, StockResponse
 
 class StockRouter:
     def __init__(self):
-        """StockRouter using wireup Injected[] pattern for scoped controller."""
         self.router = APIRouter()
         self._setup_routes()
 

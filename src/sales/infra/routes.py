@@ -17,8 +17,6 @@ from src.sales.infra.validators import (
 
 
 class SaleRouter:
-    """SaleRouter using wireup Injected[] pattern for scoped controller."""
-
     def __init__(self):
         self.router = APIRouter()
         self._setup_routes()

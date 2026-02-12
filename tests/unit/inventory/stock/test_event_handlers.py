@@ -21,7 +21,7 @@ def clear_event_bus():
     EventBus.clear()
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_handle_movement_created_creates_new_stock(mock_container):
     """Test that MovementCreated event creates new stock when none exists"""
     # Arrange
@@ -31,7 +31,7 @@ def test_handle_movement_created_creates_new_stock(mock_container):
     new_stock = Stock(id=1, product_id=10, quantity=5)
     mock_repo.create.return_value = new_stock
 
-    mock_container.resolve.return_value = mock_repo
+    mock_container.get.return_value = mock_repo
 
     events_received = []
 
@@ -69,7 +69,7 @@ def test_handle_movement_created_creates_new_stock(mock_container):
     assert stock_event.quantity == 5
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_handle_movement_created_updates_existing_stock(mock_container):
     """Test that MovementCreated event updates existing stock"""
     # Arrange
@@ -80,7 +80,7 @@ def test_handle_movement_created_updates_existing_stock(mock_container):
     updated_stock = Stock(id=1, product_id=10, quantity=105)
     mock_repo.update.return_value = updated_stock
 
-    mock_container.resolve.return_value = mock_repo
+    mock_container.get.return_value = mock_repo
 
     events_received = []
 
@@ -117,7 +117,7 @@ def test_handle_movement_created_updates_existing_stock(mock_container):
     assert stock_event.new_quantity == 105
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_handle_movement_created_decreases_stock_on_out(mock_container):
     """Test that OUT movement decreases stock"""
     # Arrange
@@ -128,7 +128,7 @@ def test_handle_movement_created_decreases_stock_on_out(mock_container):
     updated_stock = Stock(id=1, product_id=10, quantity=95)
     mock_repo.update.return_value = updated_stock
 
-    mock_container.resolve.return_value = mock_repo
+    mock_container.get.return_value = mock_repo
 
     event = MovementCreated(
         aggregate_id=3,
@@ -149,7 +149,7 @@ def test_handle_movement_created_decreases_stock_on_out(mock_container):
     assert updated.quantity == 95
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_handle_movement_created_insufficient_stock_raises(mock_container):
     """Test that insufficient stock raises exception"""
     # Arrange
@@ -157,7 +157,7 @@ def test_handle_movement_created_insufficient_stock_raises(mock_container):
     mock_repo = Mock()
     mock_repo.first.return_value = existing_stock
 
-    mock_container.resolve.return_value = mock_repo
+    mock_container.get.return_value = mock_repo
 
     event = MovementCreated(
         aggregate_id=4,
@@ -175,7 +175,7 @@ def test_handle_movement_created_insufficient_stock_raises(mock_container):
     mock_repo.update.assert_not_called()
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_handle_movement_created_publishes_stock_created_event(mock_container):
     """Test that StockCreated event is published when creating new stock"""
     # Arrange
@@ -185,7 +185,7 @@ def test_handle_movement_created_publishes_stock_created_event(mock_container):
     new_stock = Stock(id=1, product_id=10, quantity=5, location="A1")
     mock_repo.create.return_value = new_stock
 
-    mock_container.resolve.return_value = mock_repo
+    mock_container.get.return_value = mock_repo
 
     events_received = []
 
@@ -213,7 +213,7 @@ def test_handle_movement_created_publishes_stock_created_event(mock_container):
     assert stock_event.location == "A1"
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_handle_movement_created_publishes_stock_updated_event(mock_container):
     """Test that StockUpdated event is published when updating stock"""
     # Arrange
@@ -224,7 +224,7 @@ def test_handle_movement_created_publishes_stock_updated_event(mock_container):
     updated_stock = Stock(id=1, product_id=10, quantity=105)
     mock_repo.update.return_value = updated_stock
 
-    mock_container.resolve.return_value = mock_repo
+    mock_container.get.return_value = mock_repo
 
     events_received = []
 
@@ -252,7 +252,7 @@ def test_handle_movement_created_publishes_stock_updated_event(mock_container):
     assert stock_event.new_quantity == 105
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_handle_movement_created_with_location(mock_container):
     """Test creating stock with location"""
     # Arrange
@@ -262,7 +262,7 @@ def test_handle_movement_created_with_location(mock_container):
     new_stock = Stock(id=1, product_id=10, quantity=5, location="Warehouse A")
     mock_repo.create.return_value = new_stock
 
-    mock_container.resolve.return_value = mock_repo
+    mock_container.get.return_value = mock_repo
 
     event = MovementCreated(
         aggregate_id=1,

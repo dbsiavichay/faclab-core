@@ -16,8 +16,6 @@ from src.customers.infra.validators import (
 
 
 class CustomerRouter:
-    """CustomerRouter using wireup Injected[] pattern for scoped controller."""
-
     def __init__(self):
         self.router = APIRouter()
         self._setup_routes()
@@ -141,8 +139,6 @@ class CustomerRouter:
 
 
 class CustomerContactRouter:
-    """CustomerContactRouter using wireup Injected[] pattern for scoped controller."""
-
     def __init__(self):
         self.router = APIRouter()
         self._setup_routes()

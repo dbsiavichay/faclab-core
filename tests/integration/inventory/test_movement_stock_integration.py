@@ -34,7 +34,7 @@ def clear_event_bus():
     EventBus.clear()
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_create_movement_triggers_stock_update_via_event(mock_stock_container):
     """
     Integration test: Creating a movement publishes MovementCreated,
@@ -50,7 +50,7 @@ def test_create_movement_triggers_stock_update_via_event(mock_stock_container):
     new_stock = Stock(id=1, product_id=10, quantity=10)
     mock_stock_repo.create.return_value = new_stock
 
-    mock_stock_container.resolve.return_value = mock_stock_repo
+    mock_stock_container.get.return_value = mock_stock_repo
 
     # Movement to create
     created_movement = Movement(
@@ -99,7 +99,7 @@ def test_create_movement_triggers_stock_update_via_event(mock_stock_container):
     assert stock_events[0].product_id == 10
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
     """
     Integration test: SaleConfirmed → CreateMovement → MovementCreated → Stock updated
@@ -155,7 +155,7 @@ def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
             return mock_stock_repo
         raise ValueError(f"Unexpected resolve: {type_class}")
 
-    mock_container.resolve.side_effect = resolve_side_effect
+    mock_container.get.side_effect = resolve_side_effect
 
     # Track events
     stock_events = []
@@ -195,7 +195,7 @@ def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
     assert stock_events[0].new_quantity == 95
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_sale_cancelled_reverts_stock_via_event(mock_container):
     """
     Integration test: SaleCancelled (was_confirmed=True) → CreateMovement IN → Stock restored
@@ -252,7 +252,7 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
             return mock_stock_repo
         raise ValueError(f"Unexpected resolve: {type_class}")
 
-    mock_container.resolve.side_effect = resolve_side_effect
+    mock_container.get.side_effect = resolve_side_effect
 
     # Track events
     stock_events = []
@@ -293,7 +293,7 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
     assert stock_events[0].new_quantity == 100
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_sale_cancelled_draft_no_stock_change(mock_inventory_container):
     """
     Integration test: SaleCancelled (was_confirmed=False) → No movement created
@@ -303,7 +303,7 @@ def test_sale_cancelled_draft_no_stock_change(mock_inventory_container):
     import src.inventory.infra.event_handlers  # noqa: F401
 
     mock_command_handler = Mock()
-    mock_inventory_container.resolve.return_value = mock_command_handler
+    mock_inventory_container.get.return_value = mock_command_handler
 
     # Sale cancelled event (was NOT confirmed)
     cancel_event = SaleCancelled(
@@ -323,7 +323,7 @@ def test_sale_cancelled_draft_no_stock_change(mock_inventory_container):
     mock_command_handler.handle.assert_not_called()
 
 
-@patch("src.container")
+@patch("src.wireup_container")
 def test_multiple_movements_accumulate_stock(mock_stock_container):
     """
     Integration test: Multiple movements update stock cumulatively
@@ -351,7 +351,7 @@ def test_multiple_movements_accumulate_stock(mock_stock_container):
         Stock(id=1, product_id=10, quantity=15),
     ]
 
-    mock_stock_container.resolve.return_value = mock_stock_repo
+    mock_stock_container.get.return_value = mock_stock_repo
 
     handler = CreateMovementCommandHandler(mock_movement_repo)
 
