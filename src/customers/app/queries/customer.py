@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.customers.app.types import CustomerOutput
 from src.customers.domain.entities import Customer
@@ -30,7 +29,7 @@ class GetCustomerByIdQuery(Query):
 
 
 class GetCustomerByIdQueryHandler(
-    QueryHandler[GetCustomerByIdQuery, Optional[CustomerOutput]]
+    QueryHandler[GetCustomerByIdQuery, CustomerOutput | None]
 ):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
@@ -48,7 +47,7 @@ class GetCustomerByTaxIdQuery(Query):
 
 
 class GetCustomerByTaxIdQueryHandler(
-    QueryHandler[GetCustomerByTaxIdQuery, Optional[CustomerOutput]]
+    QueryHandler[GetCustomerByTaxIdQuery, CustomerOutput | None]
 ):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo

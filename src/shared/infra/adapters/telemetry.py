@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from fastapi import FastAPI
 from opentelemetry import trace
@@ -21,7 +20,7 @@ logger = StructLogger()
 
 
 class OpenTelemetry:
-    _instance: Optional["OpenTelemetry"] = None
+    _instance: "OpenTelemetry" | None = None
     _initialized: bool = False
 
     def __new__(cls):

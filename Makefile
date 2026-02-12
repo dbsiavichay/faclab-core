@@ -14,7 +14,7 @@ dev:
 down:  ## Stop the docker containers
 	docker compose down
 
-tests:  ## Run tests
+test:  ## Run tests
 	docker compose run --no-deps --rm api pytest --cov='src'
 
 lint:  ## Fix linter errors

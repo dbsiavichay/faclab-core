@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.sales.domain.entities import Sale
 from src.shared.app.queries import Query, QueryHandler
@@ -51,7 +50,7 @@ class GetSaleByIdQuery(Query):
     sale_id: int
 
 
-class GetSaleByIdQueryHandler(QueryHandler[GetSaleByIdQuery, Optional[dict]]):
+class GetSaleByIdQueryHandler(QueryHandler[GetSaleByIdQuery, dict | None]):
     """Handler para obtener una venta por ID"""
 
     def __init__(self, repo: Repository[Sale]):

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.inventory.stock.app.types import StockOutput
 from src.inventory.stock.domain.entities import Stock
@@ -34,7 +33,7 @@ class GetStockByIdQuery(Query):
 
 
 class GetStockByIdQueryHandler(
-    QueryHandler[GetStockByIdQuery, Optional[StockOutput]]
+    QueryHandler[GetStockByIdQuery, StockOutput | None]
 ):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
@@ -54,7 +53,7 @@ class GetStockByProductQuery(Query):
 
 
 class GetStockByProductQueryHandler(
-    QueryHandler[GetStockByProductQuery, Optional[StockOutput]]
+    QueryHandler[GetStockByProductQuery, StockOutput | None]
 ):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo

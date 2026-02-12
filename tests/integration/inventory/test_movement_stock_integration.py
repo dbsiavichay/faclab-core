@@ -24,6 +24,12 @@ def clear_event_bus():
     EventBus.clear()
     # Register the stock event handler
     EventBus.subscribe(MovementCreated, handle_movement_created)
+    # Import event handlers to register SaleConfirmed/SaleCancelled handlers
+    # (imports after first time are cached, but we need to ensure they're registered)
+    import importlib
+
+    import src.inventory.infra.event_handlers
+    importlib.reload(src.inventory.infra.event_handlers)
     yield
     EventBus.clear()
 
@@ -94,18 +100,13 @@ def test_create_movement_triggers_stock_update_via_event(mock_stock_container):
 
 
 @patch("src.container")
-@patch("src.container")
-def test_sale_confirmed_creates_movement_and_updates_stock(
-    mock_inventory_container, mock_stock_container
-):
+def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
     """
     Integration test: SaleConfirmed → CreateMovement → MovementCreated → Stock updated
     """
     # Arrange
-    from src.inventory.infra.event_handlers import handle_sale_confirmed
-
-    # Register the sale confirmed handler
-    EventBus.subscribe(SaleConfirmed, handle_sale_confirmed)
+    # Import registers handler via @event_handler decorator
+    import src.inventory.infra.event_handlers  # noqa: F401
 
     mock_movement_repo = Mock()
     mock_stock_repo = Mock()
@@ -117,8 +118,6 @@ def test_sale_confirmed_creates_movement_and_updates_stock(
     updated_stock = Stock(id=1, product_id=10, quantity=95)
     mock_stock_repo.update.return_value = updated_stock
 
-    mock_stock_container.resolve.return_value = mock_stock_repo
-
     # Movement created by sale confirmation
     created_movement = Movement(
         id=1,
@@ -129,10 +128,34 @@ def test_sale_confirmed_creates_movement_and_updates_stock(
     )
     mock_movement_repo.create.return_value = created_movement
 
-    # Mock command handler
+    # Mock command handler that publishes MovementCreated event like the real one
+    def mock_handle(command):
+        # Simulate what the real handler does:
+        # 1. Create movement (mocked via repo)
+        # 2. Publish MovementCreated event
+        EventBus.publish(
+            MovementCreated(
+                aggregate_id=created_movement.id,
+                product_id=created_movement.product_id,
+                quantity=created_movement.quantity,
+                type=created_movement.type.value,
+                reason=created_movement.reason,
+            )
+        )
+        return created_movement.dict()
+
     mock_command_handler = Mock()
-    mock_command_handler.handle.return_value = created_movement.dict()
-    mock_inventory_container.resolve.return_value = mock_command_handler
+    mock_command_handler.handle.side_effect = mock_handle
+
+    # Container returns different things based on what's resolved
+    def resolve_side_effect(type_class, scope_id=None):
+        if type_class == CreateMovementCommandHandler:
+            return mock_command_handler
+        elif type_class.__name__ == "Repository":  # Repository[Stock]
+            return mock_stock_repo
+        raise ValueError(f"Unexpected resolve: {type_class}")
+
+    mock_container.resolve.side_effect = resolve_side_effect
 
     # Track events
     stock_events = []
@@ -173,17 +196,13 @@ def test_sale_confirmed_creates_movement_and_updates_stock(
 
 
 @patch("src.container")
-@patch("src.container")
-def test_sale_cancelled_reverts_stock_via_event(
-    mock_inventory_container, mock_stock_container
-):
+def test_sale_cancelled_reverts_stock_via_event(mock_container):
     """
     Integration test: SaleCancelled (was_confirmed=True) → CreateMovement IN → Stock restored
     """
     # Arrange
-    from src.inventory.infra.event_handlers import handle_sale_cancelled
-
-    EventBus.subscribe(SaleCancelled, handle_sale_cancelled)
+    # Import registers handler via @event_handler decorator
+    import src.inventory.infra.event_handlers  # noqa: F401
 
     mock_movement_repo = Mock()
     mock_stock_repo = Mock()
@@ -196,8 +215,6 @@ def test_sale_cancelled_reverts_stock_via_event(
     restored_stock = Stock(id=1, product_id=10, quantity=100)
     mock_stock_repo.update.return_value = restored_stock
 
-    mock_stock_container.resolve.return_value = mock_stock_repo
-
     # Reversal movement
     reversal_movement = Movement(
         id=2,
@@ -208,10 +225,34 @@ def test_sale_cancelled_reverts_stock_via_event(
     )
     mock_movement_repo.create.return_value = reversal_movement
 
-    # Mock command handler
+    # Mock command handler that publishes MovementCreated event like the real one
+    def mock_handle(command):
+        # Simulate what the real handler does:
+        # 1. Create movement (mocked via repo)
+        # 2. Publish MovementCreated event
+        EventBus.publish(
+            MovementCreated(
+                aggregate_id=reversal_movement.id,
+                product_id=reversal_movement.product_id,
+                quantity=reversal_movement.quantity,
+                type=reversal_movement.type.value,
+                reason=reversal_movement.reason,
+            )
+        )
+        return reversal_movement.dict()
+
     mock_command_handler = Mock()
-    mock_command_handler.handle.return_value = reversal_movement.dict()
-    mock_inventory_container.resolve.return_value = mock_command_handler
+    mock_command_handler.handle.side_effect = mock_handle
+
+    # Container returns different things based on what's resolved
+    def resolve_side_effect(type_class, scope_id=None):
+        if type_class == CreateMovementCommandHandler:
+            return mock_command_handler
+        elif type_class.__name__ == "Repository":  # Repository[Stock]
+            return mock_stock_repo
+        raise ValueError(f"Unexpected resolve: {type_class}")
+
+    mock_container.resolve.side_effect = resolve_side_effect
 
     # Track events
     stock_events = []
@@ -258,9 +299,8 @@ def test_sale_cancelled_draft_no_stock_change(mock_inventory_container):
     Integration test: SaleCancelled (was_confirmed=False) → No movement created
     """
     # Arrange
-    from src.inventory.infra.event_handlers import handle_sale_cancelled
-
-    EventBus.subscribe(SaleCancelled, handle_sale_cancelled)
+    # Import registers handler via @event_handler decorator
+    import src.inventory.infra.event_handlers  # noqa: F401
 
     mock_command_handler = Mock()
     mock_inventory_container.resolve.return_value = mock_command_handler

@@ -3,7 +3,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SaleItemInput(BaseModel):
@@ -47,6 +47,8 @@ class CancelSaleInput(BaseModel):
 class SaleItemResponse(BaseModel):
     """Schema para respuesta de un item de venta"""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     sale_id: int
     product_id: int
@@ -55,12 +57,11 @@ class SaleItemResponse(BaseModel):
     discount: Decimal
     subtotal: Decimal
 
-    class Config:
-        from_attributes = True
-
 
 class PaymentResponse(BaseModel):
     """Schema para respuesta de un pago"""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     sale_id: int
@@ -71,12 +72,11 @@ class PaymentResponse(BaseModel):
     notes: str | None
     created_at: datetime | None
 
-    class Config:
-        from_attributes = True
-
 
 class SaleResponse(BaseModel):
     """Schema para respuesta de una venta"""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     customer_id: int
@@ -92,15 +92,11 @@ class SaleResponse(BaseModel):
     created_at: datetime | None
     updated_at: datetime | None
 
-    class Config:
-        from_attributes = True
-
 
 class SaleDetailResponse(SaleResponse):
     """Schema para respuesta de una venta con items y pagos"""
 
+    model_config = ConfigDict(from_attributes=True)
+
     items: list[SaleItemResponse] = []
     payments: list[PaymentResponse] = []
-
-    class Config:
-        from_attributes = True

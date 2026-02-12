@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from src.inventory.movement.app.types import MovementOutput
 from src.inventory.movement.domain.entities import Movement
@@ -40,7 +39,7 @@ class GetMovementByIdQuery(Query):
 
 
 class GetMovementByIdQueryHandler(
-    QueryHandler[GetMovementByIdQuery, Optional[MovementOutput]]
+    QueryHandler[GetMovementByIdQuery, MovementOutput | None]
 ):
     def __init__(self, repo: Repository[Movement]):
         self.repo = repo
