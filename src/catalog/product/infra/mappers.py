@@ -1,10 +1,13 @@
 from typing import Any
 
+from wireup import injectable
+
 from src.catalog.product.domain.entities import Category, Product
 from src.catalog.product.infra.models import CategoryModel, ProductModel
 from src.shared.infra.mappers import Mapper
 
 
+@injectable  # Singleton by default (stateless mapper)
 class CategoryMapper(Mapper[Category, CategoryModel]):
     def to_entity(self, model: CategoryModel | None) -> Category | None:
         """Converts an infrastructure model to a domain entity"""
