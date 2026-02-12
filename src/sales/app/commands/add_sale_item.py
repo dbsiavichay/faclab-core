@@ -86,4 +86,7 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
             )
         )
 
-        return sale_item.dict()
+        # Incluir el subtotal calculado en la respuesta
+        result = sale_item.dict()
+        result["subtotal"] = float(sale_item.subtotal)
+        return result

@@ -21,16 +21,20 @@ from src.shared.infra.events.event_bus import EventBus
 @pytest.fixture(autouse=True)
 def clear_event_bus():
     """Clear event bus before each test"""
+    # Clear the event bus first
     EventBus.clear()
-    # Register the stock event handler
+
+    # Register the stock event handler manually
     EventBus.subscribe(MovementCreated, handle_movement_created)
-    # Import event handlers to register SaleConfirmed/SaleCancelled handlers
-    # (imports after first time are cached, but we need to ensure they're registered)
+
+    # Reload event handlers module to register SaleConfirmed/SaleCancelled handlers
+    # This ensures @event_handler decorators run and register the handlers
     import importlib
 
     import src.inventory.infra.event_handlers
 
     importlib.reload(src.inventory.infra.event_handlers)
+
     yield
     EventBus.clear()
 
@@ -109,9 +113,7 @@ def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
     Integration test: SaleConfirmed → CreateMovement → MovementCreated → Stock updated
     """
     # Arrange
-    # Import registers handler via @event_handler decorator
-    import src.inventory.infra.event_handlers  # noqa: F401
-
+    # Handlers are already registered by the fixture
     mock_movement_repo = Mock()
     mock_stock_repo = Mock()
 
@@ -151,19 +153,19 @@ def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
     mock_command_handler = Mock()
     mock_command_handler.handle.side_effect = mock_handle
 
-    # Container returns different things based on what's resolved
-    def resolve_side_effect(type_class, scope_id=None):
+    # Mock the scope context manager
+    # The scope.get() needs to return different things based on what's resolved:
+    # - CreateMovementCommandHandler for sales event handlers
+    # - Repository[Stock] for stock event handlers
+    def scope_get_side_effect(type_class):
         if type_class == CreateMovementCommandHandler:
             return mock_command_handler
         elif type_class.__name__ == "Repository":  # Repository[Stock]
             return mock_stock_repo
         raise ValueError(f"Unexpected resolve: {type_class}")
 
-    mock_container.get.side_effect = resolve_side_effect
-
-    # Mock the scope context manager
     mock_scope = Mock()
-    mock_scope.get.return_value = mock_stock_repo
+    mock_scope.get.side_effect = scope_get_side_effect
     mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     # Track events
@@ -210,9 +212,7 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
     Integration test: SaleCancelled (was_confirmed=True) → CreateMovement IN → Stock restored
     """
     # Arrange
-    # Import registers handler via @event_handler decorator
-    import src.inventory.infra.event_handlers  # noqa: F401
-
+    # Handlers are already registered by the fixture
     mock_movement_repo = Mock()
     mock_stock_repo = Mock()
 
@@ -253,19 +253,19 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
     mock_command_handler = Mock()
     mock_command_handler.handle.side_effect = mock_handle
 
-    # Container returns different things based on what's resolved
-    def resolve_side_effect(type_class, scope_id=None):
+    # Mock the scope context manager
+    # The scope.get() needs to return different things based on what's resolved:
+    # - CreateMovementCommandHandler for sales event handlers
+    # - Repository[Stock] for stock event handlers
+    def scope_get_side_effect(type_class):
         if type_class == CreateMovementCommandHandler:
             return mock_command_handler
         elif type_class.__name__ == "Repository":  # Repository[Stock]
             return mock_stock_repo
         raise ValueError(f"Unexpected resolve: {type_class}")
 
-    mock_container.get.side_effect = resolve_side_effect
-
-    # Mock the scope context manager
     mock_scope = Mock()
-    mock_scope.get.return_value = mock_stock_repo
+    mock_scope.get.side_effect = scope_get_side_effect
     mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
 
     # Track events
@@ -313,9 +313,7 @@ def test_sale_cancelled_draft_no_stock_change(mock_inventory_container):
     Integration test: SaleCancelled (was_confirmed=False) → No movement created
     """
     # Arrange
-    # Import registers handler via @event_handler decorator
-    import src.inventory.infra.event_handlers  # noqa: F401
-
+    # Handlers are already registered by the fixture
     mock_command_handler = Mock()
     mock_inventory_container.get.return_value = mock_command_handler
 

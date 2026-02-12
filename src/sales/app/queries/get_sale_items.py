@@ -24,4 +24,10 @@ class GetSaleItemsQueryHandler(QueryHandler[GetSaleItemsQuery, list[dict]]):
     def handle(self, query: GetSaleItemsQuery) -> list[dict]:
         """Obtiene todos los items de una venta específica"""
         items = self.repo.filter_by(sale_id=query.sale_id)
-        return [item.dict() for item in items]
+        # Incluir el subtotal calculado en cada item
+        result = []
+        for item in items:
+            item_dict = item.dict()
+            item_dict["subtotal"] = float(item.subtotal)
+            result.append(item_dict)
+        return result
