@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from wireup.integration.fastapi import setup as wireup_fastapi_setup
 
-from src import create_wireup_container, initialize
+import src
+from src import create_wireup_container
 from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.movement.infra.routes import MovementRouter
@@ -17,29 +18,20 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
 
 origins = ["http://localhost:3000", "http://localhost:5173"]
 
-# Phase 0: Initialize custom DI (legacy - will be removed in Phase 3)
-initialize()
-
-# Phase 0: Initialize wireup container
 wireup_container = create_wireup_container()
+src.wireup_container = wireup_container
 
-# Phase 1: CategoryRouter uses wireup Injected[] pattern for scoped controller
+app = FastAPI()
+
+wireup_fastapi_setup(wireup_container, app)
+
 category_router = CategoryRouter()
-
-# Phase 0: Other routers still use custom DI via Depends(get_*_controller)
-# Phase 2+: Will migrate remaining routers to wireup
 product_router = ProductRouter()
 stock_router = StockRouter()
 movement_router = MovementRouter()
 customer_router = CustomerRouter()
 customer_contact_router = CustomerContactRouter()
 sale_router = SaleRouter()
-
-app = FastAPI()
-
-# Setup wireup FastAPI integration for scope management
-# This establishes request-scoped lifecycle for wireup dependencies
-wireup_fastapi_setup(wireup_container, app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -71,6 +63,5 @@ async def root():
 if __name__ == "__main__":
     import uvicorn
 
-    # Iniciar el servidor
-    logging.info("Starting Warehouse API with dependency injection container")
+    logging.info("Starting Warehouse API")
     uvicorn.run(app, host="0.0.0.0", port=3000)

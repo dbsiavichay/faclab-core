@@ -25,8 +25,8 @@ def create_category_repository(
     """Factory function for creating CategoryRepository with generic type binding.
 
     Args:
-        session: Scoped database session (injected by wireup)
-        mapper: CategoryMapper instance (injected by wireup)
+        session: Scoped database session
+        mapper: CategoryMapper instance
 
     Returns:
         Repository[Category]: Category repository implementation
@@ -52,8 +52,8 @@ def create_product_repository(
     """Factory function for creating ProductRepository with generic type binding.
 
     Args:
-        session: Scoped database session (injected by wireup)
-        mapper: ProductMapper instance (injected by wireup)
+        session: Scoped database session
+        mapper: ProductMapper instance
 
     Returns:
         Repository[Product]: Product repository implementation

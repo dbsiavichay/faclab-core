@@ -25,13 +25,13 @@ def handle_sale_confirmed(event: SaleConfirmed) -> None:
     logger.info(f"Handling SaleConfirmed event for sale_id={event.sale_id}")
 
     # Resolver el command handler del container
-    from src import container
+    from src import wireup_container
 
     try:
         # Crear movimientos OUT para cada item de la venta
         for item in event.items:
             # Obtener el command handler (SCOPED - con nueva sesión)
-            handler = container.resolve(CreateMovementCommandHandler)
+            handler = wireup_container.get(CreateMovementCommandHandler)
 
             # Crear comando de movimiento OUT (cantidad negativa)
             command = CreateMovementCommand(
@@ -74,13 +74,13 @@ def handle_sale_cancelled(event: SaleCancelled) -> None:
         return
 
     # Resolver el command handler del container
-    from src import container
+    from src import wireup_container
 
     try:
         # Crear movimientos IN de reversión para cada item
         for item in event.items:
             # Obtener el command handler
-            handler = container.resolve(CreateMovementCommandHandler)
+            handler = wireup_container.get(CreateMovementCommandHandler)
 
             # Crear comando de movimiento IN (cantidad positiva)
             command = CreateMovementCommand(

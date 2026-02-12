@@ -32,12 +32,12 @@ def handle_movement_created(event: MovementCreated) -> None:
         f"product_id={event.product_id}, quantity={event.quantity}"
     )
 
-    # Resolver el repositorio del container
-    from src import container
+    # Resolver el repositorio del wireup container
+    from src import wireup_container
 
     try:
         # Obtener repositorio de Stock (SCOPED - nueva sesión por evento)
-        stock_repo = container.resolve(Repository[Stock])
+        stock_repo = wireup_container.get(Repository[Stock])
 
         # Buscar stock existente
         stock = stock_repo.first(product_id=event.product_id)

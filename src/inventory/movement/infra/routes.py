@@ -11,7 +11,6 @@ from .controllers import MovementController
 
 class MovementRouter:
     def __init__(self):
-        """MovementRouter using wireup Injected[] pattern for scoped controller."""
         self.router = APIRouter()
         self._setup_routes()
 

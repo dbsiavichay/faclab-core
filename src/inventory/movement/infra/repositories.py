@@ -20,8 +20,8 @@ def create_movement_repository(
     """Factory function for creating MovementRepository with generic type binding.
 
     Args:
-        session: Scoped database session (injected by wireup)
-        mapper: MovementMapper instance (injected by wireup)
+        session: Scoped database session
+        mapper: MovementMapper instance
 
     Returns:
         Repository[Movement]: Movement repository implementation

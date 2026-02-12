@@ -20,8 +20,8 @@ def create_stock_repository(
     """Factory function for creating StockRepository with generic type binding.
 
     Args:
-        session: Scoped database session (injected by wireup)
-        mapper: StockMapper instance (injected by wireup)
+        session: Scoped database session
+        mapper: StockMapper instance
 
     Returns:
         Repository[Stock]: Stock repository implementation

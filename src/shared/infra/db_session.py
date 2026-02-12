@@ -1,7 +1,6 @@
-"""Database session factory for wireup dependency injection.
+"""Database session factory for dependency injection.
 
-This module provides a generator-based session factory that leverages wireup 2.7.0's
-native support for Iterator and generator injection patterns.
+This module provides a generator-based session factory with automatic cleanup.
 """
 
 from typing import Iterator
@@ -33,9 +32,6 @@ def configure_session_factory(connection_string: str) -> None:
 @injectable(lifetime="scoped")
 def get_db_session() -> Iterator[Session]:
     """Provides a scoped database session with automatic cleanup.
-
-    Wireup 2.7.0+ natively supports generator injection, ensuring the session
-    is properly closed after the request scope ends.
 
     Yields:
         Session: SQLAlchemy database session

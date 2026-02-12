@@ -30,9 +30,7 @@ def create_customer_repository(
     """Factory function for creating CustomerRepository with generic type binding.
 
     Args:
-        session: Scoped database session (injected by wireup)
-        mapper: CustomerMapper instance (injected by wireup)
-
+        session: Scoped database session        mapper: CustomerMapper instance
     Returns:
         Repository[Customer]: Customer repository implementation
     """
@@ -64,9 +62,7 @@ def create_customer_contact_repository(
     """Factory function for creating CustomerContactRepository with generic type binding.
 
     Args:
-        session: Scoped database session (injected by wireup)
-        mapper: CustomerContactMapper instance (injected by wireup)
-
+        session: Scoped database session        mapper: CustomerContactMapper instance
     Returns:
         Repository[CustomerContact]: Customer contact repository implementation
     """
