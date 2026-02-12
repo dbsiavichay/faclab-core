@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.specifications import ProductByName, ProductInCategory
 from src.shared.app.queries import Query, QueryHandler
@@ -13,6 +15,7 @@ class GetAllProductsQuery(Query):
     offset: int | None = None
 
 
+@injectable(lifetime="scoped")
 class GetAllProductsQueryHandler(QueryHandler[GetAllProductsQuery, list[dict]]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
@@ -33,6 +36,7 @@ class GetProductByIdQuery(Query):
     product_id: int
 
 
+@injectable(lifetime="scoped")
 class GetProductByIdQueryHandler(QueryHandler[GetProductByIdQuery, dict | None]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
@@ -48,6 +52,7 @@ class SearchProductsQuery(Query):
     limit: int | None = 20
 
 
+@injectable(lifetime="scoped")
 class SearchProductsQueryHandler(QueryHandler[SearchProductsQuery, list[dict]]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo

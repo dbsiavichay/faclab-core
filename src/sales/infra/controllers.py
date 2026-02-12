@@ -1,5 +1,6 @@
 """Controllers para el módulo Sales"""
 
+from wireup import injectable
 
 from src.sales.app.commands import (
     AddSaleItemCommand,
@@ -37,6 +38,7 @@ from src.sales.infra.validators import (
 from src.shared.infra.exceptions import NotFoundException
 
 
+@injectable(lifetime="scoped")
 class SaleController:
     """Controller para manejar las operaciones de ventas"""
 

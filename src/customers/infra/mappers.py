@@ -1,10 +1,13 @@
 from typing import Any
 
+from wireup import injectable
+
 from src.customers.domain.entities import Customer, CustomerContact, TaxType
 from src.customers.infra.models import CustomerContactModel, CustomerModel
 from src.shared.infra.mappers import Mapper
 
 
+@injectable
 class CustomerMapper(Mapper[Customer, CustomerModel]):
     def to_entity(self, model: CustomerModel | None) -> Customer | None:
         """Converts an infrastructure model to a domain entity"""
@@ -52,6 +55,7 @@ class CustomerMapper(Mapper[Customer, CustomerModel]):
         return result
 
 
+@injectable
 class CustomerContactMapper(Mapper[CustomerContact, CustomerContactModel]):
     def to_entity(
         self, model: CustomerContactModel | None

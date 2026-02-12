@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleConfirmed
 from src.sales.domain.exceptions import SaleHasNoItemsException
@@ -16,6 +18,7 @@ class ConfirmSaleCommand(Command):
     sale_id: int
 
 
+@injectable(lifetime="scoped")
 class ConfirmSaleCommandHandler(CommandHandler[ConfirmSaleCommand, dict]):
     """
     Handler para confirmar una venta.

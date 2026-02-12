@@ -99,620 +99,50 @@ container = DependencyContainer()
 
 def init_mappers() -> None:
     """Initializes all mappers (legacy custom DI)."""
-    # Register the movement mapper
-    container.register(
-        MovementMapper,
-        factory=lambda c: MovementMapper(),
-        scope=LifetimeScope.SINGLETON,
-    )
+    # Movement mapper removed - now registered in wireup (Phase 2)
     # Category mapper removed - now registered in wireup (Phase 1)
-    # Register the product mapper
-    container.register(
-        ProductMapper,
-        factory=lambda c: ProductMapper(),
-        scope=LifetimeScope.SINGLETON,
-    )
-    # Register the stock mapper
-    container.register(
-        StockMapper,
-        factory=lambda c: StockMapper(),
-        scope=LifetimeScope.SINGLETON,
-    )
-    # Register the customer mapper
-    container.register(
-        CustomerMapper,
-        factory=lambda c: CustomerMapper(),
-        scope=LifetimeScope.SINGLETON,
-    )
-    # Register the customer contact mapper
-    container.register(
-        CustomerContactMapper,
-        factory=lambda c: CustomerContactMapper(),
-        scope=LifetimeScope.SINGLETON,
-    )
-    # Register the sale mapper
-    container.register(
-        SaleMapper,
-        factory=lambda c: SaleMapper(),
-        scope=LifetimeScope.SINGLETON,
-    )
-    # Register the sale item mapper
-    container.register(
-        SaleItemMapper,
-        factory=lambda c: SaleItemMapper(),
-        scope=LifetimeScope.SINGLETON,
-    )
-    # Register the payment mapper
-    container.register(
-        PaymentMapper,
-        factory=lambda c: PaymentMapper(),
-        scope=LifetimeScope.SINGLETON,
-    )
+    # Product mapper removed - now registered in wireup (Phase 2)
+    # Stock mapper removed - now registered in wireup (Phase 2)
+    # Customer mapper removed - now registered in wireup (Phase 2)
+    # CustomerContact mapper removed - now registered in wireup (Phase 2)
+    # Sale mappers removed - now registered in wireup (Phase 2)
+    pass
 
 
 def init_repositories() -> None:
     """Initializes all repositories (legacy custom DI)."""
     # Category repository removed - now registered in wireup (Phase 1)
-    # Register the product repository
-    container.register(
-        Repository[Product],
-        factory=lambda c, scope_id=None: ProductRepositoryImpl(
-            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
-            c.resolve(ProductMapper),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the stock repository
-    container.register(
-        Repository[Stock],
-        factory=lambda c, scope_id=None: StockRepositoryImpl(
-            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
-            c.resolve(StockMapper),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the movement repository
-    container.register(
-        Repository[Movement],
-        factory=lambda c, scope_id=None: MovementRepositoryImpl(
-            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
-            c.resolve(MovementMapper),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the customer repository
-    container.register(
-        Repository[Customer],
-        factory=lambda c, scope_id=None: CustomerRepositoryImpl(
-            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
-            c.resolve(CustomerMapper),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the customer contact repository
-    container.register(
-        Repository[CustomerContact],
-        factory=lambda c, scope_id=None: CustomerContactRepositoryImpl(
-            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
-            c.resolve(CustomerContactMapper),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the sale repository
-    container.register(
-        Repository[Sale],
-        factory=lambda c, scope_id=None: SaleRepositoryImpl(
-            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
-            c.resolve(SaleMapper),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the sale item repository
-    container.register(
-        Repository[SaleItem],
-        factory=lambda c, scope_id=None: SaleItemRepositoryImpl(
-            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
-            c.resolve(SaleItemMapper),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the payment repository
-    container.register(
-        Repository[Payment],
-        factory=lambda c, scope_id=None: PaymentRepositoryImpl(
-            c.get_scoped_db_session(scope_id) if scope_id else c.get_db_session(),
-            c.resolve(PaymentMapper),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
+    # Product repository removed - now registered in wireup (Phase 2)
+    # Stock repository removed - now registered in wireup (Phase 2)
+    # Movement repository removed - now registered in wireup (Phase 2)
+    # Customer repository removed - now registered in wireup (Phase 2)
+    # CustomerContact repository removed - now registered in wireup (Phase 2)
+    # Sale repositories removed - now registered in wireup (Phase 2)
+    pass
 
 
 def init_handlers() -> None:
     """Initializes all command and query handlers for CQRS architecture (legacy custom DI)."""
     # Category handlers removed - now registered in wireup (Phase 1)
-    # Register Product command handlers
-    container.register(
-        CreateProductCommandHandler,
-        factory=lambda c, scope_id=None: CreateProductCommandHandler(
-            c.resolve_scoped(Repository[Product], scope_id)
-            if scope_id
-            else c.resolve(Repository[Product])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        UpdateProductCommandHandler,
-        factory=lambda c, scope_id=None: UpdateProductCommandHandler(
-            c.resolve_scoped(Repository[Product], scope_id)
-            if scope_id
-            else c.resolve(Repository[Product])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        DeleteProductCommandHandler,
-        factory=lambda c, scope_id=None: DeleteProductCommandHandler(
-            c.resolve_scoped(Repository[Product], scope_id)
-            if scope_id
-            else c.resolve(Repository[Product])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register Product query handlers
-    container.register(
-        GetAllProductsQueryHandler,
-        factory=lambda c, scope_id=None: GetAllProductsQueryHandler(
-            c.resolve_scoped(Repository[Product], scope_id)
-            if scope_id
-            else c.resolve(Repository[Product])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetProductByIdQueryHandler,
-        factory=lambda c, scope_id=None: GetProductByIdQueryHandler(
-            c.resolve_scoped(Repository[Product], scope_id)
-            if scope_id
-            else c.resolve(Repository[Product])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register Movement command handlers
-    container.register(
-        CreateMovementCommandHandler,
-        factory=lambda c, scope_id=None: CreateMovementCommandHandler(
-            c.resolve_scoped(Repository[Movement], scope_id)
-            if scope_id
-            else c.resolve(Repository[Movement])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register Movement query handlers
-    container.register(
-        GetAllMovementsQueryHandler,
-        factory=lambda c, scope_id=None: GetAllMovementsQueryHandler(
-            c.resolve_scoped(Repository[Movement], scope_id)
-            if scope_id
-            else c.resolve(Repository[Movement])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetMovementByIdQueryHandler,
-        factory=lambda c, scope_id=None: GetMovementByIdQueryHandler(
-            c.resolve_scoped(Repository[Movement], scope_id)
-            if scope_id
-            else c.resolve(Repository[Movement])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register Stock query handlers
-    container.register(
-        GetAllStocksQueryHandler,
-        factory=lambda c, scope_id=None: GetAllStocksQueryHandler(
-            c.resolve_scoped(Repository[Stock], scope_id)
-            if scope_id
-            else c.resolve(Repository[Stock])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetStockByIdQueryHandler,
-        factory=lambda c, scope_id=None: GetStockByIdQueryHandler(
-            c.resolve_scoped(Repository[Stock], scope_id)
-            if scope_id
-            else c.resolve(Repository[Stock])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetStockByProductQueryHandler,
-        factory=lambda c, scope_id=None: GetStockByProductQueryHandler(
-            c.resolve_scoped(Repository[Stock], scope_id)
-            if scope_id
-            else c.resolve(Repository[Stock])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register customer command handlers
-    container.register(
-        CreateCustomerCommandHandler,
-        factory=lambda c, scope_id=None: CreateCustomerCommandHandler(
-            c.resolve_scoped(Repository[Customer], scope_id)
-            if scope_id
-            else c.resolve(Repository[Customer])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        UpdateCustomerCommandHandler,
-        factory=lambda c, scope_id=None: UpdateCustomerCommandHandler(
-            c.resolve_scoped(Repository[Customer], scope_id)
-            if scope_id
-            else c.resolve(Repository[Customer])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        DeleteCustomerCommandHandler,
-        factory=lambda c, scope_id=None: DeleteCustomerCommandHandler(
-            c.resolve_scoped(Repository[Customer], scope_id)
-            if scope_id
-            else c.resolve(Repository[Customer])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        ActivateCustomerCommandHandler,
-        factory=lambda c, scope_id=None: ActivateCustomerCommandHandler(
-            c.resolve_scoped(Repository[Customer], scope_id)
-            if scope_id
-            else c.resolve(Repository[Customer])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        DeactivateCustomerCommandHandler,
-        factory=lambda c, scope_id=None: DeactivateCustomerCommandHandler(
-            c.resolve_scoped(Repository[Customer], scope_id)
-            if scope_id
-            else c.resolve(Repository[Customer])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register customer query handlers
-    container.register(
-        GetAllCustomersQueryHandler,
-        factory=lambda c, scope_id=None: GetAllCustomersQueryHandler(
-            c.resolve_scoped(Repository[Customer], scope_id)
-            if scope_id
-            else c.resolve(Repository[Customer])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetCustomerByIdQueryHandler,
-        factory=lambda c, scope_id=None: GetCustomerByIdQueryHandler(
-            c.resolve_scoped(Repository[Customer], scope_id)
-            if scope_id
-            else c.resolve(Repository[Customer])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetCustomerByTaxIdQueryHandler,
-        factory=lambda c, scope_id=None: GetCustomerByTaxIdQueryHandler(
-            c.resolve_scoped(Repository[Customer], scope_id)
-            if scope_id
-            else c.resolve(Repository[Customer])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register customer contact command handlers
-    container.register(
-        CreateCustomerContactCommandHandler,
-        factory=lambda c, scope_id=None: CreateCustomerContactCommandHandler(
-            c.resolve_scoped(Repository[CustomerContact], scope_id)
-            if scope_id
-            else c.resolve(Repository[CustomerContact])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        UpdateCustomerContactCommandHandler,
-        factory=lambda c, scope_id=None: UpdateCustomerContactCommandHandler(
-            c.resolve_scoped(Repository[CustomerContact], scope_id)
-            if scope_id
-            else c.resolve(Repository[CustomerContact])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        DeleteCustomerContactCommandHandler,
-        factory=lambda c, scope_id=None: DeleteCustomerContactCommandHandler(
-            c.resolve_scoped(Repository[CustomerContact], scope_id)
-            if scope_id
-            else c.resolve(Repository[CustomerContact])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register customer contact query handlers
-    container.register(
-        GetCustomerContactByIdQueryHandler,
-        factory=lambda c, scope_id=None: GetCustomerContactByIdQueryHandler(
-            c.resolve_scoped(Repository[CustomerContact], scope_id)
-            if scope_id
-            else c.resolve(Repository[CustomerContact])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetContactsByCustomerIdQueryHandler,
-        factory=lambda c, scope_id=None: GetContactsByCustomerIdQueryHandler(
-            c.resolve_scoped(Repository[CustomerContact], scope_id)
-            if scope_id
-            else c.resolve(Repository[CustomerContact])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-
-    # Register sales command handlers
-    container.register(
-        CreateSaleCommandHandler,
-        factory=lambda c, scope_id=None: CreateSaleCommandHandler(
-            c.resolve_scoped(Repository[Sale], scope_id)
-            if scope_id
-            else c.resolve(Repository[Sale])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        AddSaleItemCommandHandler,
-        factory=lambda c, scope_id=None: AddSaleItemCommandHandler(
-            c.resolve_scoped(Repository[Sale], scope_id)
-            if scope_id
-            else c.resolve(Repository[Sale]),
-            c.resolve_scoped(Repository[SaleItem], scope_id)
-            if scope_id
-            else c.resolve(Repository[SaleItem]),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        RemoveSaleItemCommandHandler,
-        factory=lambda c, scope_id=None: RemoveSaleItemCommandHandler(
-            c.resolve_scoped(Repository[Sale], scope_id)
-            if scope_id
-            else c.resolve(Repository[Sale]),
-            c.resolve_scoped(Repository[SaleItem], scope_id)
-            if scope_id
-            else c.resolve(Repository[SaleItem]),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        ConfirmSaleCommandHandler,
-        factory=lambda c, scope_id=None: ConfirmSaleCommandHandler(
-            c.resolve_scoped(Repository[Sale], scope_id)
-            if scope_id
-            else c.resolve(Repository[Sale]),
-            c.resolve_scoped(Repository[SaleItem], scope_id)
-            if scope_id
-            else c.resolve(Repository[SaleItem]),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        CancelSaleCommandHandler,
-        factory=lambda c, scope_id=None: CancelSaleCommandHandler(
-            c.resolve_scoped(Repository[Sale], scope_id)
-            if scope_id
-            else c.resolve(Repository[Sale]),
-            c.resolve_scoped(Repository[SaleItem], scope_id)
-            if scope_id
-            else c.resolve(Repository[SaleItem]),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        RegisterPaymentCommandHandler,
-        factory=lambda c, scope_id=None: RegisterPaymentCommandHandler(
-            c.resolve_scoped(Repository[Sale], scope_id)
-            if scope_id
-            else c.resolve(Repository[Sale]),
-            c.resolve_scoped(Repository[Payment], scope_id)
-            if scope_id
-            else c.resolve(Repository[Payment]),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-
-    # Register sales query handlers
-    container.register(
-        GetAllSalesQueryHandler,
-        factory=lambda c, scope_id=None: GetAllSalesQueryHandler(
-            c.resolve_scoped(Repository[Sale], scope_id)
-            if scope_id
-            else c.resolve(Repository[Sale])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetSaleByIdQueryHandler,
-        factory=lambda c, scope_id=None: GetSaleByIdQueryHandler(
-            c.resolve_scoped(Repository[Sale], scope_id)
-            if scope_id
-            else c.resolve(Repository[Sale])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetSaleItemsQueryHandler,
-        factory=lambda c, scope_id=None: GetSaleItemsQueryHandler(
-            c.resolve_scoped(Repository[SaleItem], scope_id)
-            if scope_id
-            else c.resolve(Repository[SaleItem])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    container.register(
-        GetSalePaymentsQueryHandler,
-        factory=lambda c, scope_id=None: GetSalePaymentsQueryHandler(
-            c.resolve_scoped(Repository[Payment], scope_id)
-            if scope_id
-            else c.resolve(Repository[Payment])
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
+    # Product handlers removed - now registered in wireup (Phase 2)
+    # Movement handlers removed - now registered in wireup (Phase 2)
+    # Stock handlers removed - now registered in wireup (Phase 2)
+    # Customer handlers removed - now registered in wireup (Phase 2)
+    # CustomerContact handlers removed - now registered in wireup (Phase 2)
+    # Sale handlers removed - now registered in wireup (Phase 2)
+    pass
 
 
 def init_controllers() -> None:
     """Initializes all controllers (legacy custom DI)."""
     # CategoryController removed - now registered in wireup (Phase 1)
-    # Register the product controller
-    container.register(
-        ProductController,
-        factory=lambda c, scope_id=None: ProductController(
-            c.resolve_scoped(CreateProductCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(CreateProductCommandHandler),
-            c.resolve_scoped(UpdateProductCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(UpdateProductCommandHandler),
-            c.resolve_scoped(DeleteProductCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(DeleteProductCommandHandler),
-            c.resolve_scoped(GetAllProductsQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetAllProductsQueryHandler),
-            c.resolve_scoped(GetProductByIdQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetProductByIdQueryHandler),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the stock controller
-    container.register(
-        StockController,
-        factory=lambda c, scope_id=None: StockController(
-            c.resolve_scoped(GetAllStocksQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetAllStocksQueryHandler),
-            c.resolve_scoped(GetStockByIdQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetStockByIdQueryHandler),
-            c.resolve_scoped(GetStockByProductQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetStockByProductQueryHandler),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the movement controller
-    container.register(
-        MovementController,
-        factory=lambda c, scope_id=None: MovementController(
-            c.resolve_scoped(CreateMovementCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(CreateMovementCommandHandler),
-            c.resolve_scoped(GetAllMovementsQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetAllMovementsQueryHandler),
-            c.resolve_scoped(GetMovementByIdQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetMovementByIdQueryHandler),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the customer controller
-    container.register(
-        CustomerController,
-        factory=lambda c, scope_id=None: CustomerController(
-            c.resolve_scoped(CreateCustomerCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(CreateCustomerCommandHandler),
-            c.resolve_scoped(UpdateCustomerCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(UpdateCustomerCommandHandler),
-            c.resolve_scoped(DeleteCustomerCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(DeleteCustomerCommandHandler),
-            c.resolve_scoped(ActivateCustomerCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(ActivateCustomerCommandHandler),
-            c.resolve_scoped(DeactivateCustomerCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(DeactivateCustomerCommandHandler),
-            c.resolve_scoped(GetAllCustomersQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetAllCustomersQueryHandler),
-            c.resolve_scoped(GetCustomerByIdQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetCustomerByIdQueryHandler),
-            c.resolve_scoped(GetCustomerByTaxIdQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetCustomerByTaxIdQueryHandler),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the customer contact controller
-    container.register(
-        CustomerContactController,
-        factory=lambda c, scope_id=None: CustomerContactController(
-            c.resolve_scoped(CreateCustomerContactCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(CreateCustomerContactCommandHandler),
-            c.resolve_scoped(UpdateCustomerContactCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(UpdateCustomerContactCommandHandler),
-            c.resolve_scoped(DeleteCustomerContactCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(DeleteCustomerContactCommandHandler),
-            c.resolve_scoped(GetCustomerContactByIdQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetCustomerContactByIdQueryHandler),
-            c.resolve_scoped(GetContactsByCustomerIdQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetContactsByCustomerIdQueryHandler),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
-    # Register the sale controller
-    container.register(
-        SaleController,
-        factory=lambda c, scope_id=None: SaleController(
-            c.resolve_scoped(CreateSaleCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(CreateSaleCommandHandler),
-            c.resolve_scoped(AddSaleItemCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(AddSaleItemCommandHandler),
-            c.resolve_scoped(RemoveSaleItemCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(RemoveSaleItemCommandHandler),
-            c.resolve_scoped(ConfirmSaleCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(ConfirmSaleCommandHandler),
-            c.resolve_scoped(CancelSaleCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(CancelSaleCommandHandler),
-            c.resolve_scoped(RegisterPaymentCommandHandler, scope_id)
-            if scope_id
-            else c.resolve(RegisterPaymentCommandHandler),
-            c.resolve_scoped(GetAllSalesQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetAllSalesQueryHandler),
-            c.resolve_scoped(GetSaleByIdQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetSaleByIdQueryHandler),
-            c.resolve_scoped(GetSaleItemsQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetSaleItemsQueryHandler),
-            c.resolve_scoped(GetSalePaymentsQueryHandler, scope_id)
-            if scope_id
-            else c.resolve(GetSalePaymentsQueryHandler),
-        ),
-        scope=LifetimeScope.SCOPED,
-    )
+    # ProductController removed - now registered in wireup (Phase 2)
+    # StockController removed - now registered in wireup (Phase 2)
+    # MovementController removed - now registered in wireup (Phase 2)
+    # CustomerController removed - now registered in wireup (Phase 2)
+    # CustomerContactController removed - now registered in wireup (Phase 2)
+    # SaleController removed - now registered in wireup (Phase 2)
+    pass
 
 
 def create_wireup_container():
@@ -746,6 +176,100 @@ def create_wireup_container():
     from src.catalog.product.infra.mappers import CategoryMapper
     from src.catalog.product.infra.repositories import create_category_repository
 
+    # Phase 2: Import product module components
+    from src.catalog.product.app.commands.create_product import (
+        CreateProductCommandHandler,
+    )
+    from src.catalog.product.app.commands.delete_product import (
+        DeleteProductCommandHandler,
+    )
+    from src.catalog.product.app.commands.update_product import (
+        UpdateProductCommandHandler,
+    )
+    from src.catalog.product.app.queries.get_products import (
+        GetAllProductsQueryHandler,
+        GetProductByIdQueryHandler,
+        SearchProductsQueryHandler,
+    )
+    from src.catalog.product.infra.controllers import ProductController
+    from src.catalog.product.infra.mappers import ProductMapper
+    from src.catalog.product.infra.repositories import create_product_repository
+
+    # Phase 2: Import movement module components
+    from src.inventory.movement.app.commands.movement import (
+        CreateMovementCommandHandler,
+    )
+    from src.inventory.movement.app.queries.movement import (
+        GetAllMovementsQueryHandler,
+        GetMovementByIdQueryHandler,
+    )
+    from src.inventory.movement.infra.controllers import MovementController
+    from src.inventory.movement.infra.mappers import MovementMapper
+    from src.inventory.movement.infra.repositories import create_movement_repository
+
+    # Phase 2: Import stock module components
+    from src.inventory.stock.app.queries.stock import (
+        GetAllStocksQueryHandler,
+        GetStockByIdQueryHandler,
+        GetStockByProductQueryHandler,
+    )
+    from src.inventory.stock.infra.controllers import StockController
+    from src.inventory.stock.infra.mappers import StockMapper
+    from src.inventory.stock.infra.repositories import create_stock_repository
+
+    # Phase 2: Import customer module components
+    from src.customers.app.commands.customer import (
+        ActivateCustomerCommandHandler,
+        CreateCustomerCommandHandler,
+        DeactivateCustomerCommandHandler,
+        DeleteCustomerCommandHandler,
+        UpdateCustomerCommandHandler,
+    )
+    from src.customers.app.commands.customer_contact import (
+        CreateCustomerContactCommandHandler,
+        DeleteCustomerContactCommandHandler,
+        UpdateCustomerContactCommandHandler,
+    )
+    from src.customers.app.queries.customer import (
+        GetAllCustomersQueryHandler,
+        GetCustomerByIdQueryHandler,
+        GetCustomerByTaxIdQueryHandler,
+    )
+    from src.customers.app.queries.customer_contact import (
+        GetContactsByCustomerIdQueryHandler,
+        GetCustomerContactByIdQueryHandler,
+    )
+    from src.customers.infra.controllers import (
+        CustomerContactController,
+        CustomerController,
+    )
+    from src.customers.infra.mappers import CustomerContactMapper, CustomerMapper
+    from src.customers.infra.repositories import (
+        create_customer_contact_repository,
+        create_customer_repository,
+    )
+
+    # Phase 2: Import sale module components
+    from src.sales.app.commands.add_sale_item import AddSaleItemCommandHandler
+    from src.sales.app.commands.cancel_sale import CancelSaleCommandHandler
+    from src.sales.app.commands.confirm_sale import ConfirmSaleCommandHandler
+    from src.sales.app.commands.create_sale import CreateSaleCommandHandler
+    from src.sales.app.commands.register_payment import RegisterPaymentCommandHandler
+    from src.sales.app.commands.remove_sale_item import RemoveSaleItemCommandHandler
+    from src.sales.app.queries.get_payments import GetSalePaymentsQueryHandler
+    from src.sales.app.queries.get_sale_items import GetSaleItemsQueryHandler
+    from src.sales.app.queries.get_sales import (
+        GetAllSalesQueryHandler,
+        GetSaleByIdQueryHandler,
+    )
+    from src.sales.infra.controllers import SaleController
+    from src.sales.infra.mappers import PaymentMapper, SaleItemMapper, SaleMapper
+    from src.sales.infra.repositories import (
+        create_payment_repository,
+        create_sale_item_repository,
+        create_sale_repository,
+    )
+
     # Configure DB connection for wireup session factory
     db_connection_string = config.DB_CONNECTION_STRING
     if not db_connection_string:
@@ -770,6 +294,68 @@ def create_wireup_container():
             GetAllCategoriesQueryHandler,  # Scoped query handler
             GetCategoryByIdQueryHandler,  # Scoped query handler
             CategoryController,  # Scoped controller
+            # Product module (Phase 2)
+            ProductMapper,  # Singleton mapper
+            create_product_repository,  # Scoped repository factory
+            CreateProductCommandHandler,  # Scoped command handler
+            UpdateProductCommandHandler,  # Scoped command handler
+            DeleteProductCommandHandler,  # Scoped command handler
+            GetAllProductsQueryHandler,  # Scoped query handler
+            GetProductByIdQueryHandler,  # Scoped query handler
+            SearchProductsQueryHandler,  # Scoped query handler
+            ProductController,  # Scoped controller
+            # Movement module (Phase 2)
+            MovementMapper,  # Singleton mapper
+            create_movement_repository,  # Scoped repository factory
+            CreateMovementCommandHandler,  # Scoped command handler
+            GetAllMovementsQueryHandler,  # Scoped query handler
+            GetMovementByIdQueryHandler,  # Scoped query handler
+            MovementController,  # Scoped controller
+            # Stock module (Phase 2)
+            StockMapper,  # Singleton mapper
+            create_stock_repository,  # Scoped repository factory
+            GetAllStocksQueryHandler,  # Scoped query handler
+            GetStockByIdQueryHandler,  # Scoped query handler
+            GetStockByProductQueryHandler,  # Scoped query handler
+            StockController,  # Scoped controller
+            # Customer module (Phase 2)
+            CustomerMapper,  # Singleton mapper
+            CustomerContactMapper,  # Singleton mapper
+            create_customer_repository,  # Scoped repository factory
+            create_customer_contact_repository,  # Scoped repository factory
+            CreateCustomerCommandHandler,  # Scoped command handler
+            UpdateCustomerCommandHandler,  # Scoped command handler
+            DeleteCustomerCommandHandler,  # Scoped command handler
+            ActivateCustomerCommandHandler,  # Scoped command handler
+            DeactivateCustomerCommandHandler,  # Scoped command handler
+            GetAllCustomersQueryHandler,  # Scoped query handler
+            GetCustomerByIdQueryHandler,  # Scoped query handler
+            GetCustomerByTaxIdQueryHandler,  # Scoped query handler
+            CreateCustomerContactCommandHandler,  # Scoped command handler
+            UpdateCustomerContactCommandHandler,  # Scoped command handler
+            DeleteCustomerContactCommandHandler,  # Scoped command handler
+            GetCustomerContactByIdQueryHandler,  # Scoped query handler
+            GetContactsByCustomerIdQueryHandler,  # Scoped query handler
+            CustomerController,  # Scoped controller
+            CustomerContactController,  # Scoped controller
+            # Sale module (Phase 2)
+            SaleMapper,  # Singleton mapper
+            SaleItemMapper,  # Singleton mapper
+            PaymentMapper,  # Singleton mapper
+            create_sale_repository,  # Scoped repository factory
+            create_sale_item_repository,  # Scoped repository factory
+            create_payment_repository,  # Scoped repository factory
+            CreateSaleCommandHandler,  # Scoped command handler
+            AddSaleItemCommandHandler,  # Scoped command handler
+            RemoveSaleItemCommandHandler,  # Scoped command handler
+            ConfirmSaleCommandHandler,  # Scoped command handler
+            CancelSaleCommandHandler,  # Scoped command handler
+            RegisterPaymentCommandHandler,  # Scoped command handler
+            GetAllSalesQueryHandler,  # Scoped query handler
+            GetSaleByIdQueryHandler,  # Scoped query handler
+            GetSaleItemsQueryHandler,  # Scoped query handler
+            GetSalePaymentsQueryHandler,  # Scoped query handler
+            SaleController,  # Scoped controller
         ]
     )
 
@@ -803,80 +389,9 @@ def get_request_scope_id():
 
 
 # get_category_controller removed - CategoryRouter now uses wireup (Phase 1)
-
-# Dependency to get the product controller in a request scope
-def get_product_controller(
-    scope_id: str = Depends(get_request_scope_id),
-) -> ProductController:
-    """Gets the product controller for a specific request."""
-    controller = container.resolve_scoped(ProductController, scope_id)
-    try:
-        yield controller
-    finally:
-        # Close the scope when the request ends
-        container.close_scope(scope_id)
-
-
-# Dependency to get the stock controller in a request scope
-def get_stock_controller(
-    scope_id: str = Depends(get_request_scope_id),
-) -> StockController:
-    """Gets the stock controller for a specific request."""
-    controller = container.resolve_scoped(StockController, scope_id)
-    try:
-        yield controller
-    finally:
-        # Close the scope when the request ends
-        container.close_scope(scope_id)
-
-
-# Dependency to get the movement controller in a request scope
-def get_movement_controller(
-    scope_id: str = Depends(get_request_scope_id),
-) -> MovementController:
-    """Gets the movement controller for a specific request."""
-    controller = container.resolve_scoped(MovementController, scope_id)
-    try:
-        yield controller
-    finally:
-        # Close the scope when the request ends
-        container.close_scope(scope_id)
-
-
-# Dependency to get the customer controller in a request scope
-def get_customer_controller(
-    scope_id: str = Depends(get_request_scope_id),
-) -> CustomerController:
-    """Gets the customer controller for a specific request."""
-    controller = container.resolve_scoped(CustomerController, scope_id)
-    try:
-        yield controller
-    finally:
-        # Close the scope when the request ends
-        container.close_scope(scope_id)
-
-
-# Dependency to get the customer contact controller in a request scope
-def get_customer_contact_controller(
-    scope_id: str = Depends(get_request_scope_id),
-) -> CustomerContactController:
-    """Gets the customer contact controller for a specific request."""
-    controller = container.resolve_scoped(CustomerContactController, scope_id)
-    try:
-        yield controller
-    finally:
-        # Close the scope when the request ends
-        container.close_scope(scope_id)
-
-
-# Dependency to get the sale controller in a request scope
-def get_sale_controller(
-    scope_id: str = Depends(get_request_scope_id),
-) -> SaleController:
-    """Gets the sale controller for a specific request."""
-    controller = container.resolve_scoped(SaleController, scope_id)
-    try:
-        yield controller
-    finally:
-        # Close the scope when the request ends
-        container.close_scope(scope_id)
+# get_product_controller removed - ProductRouter now uses wireup (Phase 2)
+# get_movement_controller removed - MovementRouter now uses wireup (Phase 2)
+# get_stock_controller removed - StockRouter now uses wireup (Phase 2)
+# get_customer_controller removed - CustomerRouter now uses wireup (Phase 2)
+# get_customer_contact_controller removed - CustomerContactRouter now uses wireup (Phase 2)
+# get_sale_controller removed - SaleRouter now uses wireup (Phase 2)

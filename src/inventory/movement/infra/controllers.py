@@ -1,3 +1,4 @@
+from wireup import injectable
 
 from src.inventory.movement.app.commands import (
     CreateMovementCommand,
@@ -14,6 +15,7 @@ from src.shared.infra.exceptions import NotFoundException
 from .validators import MovementInput, MovementQueryParams, MovementResponse
 
 
+@injectable(lifetime="scoped")
 class MovementController:
     def __init__(
         self,

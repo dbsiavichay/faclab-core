@@ -1,5 +1,7 @@
 from typing import Any
 
+from wireup import injectable
+
 from src.sales.domain.entities import (
     Payment,
     PaymentMethod,
@@ -12,6 +14,7 @@ from src.sales.infra.models import PaymentModel, SaleItemModel, SaleModel
 from src.shared.infra.mappers import Mapper
 
 
+@injectable
 class SaleMapper(Mapper[Sale, SaleModel]):
     """Mapper para convertir entre Sale entity y SaleModel"""
 
@@ -64,6 +67,7 @@ class SaleMapper(Mapper[Sale, SaleModel]):
         return result
 
 
+@injectable
 class SaleItemMapper(Mapper[SaleItem, SaleItemModel]):
     """Mapper para convertir entre SaleItem entity y SaleItemModel"""
 
@@ -98,6 +102,7 @@ class SaleItemMapper(Mapper[SaleItem, SaleItemModel]):
         return result
 
 
+@injectable
 class PaymentMapper(Mapper[Payment, PaymentModel]):
     """Mapper para convertir entre Payment entity y PaymentModel"""
 

@@ -1,3 +1,4 @@
+from wireup import injectable
 
 from src.customers.app.commands import (
     ActivateCustomerCommand,
@@ -38,6 +39,7 @@ from src.customers.infra.validators import (
 from src.shared.infra.exceptions import NotFoundException
 
 
+@injectable(lifetime="scoped")
 class CustomerController:
     def __init__(
         self,
@@ -99,6 +101,7 @@ class CustomerController:
         return CustomerResponse.model_validate(result)
 
 
+@injectable(lifetime="scoped")
 class CustomerContactController:
     def __init__(
         self,

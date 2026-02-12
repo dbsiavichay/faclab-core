@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from wireup import injectable
+
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleItemRemoved
 from src.sales.domain.exceptions import InvalidSaleStatusException
@@ -18,6 +20,7 @@ class RemoveSaleItemCommand(Command):
     sale_item_id: int
 
 
+@injectable(lifetime="scoped")
 class RemoveSaleItemCommandHandler(CommandHandler[RemoveSaleItemCommand, dict]):
     """Handler para eliminar un item de una venta y recalcular totales"""
 

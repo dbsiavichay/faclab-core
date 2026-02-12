@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
-
-from src import get_movement_controller
+from wireup import Injected
 from src.inventory.movement.infra.validators import (
     MovementInput,
     MovementQueryParams,
@@ -12,6 +11,7 @@ from .controllers import MovementController
 
 class MovementRouter:
     def __init__(self):
+        """MovementRouter using wireup Injected[] pattern for scoped controller."""
         self.router = APIRouter()
         self._setup_routes()
 
@@ -27,15 +27,15 @@ class MovementRouter:
     def create(
         self,
         new_movement: MovementInput,
-        movement_controller: MovementController = Depends(get_movement_controller),
+        movement_controller: Injected[MovementController],
     ) -> MovementResponse:
         """Save a new movement."""
         return movement_controller.create(new_movement)
 
     def get_all(
         self,
+        movement_controller: Injected[MovementController],
         query_params: MovementQueryParams = Depends(),
-        movement_controller: MovementController = Depends(get_movement_controller),
     ) -> list[MovementResponse]:
         """Get all movements."""
         return movement_controller.get_all(query_params)

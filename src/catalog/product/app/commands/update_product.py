@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.events import ProductUpdated
 from src.shared.app.commands import Command, CommandHandler
@@ -16,6 +18,7 @@ class UpdateProductCommand(Command):
     category_id: int | None = None
 
 
+@injectable(lifetime="scoped")
 class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo

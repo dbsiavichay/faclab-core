@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.sales.domain.entities import Sale
 from src.sales.domain.events import SaleCreated
 from src.shared.app.commands import Command, CommandHandler
@@ -16,6 +18,7 @@ class CreateSaleCommand(Command):
     created_by: str | None = None
 
 
+@injectable(lifetime="scoped")
 class CreateSaleCommandHandler(CommandHandler[CreateSaleCommand, dict]):
     """Handler para crear una nueva venta en estado DRAFT"""
 

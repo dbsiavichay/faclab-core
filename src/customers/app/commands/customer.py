@@ -1,6 +1,8 @@
 from dataclasses import dataclass, replace
 from decimal import Decimal
 
+from wireup import injectable
+
 from src.customers.app.types import CustomerOutput
 from src.customers.domain.entities import Customer, TaxType
 from src.customers.domain.events import (
@@ -31,6 +33,7 @@ class CreateCustomerCommand(Command):
     is_active: bool = True
 
 
+@injectable(lifetime="scoped")
 class CreateCustomerCommandHandler(
     CommandHandler[CreateCustomerCommand, CustomerOutput]
 ):
@@ -86,6 +89,7 @@ class UpdateCustomerCommand(Command):
     is_active: bool = True
 
 
+@injectable(lifetime="scoped")
 class UpdateCustomerCommandHandler(
     CommandHandler[UpdateCustomerCommand, CustomerOutput]
 ):
@@ -129,6 +133,7 @@ class DeleteCustomerCommand(Command):
     id: int = 0
 
 
+@injectable(lifetime="scoped")
 class DeleteCustomerCommandHandler(CommandHandler[DeleteCustomerCommand, None]):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
@@ -142,6 +147,7 @@ class ActivateCustomerCommand(Command):
     id: int = 0
 
 
+@injectable(lifetime="scoped")
 class ActivateCustomerCommandHandler(
     CommandHandler[ActivateCustomerCommand, CustomerOutput]
 ):
@@ -170,6 +176,7 @@ class DeactivateCustomerCommand(Command):
     id: int = 0
 
 
+@injectable(lifetime="scoped")
 class DeactivateCustomerCommandHandler(
     CommandHandler[DeactivateCustomerCommand, CustomerOutput]
 ):

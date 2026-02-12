@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.sales.domain.entities import SaleItem
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
@@ -12,6 +14,7 @@ class GetSaleItemsQuery(Query):
     sale_id: int
 
 
+@injectable(lifetime="scoped")
 class GetSaleItemsQueryHandler(QueryHandler[GetSaleItemsQuery, list[dict]]):
     """Handler para obtener todos los items de una venta"""
 

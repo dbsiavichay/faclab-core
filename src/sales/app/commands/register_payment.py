@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from wireup import injectable
+
 from src.sales.domain.entities import Payment, PaymentMethod, Sale
 from src.sales.domain.events import PaymentReceived
 from src.shared.app.commands import Command, CommandHandler
@@ -20,6 +22,7 @@ class RegisterPaymentCommand(Command):
     notes: str | None = None
 
 
+@injectable(lifetime="scoped")
 class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]):
     """Handler para registrar un pago y actualizar el estado de pago de la venta"""
 

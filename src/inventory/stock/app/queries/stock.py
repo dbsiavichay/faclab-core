@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.inventory.stock.app.types import StockOutput
 from src.inventory.stock.domain.entities import Stock
 from src.shared.app.queries import Query, QueryHandler
@@ -13,6 +15,7 @@ class GetAllStocksQuery(Query):
     product_id: int | None = None
 
 
+@injectable(lifetime="scoped")
 class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, list[StockOutput]]):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
@@ -32,6 +35,7 @@ class GetStockByIdQuery(Query):
     id: int = 0
 
 
+@injectable(lifetime="scoped")
 class GetStockByIdQueryHandler(
     QueryHandler[GetStockByIdQuery, StockOutput | None]
 ):
@@ -52,6 +56,7 @@ class GetStockByProductQuery(Query):
     product_id: int = 0
 
 
+@injectable(lifetime="scoped")
 class GetStockByProductQueryHandler(
     QueryHandler[GetStockByProductQuery, StockOutput | None]
 ):

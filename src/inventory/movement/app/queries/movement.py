@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from wireup import injectable
+
 from src.inventory.movement.app.types import MovementOutput
 from src.inventory.movement.domain.entities import Movement
 from src.shared.app.queries import Query, QueryHandler
@@ -14,6 +16,7 @@ class GetAllMovementsQuery(Query):
     type: str | None = None
 
 
+@injectable(lifetime="scoped")
 class GetAllMovementsQueryHandler(
     QueryHandler[GetAllMovementsQuery, list[MovementOutput]]
 ):
@@ -38,6 +41,7 @@ class GetMovementByIdQuery(Query):
     id: int = 0
 
 
+@injectable(lifetime="scoped")
 class GetMovementByIdQueryHandler(
     QueryHandler[GetMovementByIdQuery, MovementOutput | None]
 ):
