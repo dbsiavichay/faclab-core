@@ -1,7 +1,7 @@
-from src.shared.domain.exceptions import BaseException
+from src.shared.domain.exceptions import BaseError
 
 
-class NotFoundException(BaseException):
+class NotFoundError(BaseError):
     def __init__(self, message: str):
         self.message = message
         self.status_code = 404

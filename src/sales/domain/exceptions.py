@@ -1,13 +1,13 @@
 """Excepciones específicas del dominio de Sales"""
 
 
-class SalesException(Exception):
+class SalesError(Exception):
     """Excepción base para el dominio de sales"""
 
     pass
 
 
-class InvalidSaleStatusException(SalesException):
+class InvalidSaleStatusError(SalesError):
     """Se lanza cuando se intenta realizar una operación con un estado inválido"""
 
     def __init__(self, current_status: str, operation: str):
@@ -16,7 +16,7 @@ class InvalidSaleStatusException(SalesException):
         super().__init__(f"Cannot {operation} sale with status {current_status}")
 
 
-class SaleHasNoItemsException(SalesException):
+class SaleHasNoItemsError(SalesError):
     """Se lanza cuando se intenta confirmar una venta sin items"""
 
     def __init__(self, sale_id: int):
@@ -24,7 +24,7 @@ class SaleHasNoItemsException(SalesException):
         super().__init__(f"Sale {sale_id} has no items")
 
 
-class InsufficientStockException(SalesException):
+class InsufficientStockError(SalesError):
     """Se lanza cuando no hay suficiente stock para confirmar una venta"""
 
     def __init__(self, product_id: int, requested: int, available: int):

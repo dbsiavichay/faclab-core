@@ -4,11 +4,11 @@ from wireup import injectable
 
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleConfirmed
-from src.sales.domain.exceptions import SaleHasNoItemsException
+from src.sales.domain.exceptions import SaleHasNoItemsError
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
 from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 
 @dataclass
@@ -39,14 +39,14 @@ class ConfirmSaleCommandHandler(CommandHandler[ConfirmSaleCommand, dict]):
         # Obtener la venta
         sale = self.sale_repo.get_by_id(command.sale_id)
         if not sale:
-            raise NotFoundException(f"Sale with id {command.sale_id} not found")
+            raise NotFoundError(f"Sale with id {command.sale_id} not found")
 
         # Obtener los items
         items = self.sale_item_repo.filter_by(sale_id=command.sale_id)
 
         # Validar que tenga items
         if not items:
-            raise SaleHasNoItemsException(command.sale_id)
+            raise SaleHasNoItemsError(command.sale_id)
 
         # Confirmar la venta (esto valida el estado internamente)
         sale.confirm()

@@ -4,7 +4,7 @@ from typing import Generic, TypeVar
 
 
 @dataclass
-class Command(ABC):
+class Command:
     pass
 
 

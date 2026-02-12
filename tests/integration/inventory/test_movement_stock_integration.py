@@ -29,6 +29,7 @@ def clear_event_bus():
     import importlib
 
     import src.inventory.infra.event_handlers
+
     importlib.reload(src.inventory.infra.event_handlers)
     yield
     EventBus.clear()
@@ -359,21 +360,27 @@ def test_multiple_movements_accumulate_stock(mock_stock_container):
     mock_movement_repo.create.return_value = Movement(
         id=1, product_id=10, quantity=10, type=MovementType.IN
     )
-    command1 = CreateMovementCommand(product_id=10, quantity=10, type=MovementType.IN.value)
+    command1 = CreateMovementCommand(
+        product_id=10, quantity=10, type=MovementType.IN.value
+    )
     handler.handle(command1)
 
     # Movement 2: +10 (total 20)
     mock_movement_repo.create.return_value = Movement(
         id=2, product_id=10, quantity=10, type=MovementType.IN
     )
-    command2 = CreateMovementCommand(product_id=10, quantity=10, type=MovementType.IN.value)
+    command2 = CreateMovementCommand(
+        product_id=10, quantity=10, type=MovementType.IN.value
+    )
     handler.handle(command2)
 
     # Movement 3: -5 (total 15)
     mock_movement_repo.create.return_value = Movement(
         id=3, product_id=10, quantity=-5, type=MovementType.OUT
     )
-    command3 = CreateMovementCommand(product_id=10, quantity=-5, type=MovementType.OUT.value)
+    command3 = CreateMovementCommand(
+        product_id=10, quantity=-5, type=MovementType.OUT.value
+    )
     handler.handle(command3)
 
     # Assert

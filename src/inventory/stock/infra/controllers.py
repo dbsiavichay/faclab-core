@@ -9,7 +9,7 @@ from src.inventory.stock.app.queries import (
     GetStockByProductQueryHandler,
 )
 from src.inventory.stock.infra.validators import StockQueryParams, StockResponse
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 
 @injectable(lifetime="scoped")
@@ -25,6 +25,7 @@ class StockController:
         self.get_by_product_handler = get_by_product_handler
 
     def get_all(self, query_params: StockQueryParams) -> list[StockResponse]:
+        breakpoint()
         query = GetAllStocksQuery(**query_params.model_dump(exclude_none=True))
         stocks = self.get_all_handler.handle(query)
         return [StockResponse.model_validate(stock) for stock in stocks]
@@ -32,7 +33,7 @@ class StockController:
     def get_by_id(self, id: int) -> StockResponse:
         stock = self.get_by_id_handler.handle(GetStockByIdQuery(id=id))
         if stock is None:
-            raise NotFoundException("Stock not found")
+            raise NotFoundError("Stock not found")
         return StockResponse.model_validate(stock)
 
     def get_by_product(self, product_id: int) -> StockResponse:
@@ -40,5 +41,5 @@ class StockController:
             GetStockByProductQuery(product_id=product_id)
         )
         if stock is None:
-            raise NotFoundException(f"Stock for product_id {product_id} not found")
+            raise NotFoundError(f"Stock for product_id {product_id} not found")
         return StockResponse.model_validate(stock)

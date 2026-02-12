@@ -1,4 +1,3 @@
-
 import structlog
 from structlog.processors import TimeStamper, add_log_level
 from structlog.stdlib import LoggerFactory, filter_by_level, render_to_log_kwargs

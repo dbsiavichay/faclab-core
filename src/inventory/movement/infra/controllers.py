@@ -10,7 +10,7 @@ from src.inventory.movement.app.queries import (
     GetMovementByIdQuery,
     GetMovementByIdQueryHandler,
 )
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 from .validators import MovementInput, MovementQueryParams, MovementResponse
 
@@ -40,5 +40,5 @@ class MovementController:
     def get_by_id(self, id: int) -> MovementResponse:
         movement = self.get_by_id_handler.handle(GetMovementByIdQuery(id=id))
         if movement is None:
-            raise NotFoundException("Movement not found")
+            raise NotFoundError("Movement not found")
         return MovementResponse.model_validate(movement)

@@ -1,7 +1,7 @@
-from src.shared.domain.exceptions import BaseException
+from src.shared.domain.exceptions import BaseError
 
 
-class InsufficientStock(BaseException):
+class InsufficientStockError(BaseError):
     def __init__(self, product_id: int, quantity: int):
         self.status_code = 400
         self.data = {}

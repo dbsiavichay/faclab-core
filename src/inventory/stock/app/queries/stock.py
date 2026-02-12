@@ -36,9 +36,7 @@ class GetStockByIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetStockByIdQueryHandler(
-    QueryHandler[GetStockByIdQuery, StockOutput | None]
-):
+class GetStockByIdQueryHandler(QueryHandler[GetStockByIdQuery, StockOutput | None]):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 

@@ -38,9 +38,7 @@ class SaleModel(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now
     )
-    updated_at: Mapped[datetime | None] = mapped_column(
-        DateTime, onupdate=datetime.now
-    )
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=datetime.now)
 
     # Relationships
     items: Mapped[list["SaleItemModel"]] = relationship(

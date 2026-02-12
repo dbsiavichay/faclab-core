@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.inventory.stock.domain.exceptions import InsufficientStock
+from src.inventory.stock.domain.exceptions import InsufficientStockError
 from src.shared.domain.entities import Entity
 
 
@@ -14,6 +14,6 @@ class Stock(Entity):
     def update_quantity(self, quantity: int):
         new_quantity = self.quantity + quantity
         if new_quantity < 0:
-            raise InsufficientStock(self.product_id, quantity)
+            raise InsufficientStockError(self.product_id, quantity)
         self.quantity = new_quantity
         return self

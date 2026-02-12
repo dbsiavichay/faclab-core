@@ -1,4 +1,3 @@
-
 from pydantic import AliasChoices, BaseModel, Field
 
 from src.shared.infra.validators import QueryParams

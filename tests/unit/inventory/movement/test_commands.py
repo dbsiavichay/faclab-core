@@ -12,7 +12,7 @@ from src.inventory.movement.app.commands import (
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
 from src.inventory.movement.domain.events import MovementCreated
-from src.inventory.movement.domain.exceptions import InvalidMovementTypeException
+from src.inventory.movement.domain.exceptions import InvalidMovementTypeError
 from src.shared.infra.events.event_bus import EventBus
 
 
@@ -145,11 +145,11 @@ def test_create_movement_in_with_negative_quantity_raises(mock_movement_repo):
     handler = CreateMovementCommandHandler(mock_movement_repo)
 
     # Act & Assert
-    with pytest.raises(InvalidMovementTypeException) as exc_info:
+    with pytest.raises(InvalidMovementTypeError) as exc_info:
         handler.handle(command)
 
     # Check the detail attribute for the specific message
-    assert hasattr(exc_info.value, 'detail')
+    assert hasattr(exc_info.value, "detail")
     assert "positiva" in exc_info.value.detail.lower()
     mock_movement_repo.create.assert_not_called()
 
@@ -166,11 +166,11 @@ def test_create_movement_out_with_positive_quantity_raises(mock_movement_repo):
     handler = CreateMovementCommandHandler(mock_movement_repo)
 
     # Act & Assert
-    with pytest.raises(InvalidMovementTypeException) as exc_info:
+    with pytest.raises(InvalidMovementTypeError) as exc_info:
         handler.handle(command)
 
     # Check the detail attribute for the specific message
-    assert hasattr(exc_info.value, 'detail')
+    assert hasattr(exc_info.value, "detail")
     assert "negativa" in exc_info.value.detail.lower()
     mock_movement_repo.create.assert_not_called()
 
@@ -187,11 +187,11 @@ def test_create_movement_zero_quantity_raises(mock_movement_repo):
     handler = CreateMovementCommandHandler(mock_movement_repo)
 
     # Act & Assert
-    with pytest.raises(InvalidMovementTypeException) as exc_info:
+    with pytest.raises(InvalidMovementTypeError) as exc_info:
         handler.handle(command)
 
     # Check the detail attribute for the specific message
-    assert hasattr(exc_info.value, 'detail')
+    assert hasattr(exc_info.value, "detail")
     assert "cero" in exc_info.value.detail.lower()
     mock_movement_repo.create.assert_not_called()
 

@@ -86,16 +86,12 @@ class CustomerRouter:
         """Deletes a customer."""
         return controller.delete(id)
 
-    def get_all(
-        self, controller: Injected[CustomerController]
-    ):
+    def get_all(self, controller: Injected[CustomerController]):
         """Retrieves all customers."""
         customers = controller.get_all()
         return CustomersResponse(data=customers)
 
-    def get_by_id(
-        self, controller: Injected[CustomerController], id: int
-    ):
+    def get_by_id(self, controller: Injected[CustomerController], id: int):
         """Retrieves a specific customer by its ID."""
         return controller.get_by_id(id)
 
@@ -107,15 +103,11 @@ class CustomerRouter:
         """Retrieves a customer by tax ID."""
         return controller.get_by_tax_id(tax_id)
 
-    def activate(
-        self, controller: Injected[CustomerController], id: int
-    ):
+    def activate(self, controller: Injected[CustomerController], id: int):
         """Activates a customer."""
         return controller.activate(id)
 
-    def deactivate(
-        self, controller: Injected[CustomerController], id: int
-    ):
+    def deactivate(self, controller: Injected[CustomerController], id: int):
         """Deactivates a customer."""
         return controller.deactivate(id)
 

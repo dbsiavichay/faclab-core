@@ -12,58 +12,42 @@ def create_wireup_container():
     """
     from wireup import create_sync_container
 
-    from src.shared.infra.db_session import configure_session_factory, get_db_session
     from src.catalog.product.app.commands.create_category import (
         CreateCategoryCommandHandler,
+    )
+    from src.catalog.product.app.commands.create_product import (
+        CreateProductCommandHandler,
     )
     from src.catalog.product.app.commands.delete_category import (
         DeleteCategoryCommandHandler,
     )
+    from src.catalog.product.app.commands.delete_product import (
+        DeleteProductCommandHandler,
+    )
     from src.catalog.product.app.commands.update_category import (
         UpdateCategoryCommandHandler,
+    )
+    from src.catalog.product.app.commands.update_product import (
+        UpdateProductCommandHandler,
     )
     from src.catalog.product.app.queries.get_categories import (
         GetAllCategoriesQueryHandler,
         GetCategoryByIdQueryHandler,
-    )
-    from src.catalog.product.infra.controllers import CategoryController
-    from src.catalog.product.infra.mappers import CategoryMapper
-    from src.catalog.product.infra.repositories import create_category_repository
-    from src.catalog.product.app.commands.create_product import (
-        CreateProductCommandHandler,
-    )
-    from src.catalog.product.app.commands.delete_product import (
-        DeleteProductCommandHandler,
-    )
-    from src.catalog.product.app.commands.update_product import (
-        UpdateProductCommandHandler,
     )
     from src.catalog.product.app.queries.get_products import (
         GetAllProductsQueryHandler,
         GetProductByIdQueryHandler,
         SearchProductsQueryHandler,
     )
-    from src.catalog.product.infra.controllers import ProductController
-    from src.catalog.product.infra.mappers import ProductMapper
-    from src.catalog.product.infra.repositories import create_product_repository
-    from src.inventory.movement.app.commands.movement import (
-        CreateMovementCommandHandler,
+    from src.catalog.product.infra.controllers import (
+        CategoryController,
+        ProductController,
     )
-    from src.inventory.movement.app.queries.movement import (
-        GetAllMovementsQueryHandler,
-        GetMovementByIdQueryHandler,
+    from src.catalog.product.infra.mappers import CategoryMapper, ProductMapper
+    from src.catalog.product.infra.repositories import (
+        create_category_repository,
+        create_product_repository,
     )
-    from src.inventory.movement.infra.controllers import MovementController
-    from src.inventory.movement.infra.mappers import MovementMapper
-    from src.inventory.movement.infra.repositories import create_movement_repository
-    from src.inventory.stock.app.queries.stock import (
-        GetAllStocksQueryHandler,
-        GetStockByIdQueryHandler,
-        GetStockByProductQueryHandler,
-    )
-    from src.inventory.stock.infra.controllers import StockController
-    from src.inventory.stock.infra.mappers import StockMapper
-    from src.inventory.stock.infra.repositories import create_stock_repository
     from src.customers.app.commands.customer import (
         ActivateCustomerCommandHandler,
         CreateCustomerCommandHandler,
@@ -94,6 +78,24 @@ def create_wireup_container():
         create_customer_contact_repository,
         create_customer_repository,
     )
+    from src.inventory.movement.app.commands.movement import (
+        CreateMovementCommandHandler,
+    )
+    from src.inventory.movement.app.queries.movement import (
+        GetAllMovementsQueryHandler,
+        GetMovementByIdQueryHandler,
+    )
+    from src.inventory.movement.infra.controllers import MovementController
+    from src.inventory.movement.infra.mappers import MovementMapper
+    from src.inventory.movement.infra.repositories import create_movement_repository
+    from src.inventory.stock.app.queries.stock import (
+        GetAllStocksQueryHandler,
+        GetStockByIdQueryHandler,
+        GetStockByProductQueryHandler,
+    )
+    from src.inventory.stock.infra.controllers import StockController
+    from src.inventory.stock.infra.mappers import StockMapper
+    from src.inventory.stock.infra.repositories import create_stock_repository
     from src.sales.app.commands.add_sale_item import AddSaleItemCommandHandler
     from src.sales.app.commands.cancel_sale import CancelSaleCommandHandler
     from src.sales.app.commands.confirm_sale import ConfirmSaleCommandHandler
@@ -113,6 +115,7 @@ def create_wireup_container():
         create_sale_item_repository,
         create_sale_repository,
     )
+    from src.shared.infra.db_session import configure_session_factory, get_db_session
 
     db_connection_string = config.DB_CONNECTION_STRING
     if not db_connection_string:

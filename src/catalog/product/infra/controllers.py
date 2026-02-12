@@ -32,7 +32,7 @@ from src.catalog.product.infra.validators import (
     ProductResponse,
     ProductsResponse,
 )
-from src.shared.infra.exceptions import NotFoundException
+from src.shared.infra.exceptions import NotFoundError
 
 
 @injectable(lifetime="scoped")
@@ -76,7 +76,7 @@ class CategoryController:
         query = GetCategoryByIdQuery(category_id=id)
         category = self.get_by_id_handler.handle(query)
         if category is None:
-            raise NotFoundException("Category not found")
+            raise NotFoundError("Category not found")
         return CategoryResponse.model_validate(category)
 
 
@@ -122,5 +122,5 @@ class ProductController:
         query = GetProductByIdQuery(product_id=id)
         product = self.get_by_id_handler.handle(query)
         if product is None:
-            raise NotFoundException("Product not found")
+            raise NotFoundError("Product not found")
         return ProductResponse.model_validate(product)
