@@ -14,6 +14,10 @@ class GetAllMovementsQuery(Query):
 
     product_id: int | None = None
     type: str | None = None
+    from_date: str | None = None
+    to_date: str | None = None
+    limit: int | None = None
+    offset: int | None = None
 
 
 @injectable(lifetime="scoped")
@@ -29,8 +33,11 @@ class GetAllMovementsQueryHandler(
             filters["product_id"] = query.product_id
         if query.type is not None:
             filters["type"] = query.type
+        # TODO: Implementar filtros por from_date y to_date cuando sea necesario
 
-        movements = self.repo.filter_by(**filters) if filters else self.repo.get_all()
+        movements = self.repo.filter_by(
+            limit=query.limit, offset=query.offset, **filters
+        )
         return [movement.dict() for movement in movements]
 
 
