@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.customers.app.types import CustomerContactOutput
 from src.customers.domain.entities import CustomerContact
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
@@ -19,12 +18,12 @@ class CreateCustomerContactCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateCustomerContactCommandHandler(
-    CommandHandler[CreateCustomerContactCommand, CustomerContactOutput]
+    CommandHandler[CreateCustomerContactCommand, dict]
 ):
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def _handle(self, command: CreateCustomerContactCommand) -> CustomerContactOutput:
+    def _handle(self, command: CreateCustomerContactCommand) -> dict:
         contact = CustomerContact(
             customer_id=command.customer_id,
             name=command.name,
@@ -48,12 +47,12 @@ class UpdateCustomerContactCommand(Command):
 
 @injectable(lifetime="scoped")
 class UpdateCustomerContactCommandHandler(
-    CommandHandler[UpdateCustomerContactCommand, CustomerContactOutput]
+    CommandHandler[UpdateCustomerContactCommand, dict]
 ):
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def _handle(self, command: UpdateCustomerContactCommand) -> CustomerContactOutput:
+    def _handle(self, command: UpdateCustomerContactCommand) -> dict:
         contact = CustomerContact(
             id=command.id,
             customer_id=command.customer_id,

@@ -31,9 +31,9 @@ from src.customers.app.queries import (
     GetCustomerContactByIdQueryHandler,
 )
 from src.customers.infra.validators import (
-    CustomerContactInput,
+    CustomerContactRequest,
     CustomerContactResponse,
-    CustomerInput,
+    CustomerRequest,
     CustomerResponse,
 )
 from src.shared.infra.exceptions import NotFoundError
@@ -61,12 +61,12 @@ class CustomerController:
         self.get_by_id_handler = get_by_id_handler
         self.get_by_tax_id_handler = get_by_tax_id_handler
 
-    def create(self, new_customer: CustomerInput) -> CustomerResponse:
+    def create(self, new_customer: CustomerRequest) -> CustomerResponse:
         command = CreateCustomerCommand(**new_customer.model_dump(exclude_none=True))
         result = self.create_handler.handle(command)
         return CustomerResponse.model_validate(result)
 
-    def update(self, id: int, customer: CustomerInput) -> CustomerResponse:
+    def update(self, id: int, customer: CustomerRequest) -> CustomerResponse:
         command = UpdateCustomerCommand(id=id, **customer.model_dump(exclude_none=True))
         result = self.update_handler.handle(command)
         return CustomerResponse.model_validate(result)
@@ -118,7 +118,7 @@ class CustomerContactController:
         self.get_by_customer_id_handler = get_by_customer_id_handler
 
     def create(
-        self, customer_id: int, new_contact: CustomerContactInput
+        self, customer_id: int, new_contact: CustomerContactRequest
     ) -> CustomerContactResponse:
         command = CreateCustomerContactCommand(
             customer_id=customer_id, **new_contact.model_dump(exclude_none=True)
@@ -126,7 +126,9 @@ class CustomerContactController:
         result = self.create_handler.handle(command)
         return CustomerContactResponse.model_validate(result)
 
-    def update(self, id: int, contact: CustomerContactInput) -> CustomerContactResponse:
+    def update(
+        self, id: int, contact: CustomerContactRequest
+    ) -> CustomerContactResponse:
         command = UpdateCustomerContactCommand(
             id=id, **contact.model_dump(exclude_none=True)
         )

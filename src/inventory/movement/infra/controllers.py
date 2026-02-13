@@ -12,7 +12,7 @@ from src.inventory.movement.app.queries import (
 )
 from src.shared.infra.exceptions import NotFoundError
 
-from .validators import MovementInput, MovementQueryParams, MovementResponse
+from .validators import MovementQueryParams, MovementRequest, MovementResponse
 
 
 @injectable(lifetime="scoped")
@@ -27,7 +27,7 @@ class MovementController:
         self.get_all_handler = get_all_handler
         self.get_by_id_handler = get_by_id_handler
 
-    def create(self, new_movement: MovementInput) -> MovementResponse:
+    def create(self, new_movement: MovementRequest) -> MovementResponse:
         command = CreateMovementCommand(**new_movement.model_dump(exclude_none=True))
         result = self.create_handler.handle(command)
         return MovementResponse.model_validate(result)

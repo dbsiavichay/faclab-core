@@ -3,9 +3,9 @@ from wireup import Injected
 
 from src.catalog.product.infra.controllers import CategoryController, ProductController
 from src.catalog.product.infra.validators import (
-    CategoryInput,
+    CategoryRequest,
     CategoryResponse,
-    ProductInput,
+    ProductRequest,
     ProductResponse,
     ProductsResponse,
 )
@@ -34,7 +34,7 @@ class CategoryRouter:
 
     def create(
         self,
-        new_category: CategoryInput,
+        new_category: CategoryRequest,
         controller: Injected[CategoryController],
     ):
         """Saves a category."""
@@ -43,7 +43,7 @@ class CategoryRouter:
     def update(
         self,
         id: int,
-        category: CategoryInput,
+        category: CategoryRequest,
         controller: Injected[CategoryController],
     ):
         """Updates a category."""
@@ -85,7 +85,7 @@ class ProductRouter:
 
     def create(
         self,
-        new_product: ProductInput,
+        new_product: ProductRequest,
         controller: Injected[ProductController],
     ):
         """Saves a product."""
@@ -94,7 +94,7 @@ class ProductRouter:
     def update(
         self,
         id: int,
-        product: ProductInput,
+        product: ProductRequest,
         controller: Injected[ProductController],
     ):
         """Updates a product."""

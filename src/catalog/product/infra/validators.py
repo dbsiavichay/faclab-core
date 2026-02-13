@@ -1,13 +1,13 @@
 from pydantic import AliasChoices, BaseModel, Field
 
 
-# Inputs
-class CategoryInput(BaseModel):
+# Requests
+class CategoryRequest(BaseModel):
     name: str
     description: str | None = None
 
 
-class ProductInput(BaseModel):
+class ProductRequest(BaseModel):
     name: str
     sku: str
     description: str | None = None
@@ -15,17 +15,17 @@ class ProductInput(BaseModel):
         None,
         ge=1,
         description="Category ID (must be a positive integer)",
-        validation_alias=AliasChoices("category_id", "categoryId"),
+        validation_alias=AliasChoices("categoryId", "category_id"),
         serialization_alias="categoryId",
     )
 
 
 # Responses
-class CategoryResponse(CategoryInput):
+class CategoryResponse(CategoryRequest):
     id: int = Field(ge=1, description="Category ID")
 
 
-class ProductResponse(ProductInput):
+class ProductResponse(ProductRequest):
     id: int = Field(ge=1, description="Product ID")
 
 

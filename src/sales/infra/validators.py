@@ -6,7 +6,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class SaleItemInput(BaseModel):
+class SaleItemRequest(BaseModel):
     """Schema para input de un item de venta"""
 
     product_id: int = Field(..., gt=0, description="ID del producto")
@@ -15,7 +15,7 @@ class SaleItemInput(BaseModel):
     discount: float = Field(0.0, ge=0, le=100, description="Porcentaje de descuento")
 
 
-class SaleInput(BaseModel):
+class SaleRequest(BaseModel):
     """Schema para crear una venta"""
 
     customer_id: int = Field(..., gt=0, description="ID del cliente")
@@ -23,7 +23,7 @@ class SaleInput(BaseModel):
     created_by: str | None = Field(None, max_length=64, description="Usuario que crea")
 
 
-class PaymentInput(BaseModel):
+class PaymentRequest(BaseModel):
     """Schema para registrar un pago"""
 
     amount: float = Field(..., gt=0, description="Monto del pago")
@@ -34,7 +34,7 @@ class PaymentInput(BaseModel):
     notes: str | None = Field(None, max_length=512, description="Notas del pago")
 
 
-class CancelSaleInput(BaseModel):
+class CancelSaleRequest(BaseModel):
     """Schema para cancelar una venta"""
 
     reason: str | None = Field(

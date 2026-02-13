@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.inventory.stock.app.types import StockOutput
 from src.inventory.stock.domain.entities import Stock
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
@@ -18,11 +17,11 @@ class GetAllStocksQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, list[StockOutput]]):
+class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, list[dict]]):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def _handle(self, query: GetAllStocksQuery) -> list[StockOutput]:
+    def _handle(self, query: GetAllStocksQuery) -> list[dict]:
         # Build filter kwargs
         filter_kwargs = {}
         if query.product_id is not None:
@@ -43,11 +42,11 @@ class GetStockByIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetStockByIdQueryHandler(QueryHandler[GetStockByIdQuery, StockOutput | None]):
+class GetStockByIdQueryHandler(QueryHandler[GetStockByIdQuery, dict | None]):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def _handle(self, query: GetStockByIdQuery) -> StockOutput | None:
+    def _handle(self, query: GetStockByIdQuery) -> dict | None:
         stock = self.repo.get_by_id(query.id)
         if stock is None:
             return None
@@ -62,13 +61,11 @@ class GetStockByProductQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetStockByProductQueryHandler(
-    QueryHandler[GetStockByProductQuery, StockOutput | None]
-):
+class GetStockByProductQueryHandler(QueryHandler[GetStockByProductQuery, dict | None]):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def _handle(self, query: GetStockByProductQuery) -> StockOutput | None:
+    def _handle(self, query: GetStockByProductQuery) -> dict | None:
         stock = self.repo.first(product_id=query.product_id)
         if stock is None:
             return None

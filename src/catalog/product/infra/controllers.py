@@ -24,11 +24,10 @@ from src.catalog.product.app.queries import (
     GetProductByIdQuery,
     GetProductByIdQueryHandler,
 )
-from src.catalog.product.domain.entities import Product
 from src.catalog.product.infra.validators import (
-    CategoryInput,
+    CategoryRequest,
     CategoryResponse,
-    ProductInput,
+    ProductRequest,
     ProductResponse,
     ProductsResponse,
 )
@@ -51,12 +50,12 @@ class CategoryController:
         self.get_all_handler = get_all_handler
         self.get_by_id_handler = get_by_id_handler
 
-    def create(self, new_category: CategoryInput) -> CategoryResponse:
+    def create(self, new_category: CategoryRequest) -> CategoryResponse:
         command = CreateCategoryCommand(**new_category.model_dump(exclude_none=True))
         category = self.create_handler.handle(command)
         return CategoryResponse.model_validate(category)
 
-    def update(self, id: int, category: CategoryInput) -> Product:
+    def update(self, id: int, category: CategoryRequest) -> CategoryResponse:
         command = UpdateCategoryCommand(
             category_id=id, **category.model_dump(exclude_none=True)
         )
@@ -96,12 +95,12 @@ class ProductController:
         self.get_all_handler = get_all_handler
         self.get_by_id_handler = get_by_id_handler
 
-    def create(self, new_product: ProductInput) -> ProductResponse:
+    def create(self, new_product: ProductRequest) -> ProductResponse:
         command = CreateProductCommand(**new_product.model_dump(exclude_none=True))
         product = self.create_handler.handle(command)
         return ProductResponse.model_validate(product)
 
-    def update(self, id: int, product: ProductInput) -> Product:
+    def update(self, id: int, product: ProductRequest) -> ProductResponse:
         command = UpdateProductCommand(
             product_id=id, **product.model_dump(exclude_none=True)
         )

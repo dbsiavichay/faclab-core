@@ -3,7 +3,6 @@ from decimal import Decimal
 
 from wireup import injectable
 
-from src.customers.app.types import CustomerOutput
 from src.customers.domain.entities import Customer, TaxType
 from src.customers.domain.events import (
     CustomerActivated,
@@ -35,13 +34,11 @@ class CreateCustomerCommand(Command):
 
 
 @injectable(lifetime="scoped")
-class CreateCustomerCommandHandler(
-    CommandHandler[CreateCustomerCommand, CustomerOutput]
-):
+class CreateCustomerCommandHandler(CommandHandler[CreateCustomerCommand, dict]):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def _handle(self, command: CreateCustomerCommand) -> CustomerOutput:
+    def _handle(self, command: CreateCustomerCommand) -> dict:
         if command.email:
             Email(command.email)
         TaxId(command.tax_id)
@@ -91,13 +88,11 @@ class UpdateCustomerCommand(Command):
 
 
 @injectable(lifetime="scoped")
-class UpdateCustomerCommandHandler(
-    CommandHandler[UpdateCustomerCommand, CustomerOutput]
-):
+class UpdateCustomerCommandHandler(CommandHandler[UpdateCustomerCommand, dict]):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def _handle(self, command: UpdateCustomerCommand) -> CustomerOutput:
+    def _handle(self, command: UpdateCustomerCommand) -> dict:
         if command.email:
             Email(command.email)
         TaxId(command.tax_id)
@@ -149,13 +144,11 @@ class ActivateCustomerCommand(Command):
 
 
 @injectable(lifetime="scoped")
-class ActivateCustomerCommandHandler(
-    CommandHandler[ActivateCustomerCommand, CustomerOutput]
-):
+class ActivateCustomerCommandHandler(CommandHandler[ActivateCustomerCommand, dict]):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def _handle(self, command: ActivateCustomerCommand) -> CustomerOutput:
+    def _handle(self, command: ActivateCustomerCommand) -> dict:
         customer = self.repo.get_by_id(command.id)
         if customer is None:
             raise NotFoundError(f"Customer with id {command.id} not found")
@@ -178,13 +171,11 @@ class DeactivateCustomerCommand(Command):
 
 
 @injectable(lifetime="scoped")
-class DeactivateCustomerCommandHandler(
-    CommandHandler[DeactivateCustomerCommand, CustomerOutput]
-):
+class DeactivateCustomerCommandHandler(CommandHandler[DeactivateCustomerCommand, dict]):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def _handle(self, command: DeactivateCustomerCommand) -> CustomerOutput:
+    def _handle(self, command: DeactivateCustomerCommand) -> dict:
         customer = self.repo.get_by_id(command.id)
         if customer is None:
             raise NotFoundError(f"Customer with id {command.id} not found")

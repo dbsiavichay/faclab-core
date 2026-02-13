@@ -21,7 +21,7 @@ class MovementBase(BaseModel):
     date: datetime | None = None
 
 
-class MovementInput(MovementBase):
+class MovementRequest(MovementBase):
     @field_validator("quantity", mode="after")
     @classmethod
     def validate_quantity_not_zero(cls, v):
@@ -30,7 +30,7 @@ class MovementInput(MovementBase):
         return v
 
     @model_validator(mode="after")
-    def validate_quantity_by_movement_type(self) -> "MovementInput":
+    def validate_quantity_by_movement_type(self) -> "MovementRequest":
         if self.type == MovementType.IN and self.quantity < 0:
             raise InvalidMovementTypeError(
                 "La cantidad debe ser positiva para movimientos de entrada"

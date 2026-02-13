@@ -6,10 +6,10 @@ from src.customers.infra.controllers import (
     CustomerController,
 )
 from src.customers.infra.validators import (
-    CustomerContactInput,
+    CustomerContactRequest,
     CustomerContactResponse,
     CustomerContactsResponse,
-    CustomerInput,
+    CustomerRequest,
     CustomerResponse,
     CustomersResponse,
 )
@@ -64,7 +64,7 @@ class CustomerRouter:
     def create(
         self,
         controller: Injected[CustomerController],
-        new_customer: CustomerInput,
+        new_customer: CustomerRequest,
     ):
         """Creates a new customer."""
         return controller.create(new_customer)
@@ -73,7 +73,7 @@ class CustomerRouter:
         self,
         controller: Injected[CustomerController],
         id: int,
-        customer: CustomerInput,
+        customer: CustomerRequest,
     ):
         """Updates a customer."""
         return controller.update(id, customer)
@@ -115,7 +115,7 @@ class CustomerRouter:
         self,
         controller: Injected[CustomerContactController],
         customer_id: int,
-        new_contact: CustomerContactInput,
+        new_contact: CustomerContactRequest,
     ):
         """Creates a new contact for a customer."""
         return controller.create(customer_id, new_contact)
@@ -153,7 +153,7 @@ class CustomerContactRouter:
         self,
         controller: Injected[CustomerContactController],
         id: int,
-        contact: CustomerContactInput,
+        contact: CustomerContactRequest,
     ):
         """Updates a customer contact."""
         return controller.update(id, contact)
