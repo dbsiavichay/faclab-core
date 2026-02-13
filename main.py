@@ -12,6 +12,7 @@ from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.movement.infra.routes import MovementRouter
 from src.inventory.stock.infra.routes import StockRouter
 from src.sales.infra.routes import SaleRouter
+from src.shared.infra.adapters import OpenTelemetry
 from src.shared.infra.logging import configure_logging
 from src.shared.infra.middlewares import ErrorHandlingMiddleware
 
@@ -24,12 +25,15 @@ logger = structlog.get_logger(__name__)
 
 origins = ["http://localhost:3000", "http://localhost:5173"]
 
-wireup_container = create_wireup_container()
-src.wireup_container = wireup_container
-
 app = FastAPI(
     title="Faclab core API", version="1.0.0", description="API for Faclab core services"
 )
+
+otel = OpenTelemetry()
+otel.instrument(app, config.get_otel_config())
+
+wireup_container = create_wireup_container()
+src.wireup_container = wireup_container
 
 
 category_router = CategoryRouter()
@@ -65,6 +69,11 @@ app.include_router(sale_router.router, prefix="/sales", tags=["sales"])
 @app.get("/")
 async def root():
     return RedirectResponse("/docs")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    otel.shutdown()
 
 
 wireup_fastapi_setup(wireup_container, app)
