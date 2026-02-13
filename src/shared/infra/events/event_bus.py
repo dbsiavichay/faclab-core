@@ -1,10 +1,11 @@
-import logging
 from collections import defaultdict
 from collections.abc import Callable
 
+import structlog
+
 from src.shared.domain.events import DomainEvent
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class EventBus:
@@ -18,14 +19,20 @@ class EventBus:
     def publish(cls, event: DomainEvent) -> None:
         event_type = type(event)
         handlers = cls._subscribers.get(event_type, [])
-        logger.info(f"Publishing {event_type.__name__} to {len(handlers)} handler(s)")
+        logger.info(
+            "event_published",
+            event_type=event_type.__name__,
+            handler_count=len(handlers),
+        )
         for handler in handlers:
             try:
                 handler(event)
             except Exception as e:
                 logger.error(
-                    f"Error in handler {handler.__name__} for "
-                    f"{event_type.__name__}: {e}"
+                    "event_handler_error",
+                    handler=handler.__name__,
+                    event_type=event_type.__name__,
+                    error=str(e),
                 )
 
     @classmethod

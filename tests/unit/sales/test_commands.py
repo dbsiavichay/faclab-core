@@ -19,6 +19,7 @@ from src.sales.app.commands import (
 )
 from src.sales.domain.entities import Payment, PaymentMethod, Sale, SaleItem, SaleStatus
 from src.sales.domain.exceptions import InvalidSaleStatusError, SaleHasNoItemsError
+from src.shared.domain.exceptions import ValidationError
 from src.shared.infra.events.event_bus import EventBus
 from src.shared.infra.exceptions import NotFoundError
 
@@ -283,7 +284,7 @@ def test_register_payment_invalid_method():
         payment_method="BITCOIN",  # Método inválido
     )
 
-    with pytest.raises(ValueError, match="Invalid payment method"):
+    with pytest.raises(ValidationError, match="Invalid payment method"):
         handler.handle(command)
 
 

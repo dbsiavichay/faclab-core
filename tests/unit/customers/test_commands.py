@@ -15,6 +15,7 @@ from src.customers.app.commands.customer import (
     UpdateCustomerCommandHandler,
 )
 from src.customers.domain.entities import Customer, TaxType
+from src.shared.domain.exceptions import NotFoundError
 from src.shared.infra.events.event_bus import EventBus
 
 
@@ -135,7 +136,7 @@ def test_activate_customer_not_found_raises():
     repo.get_by_id.return_value = None
     handler = ActivateCustomerCommandHandler(repo)
 
-    with pytest.raises(ValueError, match="Customer with id 1 not found"):
+    with pytest.raises(NotFoundError, match="Customer with id 1 not found"):
         handler.handle(ActivateCustomerCommand(id=1))
 
 

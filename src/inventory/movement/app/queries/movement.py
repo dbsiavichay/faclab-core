@@ -27,7 +27,7 @@ class GetAllMovementsQueryHandler(
     def __init__(self, repo: Repository[Movement]):
         self.repo = repo
 
-    def handle(self, query: GetAllMovementsQuery) -> list[MovementOutput]:
+    def _handle(self, query: GetAllMovementsQuery) -> list[MovementOutput]:
         filters = {}
         if query.product_id is not None:
             filters["product_id"] = query.product_id
@@ -55,7 +55,7 @@ class GetMovementByIdQueryHandler(
     def __init__(self, repo: Repository[Movement]):
         self.repo = repo
 
-    def handle(self, query: GetMovementByIdQuery) -> MovementOutput | None:
+    def _handle(self, query: GetMovementByIdQuery) -> MovementOutput | None:
         movement = self.repo.get_by_id(query.id)
         if movement is None:
             return None

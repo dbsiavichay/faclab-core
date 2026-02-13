@@ -23,7 +23,7 @@ class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
 
-    def handle(self, command: UpdateProductCommand) -> dict:
+    def _handle(self, command: UpdateProductCommand) -> dict:
         # Get existing product to track changes
         existing = self.repo.get_by_id(command.product_id)
 

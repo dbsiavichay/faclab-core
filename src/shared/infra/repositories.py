@@ -6,6 +6,7 @@ from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
 
 from src.shared.app.repositories import Repository
 from src.shared.domain.entities import Entity
+from src.shared.domain.exceptions import NotFoundError
 from src.shared.domain.specifications import Specification
 from src.shared.infra.mappers import Mapper
 
@@ -50,7 +51,7 @@ class BaseRepository(Repository[E], Generic[E]):
         """
         model = self.session.query(self.__model__).get(entity.id)
         if not model:
-            raise ValueError(f"Entity with id {entity.id} not found")
+            raise NotFoundError(f"Entity with id {entity.id} not found")
 
         for key, value in self.mapper.to_dict(entity).items():
             setattr(model, key, value)
@@ -67,7 +68,7 @@ class BaseRepository(Repository[E], Generic[E]):
         """
         model = self.session.query(self.__model__).get(id)
         if not model:
-            raise ValueError(f"Entity with id {id} not found")
+            raise NotFoundError(f"Entity with id {id} not found")
 
         self.session.delete(model)
         self.session.commit()

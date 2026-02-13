@@ -22,7 +22,7 @@ class CreateProductCommandHandler(CommandHandler[CreateProductCommand, dict]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
 
-    def handle(self, command: CreateProductCommand) -> dict:
+    def _handle(self, command: CreateProductCommand) -> dict:
         product = Product(
             sku=command.sku,
             name=command.name,

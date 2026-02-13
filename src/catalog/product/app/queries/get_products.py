@@ -20,7 +20,7 @@ class GetAllProductsQueryHandler(QueryHandler[GetAllProductsQuery, list[dict]]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
 
-    def handle(self, query: GetAllProductsQuery) -> list[dict]:
+    def _handle(self, query: GetAllProductsQuery) -> list[dict]:
         if query.category_id is not None:
             spec = ProductInCategory(query.category_id)
             products = self.repo.filter_by_spec(
@@ -41,7 +41,7 @@ class GetProductByIdQueryHandler(QueryHandler[GetProductByIdQuery, dict | None])
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
 
-    def handle(self, query: GetProductByIdQuery) -> dict | None:
+    def _handle(self, query: GetProductByIdQuery) -> dict | None:
         product = self.repo.get_by_id(query.product_id)
         return product.dict() if product else None
 
@@ -57,7 +57,7 @@ class SearchProductsQueryHandler(QueryHandler[SearchProductsQuery, list[dict]]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
 
-    def handle(self, query: SearchProductsQuery) -> list[dict]:
+    def _handle(self, query: SearchProductsQuery) -> list[dict]:
         spec = ProductByName(query.search_term)
         products = self.repo.filter_by_spec(spec, limit=query.limit)
         return [p.dict() for p in products]

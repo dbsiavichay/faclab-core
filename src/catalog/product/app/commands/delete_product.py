@@ -19,7 +19,7 @@ class DeleteProductCommandHandler(CommandHandler[DeleteProductCommand, None]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
 
-    def handle(self, command: DeleteProductCommand) -> None:
+    def _handle(self, command: DeleteProductCommand) -> None:
         self.repo.delete(command.product_id)
 
         EventBus.publish(

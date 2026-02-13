@@ -21,7 +21,7 @@ class GetSalePaymentsQueryHandler(QueryHandler[GetSalePaymentsQuery, list[dict]]
     def __init__(self, repo: Repository[Payment]):
         self.repo = repo
 
-    def handle(self, query: GetSalePaymentsQuery) -> list[dict]:
+    def _handle(self, query: GetSalePaymentsQuery) -> list[dict]:
         """Obtiene todos los pagos de una venta específica"""
         payments = self.repo.filter_by(sale_id=query.sale_id)
         return [payment.dict() for payment in payments]

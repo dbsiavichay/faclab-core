@@ -35,7 +35,7 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
 
-    def handle(self, command: AddSaleItemCommand) -> dict:
+    def _handle(self, command: AddSaleItemCommand) -> dict:
         """Agrega un item a la venta y recalcula los totales"""
         # Obtener la venta
         sale = self.sale_repo.get_by_id(command.sale_id)

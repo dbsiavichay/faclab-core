@@ -34,7 +34,7 @@ class ConfirmSaleCommandHandler(CommandHandler[ConfirmSaleCommand, dict]):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
 
-    def handle(self, command: ConfirmSaleCommand) -> dict:
+    def _handle(self, command: ConfirmSaleCommand) -> dict:
         """Confirma la venta si pasa todas las validaciones"""
         # Obtener la venta
         sale = self.sale_repo.get_by_id(command.sale_id)

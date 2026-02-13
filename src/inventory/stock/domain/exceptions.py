@@ -1,13 +1,12 @@
-from src.shared.domain.exceptions import BaseError
+from src.shared.domain.exceptions import DomainError
 
 
-class InsufficientStockError(BaseError):
+class InsufficientStockError(DomainError):
+    error_code = "INSUFFICIENT_STOCK"
+
     def __init__(self, product_id: int, quantity: int):
-        self.status_code = 400
-        self.data = {}
-        self.data["product_id"] = product_id
-        self.data["quantity"] = quantity
-        self.message = (
-            f"Insufficient stock for product {product_id} with quantity {quantity}"
+        self.data = {"product_id": product_id, "quantity": quantity}
+        super().__init__(
+            message=f"Insufficient stock for product {product_id} with quantity {quantity}",
+            detail=f"product_id={product_id}, quantity={quantity}",
         )
-        super().__init__(self.status_code, self.message)

@@ -7,6 +7,7 @@ from src.sales.domain.entities import Payment, PaymentMethod, Sale
 from src.sales.domain.events import PaymentReceived
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import ValidationError
 from src.shared.infra.events.event_bus import EventBus
 from src.shared.infra.exceptions import NotFoundError
 
@@ -34,7 +35,7 @@ class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]
         self.sale_repo = sale_repo
         self.payment_repo = payment_repo
 
-    def handle(self, command: RegisterPaymentCommand) -> dict:
+    def _handle(self, command: RegisterPaymentCommand) -> dict:
         """Registra el pago y actualiza el estado de la venta"""
         # Obtener la venta
         sale = self.sale_repo.get_by_id(command.sale_id)
@@ -45,9 +46,9 @@ class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]
         try:
             payment_method = PaymentMethod(command.payment_method)
         except ValueError:
-            raise ValueError(
-                f"Invalid payment method: {command.payment_method}. "
-                f"Valid methods: {[m.value for m in PaymentMethod]}"
+            raise ValidationError(
+                message=f"Invalid payment method: {command.payment_method}",
+                detail=f"Valid methods: {[m.value for m in PaymentMethod]}",
             ) from None
 
         # Crear el pago

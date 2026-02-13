@@ -1,20 +1,26 @@
-import logging
-
+import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from wireup.integration.fastapi import setup as wireup_fastapi_setup
 
 import src
+from config import config
 from src import create_wireup_container
 from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.movement.infra.routes import MovementRouter
 from src.inventory.stock.infra.routes import StockRouter
 from src.sales.infra.routes import SaleRouter
+from src.shared.infra.logging import configure_logging
 from src.shared.infra.middlewares import ErrorHandlingMiddleware
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
+configure_logging(
+    log_level=config.LOG_LEVEL,
+    json_output=config.ENVIRONMENT != "local",
+)
+
+logger = structlog.get_logger(__name__)
 
 origins = ["http://localhost:3000", "http://localhost:5173"]
 
@@ -67,5 +73,5 @@ wireup_fastapi_setup(wireup_container, app)
 if __name__ == "__main__":
     import uvicorn
 
-    logging.info("Starting Warehouse API")
+    logger.info("starting_api")
     uvicorn.run(app, host="0.0.0.0", port=3000)

@@ -11,6 +11,7 @@ from src.sales.domain.entities import (
     SaleItem,
     SaleStatus,
 )
+from src.sales.domain.exceptions import InvalidSaleStatusError
 
 
 def test_sale_item_subtotal_calculation():
@@ -49,7 +50,7 @@ def test_sale_confirm_changes_status():
 def test_sale_confirm_only_draft():
     """Test que solo se pueden confirmar ventas en DRAFT"""
     sale = Sale(customer_id=1, status=SaleStatus.CONFIRMED)
-    with pytest.raises(ValueError, match="Only DRAFT sales can be confirmed"):
+    with pytest.raises(InvalidSaleStatusError):
         sale.confirm()
 
 
@@ -70,7 +71,7 @@ def test_sale_cancel_from_confirmed():
 def test_sale_cancel_from_invoiced_fails():
     """Test que no se pueden cancelar ventas facturadas"""
     sale = Sale(customer_id=1, status=SaleStatus.INVOICED)
-    with pytest.raises(ValueError, match="Only DRAFT or CONFIRMED"):
+    with pytest.raises(InvalidSaleStatusError):
         sale.cancel()
 
 
@@ -84,7 +85,7 @@ def test_sale_invoice_only_confirmed():
 def test_sale_invoice_draft_fails():
     """Test que no se pueden facturar ventas en DRAFT"""
     sale = Sale(customer_id=1, status=SaleStatus.DRAFT)
-    with pytest.raises(ValueError, match="Only CONFIRMED sales can be invoiced"):
+    with pytest.raises(InvalidSaleStatusError):
         sale.invoice()
 
 

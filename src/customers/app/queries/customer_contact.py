@@ -21,7 +21,7 @@ class GetCustomerContactByIdQueryHandler(
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def handle(
+    def _handle(
         self, query: GetCustomerContactByIdQuery
     ) -> CustomerContactOutput | None:
         contact = self.repo.get_by_id(query.id)
@@ -42,7 +42,7 @@ class GetContactsByCustomerIdQueryHandler(
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def handle(
+    def _handle(
         self, query: GetContactsByCustomerIdQuery
     ) -> list[CustomerContactOutput]:
         if isinstance(self.repo, CustomerContactRepositoryImpl):

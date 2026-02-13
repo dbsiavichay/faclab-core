@@ -33,7 +33,7 @@ class CancelSaleCommandHandler(CommandHandler[CancelSaleCommand, dict]):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
 
-    def handle(self, command: CancelSaleCommand) -> dict:
+    def _handle(self, command: CancelSaleCommand) -> dict:
         """Cancela la venta y emite evento si es necesario"""
         # Obtener la venta
         sale = self.sale_repo.get_by_id(command.sale_id)

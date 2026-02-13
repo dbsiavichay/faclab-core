@@ -19,7 +19,7 @@ class DeleteCategoryCommandHandler(CommandHandler[DeleteCategoryCommand, None]):
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
 
-    def handle(self, command: DeleteCategoryCommand) -> None:
+    def _handle(self, command: DeleteCategoryCommand) -> None:
         self.repo.delete(command.category_id)
 
         EventBus.publish(

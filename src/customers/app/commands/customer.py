@@ -13,6 +13,7 @@ from src.customers.domain.events import (
 )
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError
 from src.shared.domain.value_objects import Email, TaxId
 from src.shared.infra.events.event_bus import EventBus
 
@@ -40,7 +41,7 @@ class CreateCustomerCommandHandler(
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def handle(self, command: CreateCustomerCommand) -> CustomerOutput:
+    def _handle(self, command: CreateCustomerCommand) -> CustomerOutput:
         if command.email:
             Email(command.email)
         TaxId(command.tax_id)
@@ -96,7 +97,7 @@ class UpdateCustomerCommandHandler(
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def handle(self, command: UpdateCustomerCommand) -> CustomerOutput:
+    def _handle(self, command: UpdateCustomerCommand) -> CustomerOutput:
         if command.email:
             Email(command.email)
         TaxId(command.tax_id)
@@ -138,7 +139,7 @@ class DeleteCustomerCommandHandler(CommandHandler[DeleteCustomerCommand, None]):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def handle(self, command: DeleteCustomerCommand) -> None:
+    def _handle(self, command: DeleteCustomerCommand) -> None:
         self.repo.delete(command.id)
 
 
@@ -154,10 +155,10 @@ class ActivateCustomerCommandHandler(
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def handle(self, command: ActivateCustomerCommand) -> CustomerOutput:
+    def _handle(self, command: ActivateCustomerCommand) -> CustomerOutput:
         customer = self.repo.get_by_id(command.id)
         if customer is None:
-            raise ValueError(f"Customer with id {command.id} not found")
+            raise NotFoundError(f"Customer with id {command.id} not found")
 
         updated_customer = replace(customer, is_active=True)
         updated_customer = self.repo.update(updated_customer)
@@ -183,10 +184,10 @@ class DeactivateCustomerCommandHandler(
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def handle(self, command: DeactivateCustomerCommand) -> CustomerOutput:
+    def _handle(self, command: DeactivateCustomerCommand) -> CustomerOutput:
         customer = self.repo.get_by_id(command.id)
         if customer is None:
-            raise ValueError(f"Customer with id {command.id} not found")
+            raise NotFoundError(f"Customer with id {command.id} not found")
 
         updated_customer = replace(customer, is_active=False)
         updated_customer = self.repo.update(updated_customer)

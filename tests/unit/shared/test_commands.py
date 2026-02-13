@@ -10,7 +10,7 @@ class CreateOrder(Command):
 
 
 class CreateOrderHandler(CommandHandler[CreateOrder, int]):
-    def handle(self, command: CreateOrder) -> int:
+    def _handle(self, command: CreateOrder) -> int:
         return command.product_id * command.quantity
 
 
