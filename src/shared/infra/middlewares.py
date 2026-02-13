@@ -5,6 +5,7 @@ import structlog
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from opentelemetry import trace
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -54,7 +55,15 @@ def _build_error_response(
 class ErrorHandlingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         request_id = request.headers.get("x-request-id", str(uuid.uuid4()))
-        structlog.contextvars.bind_contextvars(request_id=request_id)
+        bind_vars = {"request_id": request_id}
+
+        span = trace.get_current_span()
+        ctx = span.get_span_context()
+        if ctx.is_valid:
+            bind_vars["trace_id"] = format(ctx.trace_id, "032x")
+            bind_vars["span_id"] = format(ctx.span_id, "016x")
+
+        structlog.contextvars.bind_contextvars(**bind_vars)
 
         try:
             response = await call_next(request)
@@ -111,4 +120,6 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             )
             return JSONResponse(status_code=500, content=body)
         finally:
-            structlog.contextvars.unbind_contextvars("request_id")
+            structlog.contextvars.unbind_contextvars(
+                "request_id", "trace_id", "span_id"
+            )
