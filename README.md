@@ -74,7 +74,7 @@ modulo/
     ├── routes.py                   # Rutas FastAPI
     ├── validators.py               # Esquemas Pydantic
     ├── models.py                   # Modelos SQLAlchemy
-    ├── mappers.py                  # Conversion Entity <-> Model
+    ├── mappers.py                  # Mappers declarativos Entity <-> Model
     └── repositories.py             # Implementacion de repositorios
 ```
 
@@ -120,7 +120,16 @@ Dataclasses inmutables (`frozen=True`) que encapsulan validacion:
 
 ### Mapper Pattern
 
-Conversion bidireccional entre entidades de dominio y modelos SQLAlchemy. Registrados como `SINGLETON` por ser stateless.
+Mapper base declarativo (`Mapper[E, M]`) que auto-mapea campos por nombre entre entidades de dominio y modelos SQLAlchemy usando introspeccion de dataclasses. Los campos Enum se detectan automaticamente. Los mappers concretos solo declaran `__entity__` y opcionalmente `__exclude_fields__` para campos auto-generados (ej. `created_at`):
+
+```python
+@injectable
+class ProductMapper(Mapper[Product, ProductModel]):
+    __entity__ = Product
+    __exclude_fields__ = frozenset({"created_at"})
+```
+
+Registrados como `SINGLETON` por ser stateless.
 
 ### Inyeccion de Dependencias
 
@@ -402,7 +411,7 @@ pip install -r requirements.txt -r requirements_dev.txt
    │   └── types.py              # TypedDicts de entrada/salida
    └── infra/
        ├── models.py             # SQLAlchemy Model(Base)
-       ├── mappers.py            # Mapper[Entity, Model]
+       ├── mappers.py            # Mapper declarativo (__entity__, __exclude_fields__)
        ├── repositories.py       # Repository factories
        ├── controllers.py        # Controller con wireup injection
        ├── routes.py             # APIRouter
