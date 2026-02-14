@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from wireup import Injected
 
 from src.inventory.movement.infra.validators import (
-    MovementInput,
     MovementQueryParams,
+    MovementRequest,
     MovementResponse,
 )
 
@@ -26,7 +26,7 @@ class MovementRouter:
 
     def create(
         self,
-        new_movement: MovementInput,
+        new_movement: MovementRequest,
         movement_controller: Injected[MovementController],
     ) -> MovementResponse:
         """Save a new movement."""

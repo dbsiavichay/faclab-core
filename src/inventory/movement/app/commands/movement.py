@@ -3,7 +3,6 @@ from datetime import datetime
 
 from wireup import injectable
 
-from src.inventory.movement.app.types import MovementOutput
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
 from src.inventory.movement.domain.events import MovementCreated
@@ -22,9 +21,7 @@ class CreateMovementCommand(Command):
 
 
 @injectable(lifetime="scoped")
-class CreateMovementCommandHandler(
-    CommandHandler[CreateMovementCommand, MovementOutput]
-):
+class CreateMovementCommandHandler(CommandHandler[CreateMovementCommand, dict]):
     """
     Maneja la creación de movimientos de inventario.
     Publica el evento MovementCreated que será consumido por el Stock event handler.
@@ -33,7 +30,7 @@ class CreateMovementCommandHandler(
     def __init__(self, repo: Repository[Movement]):
         self.repo = repo
 
-    def _handle(self, command: CreateMovementCommand) -> MovementOutput:
+    def _handle(self, command: CreateMovementCommand) -> dict:
         # Convert string type to enum
         movement_type = MovementType(command.type)
 

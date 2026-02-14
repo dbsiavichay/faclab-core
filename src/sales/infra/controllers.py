@@ -27,12 +27,12 @@ from src.sales.app.queries import (
     GetSalePaymentsQueryHandler,
 )
 from src.sales.infra.validators import (
-    CancelSaleInput,
-    PaymentInput,
+    CancelSaleRequest,
+    PaymentRequest,
     PaymentResponse,
-    SaleInput,
-    SaleItemInput,
+    SaleItemRequest,
     SaleItemResponse,
+    SaleRequest,
     SaleResponse,
 )
 from src.shared.infra.exceptions import NotFoundError
@@ -68,7 +68,7 @@ class SaleController:
         self.get_items_handler = get_items_handler
         self.get_payments_handler = get_payments_handler
 
-    def create(self, request: SaleInput) -> SaleResponse:
+    def create(self, request: SaleRequest) -> SaleResponse:
         """Crea una nueva venta"""
         command = CreateSaleCommand(**request.model_dump(exclude_none=True))
         result = self.create_handler.handle(command)
@@ -99,7 +99,7 @@ class SaleController:
             raise NotFoundError(f"Sale with id {sale_id} not found")
         return SaleResponse.model_validate(result)
 
-    def add_item(self, sale_id: int, request: SaleItemInput) -> SaleItemResponse:
+    def add_item(self, sale_id: int, request: SaleItemRequest) -> SaleItemResponse:
         """Agrega un item a una venta"""
         command = AddSaleItemCommand(
             sale_id=sale_id,
@@ -127,7 +127,7 @@ class SaleController:
         return SaleResponse.model_validate(result)
 
     def cancel(
-        self, sale_id: int, request: CancelSaleInput | None = None
+        self, sale_id: int, request: CancelSaleRequest | None = None
     ) -> SaleResponse:
         """Cancela una venta (revierte movimientos si estaba confirmada)"""
         reason = request.reason if request else None
@@ -135,7 +135,9 @@ class SaleController:
         result = self.cancel_handler.handle(command)
         return SaleResponse.model_validate(result)
 
-    def register_payment(self, sale_id: int, request: PaymentInput) -> PaymentResponse:
+    def register_payment(
+        self, sale_id: int, request: PaymentRequest
+    ) -> PaymentResponse:
         """Registra un pago para una venta"""
         command = RegisterPaymentCommand(
             sale_id=sale_id,

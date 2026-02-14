@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.customers.app.types import CustomerContactOutput
 from src.customers.domain.entities import CustomerContact
 from src.customers.infra.repositories import CustomerContactRepositoryImpl
 from src.shared.app.queries import Query, QueryHandler
@@ -16,14 +15,12 @@ class GetCustomerContactByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetCustomerContactByIdQueryHandler(
-    QueryHandler[GetCustomerContactByIdQuery, CustomerContactOutput | None]
+    QueryHandler[GetCustomerContactByIdQuery, dict | None]
 ):
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def _handle(
-        self, query: GetCustomerContactByIdQuery
-    ) -> CustomerContactOutput | None:
+    def _handle(self, query: GetCustomerContactByIdQuery) -> dict | None:
         contact = self.repo.get_by_id(query.id)
         if contact is None:
             return None
@@ -37,14 +34,12 @@ class GetContactsByCustomerIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetContactsByCustomerIdQueryHandler(
-    QueryHandler[GetContactsByCustomerIdQuery, list[CustomerContactOutput]]
+    QueryHandler[GetContactsByCustomerIdQuery, list[dict]]
 ):
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def _handle(
-        self, query: GetContactsByCustomerIdQuery
-    ) -> list[CustomerContactOutput]:
+    def _handle(self, query: GetContactsByCustomerIdQuery) -> list[dict]:
         if isinstance(self.repo, CustomerContactRepositoryImpl):
             contacts = self.repo.get_by_customer_id(query.customer_id)
             return [contact.dict() for contact in contacts]

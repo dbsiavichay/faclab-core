@@ -5,12 +5,12 @@ from wireup import Injected
 
 from src.sales.infra.controllers import SaleController
 from src.sales.infra.validators import (
-    CancelSaleInput,
-    PaymentInput,
+    CancelSaleRequest,
+    PaymentRequest,
     PaymentResponse,
-    SaleInput,
-    SaleItemInput,
+    SaleItemRequest,
     SaleItemResponse,
+    SaleRequest,
     SaleResponse,
 )
 
@@ -54,7 +54,7 @@ class SaleRouter:
     def create_sale(
         self,
         controller: Injected[SaleController],
-        sale: SaleInput,
+        sale: SaleRequest,
     ) -> SaleResponse:
         """Create a new sale in DRAFT status"""
         return controller.create(sale)
@@ -87,7 +87,7 @@ class SaleRouter:
         self,
         controller: Injected[SaleController],
         sale_id: int,
-        item: SaleItemInput,
+        item: SaleItemRequest,
     ) -> SaleItemResponse:
         """Add a new item to a sale (only in DRAFT status)"""
         return controller.add_item(sale_id, item)
@@ -124,7 +124,7 @@ class SaleRouter:
         self,
         controller: Injected[SaleController],
         sale_id: int,
-        cancel_input: CancelSaleInput | None = None,
+        cancel_input: CancelSaleRequest | None = None,
     ) -> SaleResponse:
         """
         Cancel a sale (only DRAFT or CONFIRMED sales can be cancelled).
@@ -136,7 +136,7 @@ class SaleRouter:
         self,
         controller: Injected[SaleController],
         sale_id: int,
-        payment: PaymentInput,
+        payment: PaymentRequest,
     ) -> PaymentResponse:
         """Register a payment for a sale"""
         return controller.register_payment(sale_id, payment)
