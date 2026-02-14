@@ -19,7 +19,7 @@ Criteria = list[BinaryExpression | BooleanClauseList | Any]
 OrderCriteria = str | Any
 
 
-class BaseRepository(Repository[E], Generic[E]):
+class SqlAlchemyRepository(Repository[E], Generic[E]):
     __model__: ClassVar[type[M]]
 
     def __init__(self, session: Session, mapper: Mapper[E, M]):

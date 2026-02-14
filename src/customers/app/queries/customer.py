@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from src.customers.domain.entities import Customer
-from src.customers.infra.repositories import CustomerRepositoryImpl
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
 
@@ -53,9 +52,7 @@ class GetCustomerByTaxIdQueryHandler(
         self.repo = repo
 
     def _handle(self, query: GetCustomerByTaxIdQuery) -> dict | None:
-        if isinstance(self.repo, CustomerRepositoryImpl):
-            customer = self.repo.get_by_tax_id(query.tax_id)
-            if customer is None:
-                return None
-            return customer.dict()
-        return None
+        customer = self.repo.first(tax_id=query.tax_id)
+        if customer is None:
+            return None
+        return customer.dict()
