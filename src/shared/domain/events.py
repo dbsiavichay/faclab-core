@@ -9,7 +9,7 @@ from typing import Any
 class DomainEvent(ABC):
     aggregate_id: int
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    occurred_at: datetime = field(default_factory=datetime.utcnow)
+    occurred_at: datetime = field(default_factory=datetime.now)
 
     @abstractmethod
     def _payload(self) -> dict[str, Any]:

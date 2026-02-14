@@ -79,13 +79,3 @@ class CustomerContactResponse(CustomerContactRequest):
     customer_id: int = Field(
         ge=1, description="Customer ID", serialization_alias="customerId"
     )
-
-
-class CustomersResponse(BaseModel):
-    data: list[CustomerResponse] = Field(..., description="List of customers")
-
-
-class CustomerContactsResponse(BaseModel):
-    data: list[CustomerContactResponse] = Field(
-        ..., description="List of customer contacts"
-    )

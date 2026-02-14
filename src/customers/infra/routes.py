@@ -8,10 +8,8 @@ from src.customers.infra.controllers import (
 from src.customers.infra.validators import (
     CustomerContactRequest,
     CustomerContactResponse,
-    CustomerContactsResponse,
     CustomerRequest,
     CustomerResponse,
-    CustomersResponse,
 )
 
 
@@ -30,7 +28,7 @@ class CustomerRouter:
         )(self.update)
         self.router.delete("/{id}", summary="Delete customer")(self.delete)
         self.router.get(
-            "", response_model=CustomersResponse, summary="Get all customers"
+            "", response_model=list[CustomerResponse], summary="Get all customers"
         )(self.get_all)
         self.router.get(
             "/{id}", response_model=CustomerResponse, summary="Get customer by ID"
@@ -57,7 +55,7 @@ class CustomerRouter:
         )(self.create_contact)
         self.router.get(
             "/{customer_id}/contacts",
-            response_model=CustomerContactsResponse,
+            response_model=list[CustomerContactResponse],
             summary="Get customer contacts",
         )(self.get_customer_contacts)
 
@@ -88,8 +86,7 @@ class CustomerRouter:
 
     def get_all(self, controller: Injected[CustomerController]):
         """Retrieves all customers."""
-        customers = controller.get_all()
-        return CustomersResponse(data=customers)
+        return controller.get_all()
 
     def get_by_id(self, controller: Injected[CustomerController], id: int):
         """Retrieves a specific customer by its ID."""
@@ -126,8 +123,7 @@ class CustomerRouter:
         customer_id: int,
     ):
         """Retrieves all contacts for a customer."""
-        contacts = controller.get_by_customer_id(customer_id)
-        return CustomerContactsResponse(data=contacts)
+        return controller.get_by_customer_id(customer_id)
 
 
 class CustomerContactRouter:
