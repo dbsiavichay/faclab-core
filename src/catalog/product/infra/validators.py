@@ -27,7 +27,3 @@ class CategoryResponse(CategoryRequest):
 
 class ProductResponse(ProductRequest):
     id: int = Field(ge=1, description="Product ID")
-
-
-class ProductsResponse(BaseModel):
-    data: list[ProductResponse] = Field(..., description="List of products")

@@ -29,7 +29,6 @@ from src.catalog.product.infra.validators import (
     CategoryResponse,
     ProductRequest,
     ProductResponse,
-    ProductsResponse,
 )
 from src.shared.infra.exceptions import NotFoundError
 
@@ -111,11 +110,10 @@ class ProductController:
         command = DeleteProductCommand(product_id=id)
         self.delete_handler.handle(command)
 
-    def get_all(self) -> ProductsResponse:
+    def get_all(self) -> list[ProductResponse]:
         query = GetAllProductsQuery()
         products = self.get_all_handler.handle(query)
-        data = [ProductResponse.model_validate(product) for product in products]
-        return ProductsResponse(data=data)
+        return [ProductResponse.model_validate(product) for product in products]
 
     def get_by_id(self, id: int) -> ProductResponse:
         query = GetProductByIdQuery(product_id=id)

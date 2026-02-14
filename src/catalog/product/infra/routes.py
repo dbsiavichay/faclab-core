@@ -7,7 +7,6 @@ from src.catalog.product.infra.validators import (
     CategoryResponse,
     ProductRequest,
     ProductResponse,
-    ProductsResponse,
 )
 
 
@@ -77,7 +76,7 @@ class ProductRouter:
         )(self.update)
         self.router.delete("/{id}", summary="Delete product")(self.delete)
         self.router.get(
-            "", response_model=ProductsResponse, summary="Get all products"
+            "", response_model=list[ProductResponse], summary="Get all products"
         )(self.get_all)
         self.router.get(
             "/{id}", response_model=ProductResponse, summary="Get product by ID"
