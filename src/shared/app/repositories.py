@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
+from src.shared.domain.specifications import Specification
+
 T = TypeVar("T")
 
 
@@ -30,5 +32,18 @@ class Repository(Generic[T], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def filter_by(self, **kwargs) -> list[T]:
+    def filter_by(
+        self, limit: int | None = None, offset: int | None = None, **kwargs
+    ) -> list[T]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def filter_by_spec(
+        self,
+        spec: Specification,
+        order_by: str | None = None,
+        desc_order: bool = False,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[T]:
         raise NotImplementedError

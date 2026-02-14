@@ -45,8 +45,8 @@ def create_wireup_container():
     )
     from src.catalog.product.infra.mappers import CategoryMapper, ProductMapper
     from src.catalog.product.infra.repositories import (
-        create_category_repository,
-        create_product_repository,
+        CategoryRepository,
+        ProductRepository,
     )
     from src.customers.app.commands.customer import (
         ActivateCustomerCommandHandler,
@@ -75,8 +75,8 @@ def create_wireup_container():
     )
     from src.customers.infra.mappers import CustomerContactMapper, CustomerMapper
     from src.customers.infra.repositories import (
-        create_customer_contact_repository,
-        create_customer_repository,
+        CustomerContactRepository,
+        CustomerRepository,
     )
     from src.inventory.movement.app.commands.movement import (
         CreateMovementCommandHandler,
@@ -87,7 +87,7 @@ def create_wireup_container():
     )
     from src.inventory.movement.infra.controllers import MovementController
     from src.inventory.movement.infra.mappers import MovementMapper
-    from src.inventory.movement.infra.repositories import create_movement_repository
+    from src.inventory.movement.infra.repositories import MovementRepository
     from src.inventory.stock.app.queries.stock import (
         GetAllStocksQueryHandler,
         GetStockByIdQueryHandler,
@@ -95,7 +95,7 @@ def create_wireup_container():
     )
     from src.inventory.stock.infra.controllers import StockController
     from src.inventory.stock.infra.mappers import StockMapper
-    from src.inventory.stock.infra.repositories import create_stock_repository
+    from src.inventory.stock.infra.repositories import StockRepository
     from src.sales.app.commands.add_sale_item import AddSaleItemCommandHandler
     from src.sales.app.commands.cancel_sale import CancelSaleCommandHandler
     from src.sales.app.commands.confirm_sale import ConfirmSaleCommandHandler
@@ -111,9 +111,9 @@ def create_wireup_container():
     from src.sales.infra.controllers import SaleController
     from src.sales.infra.mappers import PaymentMapper, SaleItemMapper, SaleMapper
     from src.sales.infra.repositories import (
-        create_payment_repository,
-        create_sale_item_repository,
-        create_sale_repository,
+        PaymentRepository,
+        SaleItemRepository,
+        SaleRepository,
     )
     from src.shared.infra.db_session import configure_session_factory, get_db_session
 
@@ -127,7 +127,7 @@ def create_wireup_container():
         injectables=[
             get_db_session,
             CategoryMapper,
-            create_category_repository,
+            CategoryRepository,
             CreateCategoryCommandHandler,
             UpdateCategoryCommandHandler,
             DeleteCategoryCommandHandler,
@@ -135,7 +135,7 @@ def create_wireup_container():
             GetCategoryByIdQueryHandler,
             CategoryController,
             ProductMapper,
-            create_product_repository,
+            ProductRepository,
             CreateProductCommandHandler,
             UpdateProductCommandHandler,
             DeleteProductCommandHandler,
@@ -144,21 +144,21 @@ def create_wireup_container():
             SearchProductsQueryHandler,
             ProductController,
             MovementMapper,
-            create_movement_repository,
+            MovementRepository,
             CreateMovementCommandHandler,
             GetAllMovementsQueryHandler,
             GetMovementByIdQueryHandler,
             MovementController,
             StockMapper,
-            create_stock_repository,
+            StockRepository,
             GetAllStocksQueryHandler,
             GetStockByIdQueryHandler,
             GetStockByProductQueryHandler,
             StockController,
             CustomerMapper,
             CustomerContactMapper,
-            create_customer_repository,
-            create_customer_contact_repository,
+            CustomerRepository,
+            CustomerContactRepository,
             CreateCustomerCommandHandler,
             UpdateCustomerCommandHandler,
             DeleteCustomerCommandHandler,
@@ -177,9 +177,9 @@ def create_wireup_container():
             SaleMapper,
             SaleItemMapper,
             PaymentMapper,
-            create_sale_repository,
-            create_sale_item_repository,
-            create_payment_repository,
+            SaleRepository,
+            SaleItemRepository,
+            PaymentRepository,
             CreateSaleCommandHandler,
             AddSaleItemCommandHandler,
             RemoveSaleItemCommandHandler,

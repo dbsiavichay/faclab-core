@@ -9,7 +9,6 @@ from src.customers.app.queries.customer import (
     GetCustomerByTaxIdQueryHandler,
 )
 from src.customers.domain.entities import Customer, TaxType
-from src.customers.infra.repositories import CustomerRepositoryImpl
 
 
 def _make_customer(**overrides) -> Customer:
@@ -62,8 +61,8 @@ def test_get_customer_by_id_not_found_returns_none():
 
 def test_get_customer_by_tax_id_handler():
     customer = _make_customer()
-    repo = MagicMock(spec=CustomerRepositoryImpl)
-    repo.get_by_tax_id.return_value = customer
+    repo = MagicMock()
+    repo.first.return_value = customer
     handler = GetCustomerByTaxIdQueryHandler(repo)
 
     result = handler.handle(GetCustomerByTaxIdQuery(tax_id="1234567890123"))

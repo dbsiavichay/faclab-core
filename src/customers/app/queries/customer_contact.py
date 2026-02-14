@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from src.customers.domain.entities import CustomerContact
-from src.customers.infra.repositories import CustomerContactRepositoryImpl
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
 
@@ -40,7 +39,5 @@ class GetContactsByCustomerIdQueryHandler(
         self.repo = repo
 
     def _handle(self, query: GetContactsByCustomerIdQuery) -> list[dict]:
-        if isinstance(self.repo, CustomerContactRepositoryImpl):
-            contacts = self.repo.get_by_customer_id(query.customer_id)
-            return [contact.dict() for contact in contacts]
-        return []
+        contacts = self.repo.filter_by(customer_id=query.customer_id)
+        return [contact.dict() for contact in contacts]
