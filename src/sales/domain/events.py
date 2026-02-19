@@ -33,6 +33,7 @@ class SaleConfirmed(DomainEvent):
         default_factory=list
     )  # [{product_id, quantity, unit_price}]
     total: float = 0.0
+    source: str = "admin"
 
     def _payload(self) -> dict[str, Any]:
         return {
@@ -40,6 +41,7 @@ class SaleConfirmed(DomainEvent):
             "customer_id": self.customer_id,
             "items": self.items,
             "total": self.total,
+            "source": self.source,
         }
 
 
@@ -59,6 +61,7 @@ class SaleCancelled(DomainEvent):
     was_confirmed: bool = (
         False  # True si la venta estaba confirmada antes de cancelarse
     )
+    source: str = "admin"
 
     def _payload(self) -> dict[str, Any]:
         return {
@@ -67,6 +70,7 @@ class SaleCancelled(DomainEvent):
             "items": self.items,
             "reason": self.reason,
             "was_confirmed": self.was_confirmed,
+            "source": self.source,
         }
 
 

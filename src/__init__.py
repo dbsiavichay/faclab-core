@@ -96,6 +96,8 @@ def create_wireup_container():
     from src.inventory.stock.infra.controllers import StockController
     from src.inventory.stock.infra.mappers import StockMapper
     from src.inventory.stock.infra.repositories import StockRepository
+    from src.pos.sales.app.services import CancelSaleService, ConfirmSaleService
+    from src.pos.sales.infra.controllers import POSSaleController
     from src.sales.app.commands.add_sale_item import AddSaleItemCommandHandler
     from src.sales.app.commands.cancel_sale import CancelSaleCommandHandler
     from src.sales.app.commands.confirm_sale import ConfirmSaleCommandHandler
@@ -191,6 +193,9 @@ def create_wireup_container():
             GetSaleItemsQueryHandler,
             GetSalePaymentsQueryHandler,
             SaleController,
+            ConfirmSaleService,
+            CancelSaleService,
+            POSSaleController,
         ]
     )
 

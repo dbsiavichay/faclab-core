@@ -22,9 +22,18 @@ OrderCriteria = str | Any
 class SqlAlchemyRepository(Repository[E], Generic[E]):
     __model__: ClassVar[type[M]]
 
-    def __init__(self, session: Session, mapper: Mapper[E, M]):
+    def __init__(
+        self, session: Session, mapper: Mapper[E, M], auto_commit: bool = True
+    ):
         self.session = session
         self.mapper = mapper
+        self._auto_commit = auto_commit
+
+    def _save(self) -> None:
+        if self._auto_commit:
+            self.session.commit()
+        else:
+            self.session.flush()
 
     def create(self, entity: E) -> E:
         """
@@ -36,7 +45,7 @@ class SqlAlchemyRepository(Repository[E], Generic[E]):
         """
         model = self.__model__(**self.mapper.to_dict(entity))
         self.session.add(model)
-        self.session.commit()
+        self._save()
         return self.mapper.to_entity(model)
 
     def update(self, entity: E) -> E:
@@ -55,7 +64,7 @@ class SqlAlchemyRepository(Repository[E], Generic[E]):
 
         for key, value in self.mapper.to_dict(entity).items():
             setattr(model, key, value)
-        self.session.commit()
+        self._save()
         return self.mapper.to_entity(model)
 
     def delete(self, id: int) -> None:
@@ -71,7 +80,7 @@ class SqlAlchemyRepository(Repository[E], Generic[E]):
             raise NotFoundError(f"Entity with id {id} not found")
 
         self.session.delete(model)
-        self.session.commit()
+        self._save()
 
     def get_by_id(self, id: int) -> E | None:
         """
