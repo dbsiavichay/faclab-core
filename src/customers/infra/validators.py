@@ -77,5 +77,8 @@ class CustomerResponse(CustomerRequest):
 class CustomerContactResponse(CustomerContactRequest):
     id: int = Field(ge=1, description="Contact ID")
     customer_id: int = Field(
-        ge=1, description="Customer ID", serialization_alias="customerId"
+        ge=1,
+        description="Customer ID",
+        validation_alias=AliasChoices("customerId", "customer_id"),
+        serialization_alias="customerId",
     )

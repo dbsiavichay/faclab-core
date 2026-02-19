@@ -17,4 +17,9 @@ class StockResponse(BaseModel):
 
 
 class StockQueryParams(QueryParams):
-    product_id: int | None = Field(None, ge=1, alias="productId")
+    product_id: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("productId", "product_id"),
+        serialization_alias="productId",
+    )
