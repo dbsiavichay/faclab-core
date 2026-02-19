@@ -50,8 +50,17 @@ class MovementQueryParams(QueryParams):
     product_id: int | None = Field(
         None,
         ge=1,
-        alias="productId",
+        validation_alias=AliasChoices("productId", "product_id"),
+        serialization_alias="productId",
     )
     type: MovementType | None = None
-    from_date: datetime | None = Field(None, alias="fromDate")
-    to_date: datetime | None = Field(None, alias="toDate")
+    from_date: datetime | None = Field(
+        None,
+        validation_alias=AliasChoices("fromDate", "from_date"),
+        serialization_alias="fromDate",
+    )
+    to_date: datetime | None = Field(
+        None,
+        validation_alias=AliasChoices("toDate", "to_date"),
+        serialization_alias="toDate",
+    )
