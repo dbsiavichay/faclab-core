@@ -22,6 +22,14 @@ def handle_sale_confirmed(event: SaleConfirmed) -> None:
     Cuando se confirma una venta, crear movimientos OUT de inventario.
     Este handler desacopla el módulo de sales del módulo de inventory.
     """
+    if event.source == "pos":
+        logger.info(
+            "skip_inventory_from_pos",
+            sale_id=event.sale_id,
+            reason="pos_handles_inventory_atomically",
+        )
+        return
+
     logger.info("handling_sale_confirmed", sale_id=event.sale_id)
 
     from src import wireup_container
@@ -61,6 +69,14 @@ def handle_sale_cancelled(event: SaleCancelled) -> None:
     Cuando se cancela una venta, revertir movimientos si la venta estaba confirmada.
     Solo crea movimientos IN si was_confirmed=True.
     """
+    if event.source == "pos":
+        logger.info(
+            "skip_inventory_from_pos",
+            sale_id=event.sale_id,
+            reason="pos_handles_inventory_atomically",
+        )
+        return
+
     logger.info(
         "handling_sale_cancelled",
         sale_id=event.sale_id,

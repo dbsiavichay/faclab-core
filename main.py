@@ -1,5 +1,5 @@
 import structlog
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from wireup.integration.fastapi import setup as wireup_fastapi_setup
@@ -11,7 +11,9 @@ from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.movement.infra.routes import MovementRouter
 from src.inventory.stock.infra.routes import StockRouter
-from src.sales.infra.routes import SaleRouter
+from src.pos.infra.routes import POSCustomerRouter, POSProductRouter
+from src.pos.sales.infra.routes import POSSaleRouter
+from src.sales.infra.admin_routes import AdminSaleRouter
 from src.shared.infra.adapters import OpenTelemetry
 from src.shared.infra.logging import configure_logging
 from src.shared.infra.middlewares import ErrorHandlingMiddleware
@@ -35,14 +37,41 @@ otel.instrument(app, config.get_otel_config())
 wireup_container = create_wireup_container()
 src.wireup_container = wireup_container
 
+# Admin API
+admin_router = APIRouter(prefix="/api/admin")
+admin_router.include_router(
+    CategoryRouter().router, prefix="/categories", tags=["admin - categories"]
+)
+admin_router.include_router(
+    ProductRouter().router, prefix="/products", tags=["admin - products"]
+)
+admin_router.include_router(
+    StockRouter().router, prefix="/stock", tags=["admin - stock"]
+)
+admin_router.include_router(
+    MovementRouter().router, prefix="/movements", tags=["admin - movements"]
+)
+admin_router.include_router(
+    CustomerRouter().router, prefix="/customers", tags=["admin - customers"]
+)
+admin_router.include_router(
+    CustomerContactRouter().router,
+    prefix="/customer-contacts",
+    tags=["admin - customer-contacts"],
+)
+admin_router.include_router(
+    AdminSaleRouter().router, prefix="/sales", tags=["admin - sales"]
+)
 
-category_router = CategoryRouter()
-product_router = ProductRouter()
-stock_router = StockRouter()
-movement_router = MovementRouter()
-customer_router = CustomerRouter()
-customer_contact_router = CustomerContactRouter()
-sale_router = SaleRouter()
+# POS API
+pos_router = APIRouter(prefix="/api/pos")
+pos_router.include_router(POSSaleRouter().router, prefix="/sales", tags=["pos - sales"])
+pos_router.include_router(
+    POSProductRouter().router, prefix="/products", tags=["pos - products"]
+)
+pos_router.include_router(
+    POSCustomerRouter().router, prefix="/customers", tags=["pos - customers"]
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -53,17 +82,8 @@ app.add_middleware(
 )
 app.add_middleware(ErrorHandlingMiddleware)
 
-app.include_router(category_router.router, prefix="/categories", tags=["categories"])
-app.include_router(product_router.router, prefix="/products", tags=["products"])
-app.include_router(stock_router.router, prefix="/stock", tags=["stock"])
-app.include_router(movement_router.router, prefix="/movements", tags=["movements"])
-app.include_router(customer_router.router, prefix="/customers", tags=["customers"])
-app.include_router(
-    customer_contact_router.router,
-    prefix="/customer-contacts",
-    tags=["customer-contacts"],
-)
-app.include_router(sale_router.router, prefix="/sales", tags=["sales"])
+app.include_router(admin_router)
+app.include_router(pos_router)
 
 
 @app.get("/")
