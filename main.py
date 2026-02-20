@@ -6,8 +6,8 @@ from wireup.integration.fastapi import setup as wireup_fastapi_setup
 
 import src
 from config import config
-from src import create_wireup_container
 from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
+from src.container import create_wireup_container
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.movement.infra.routes import MovementRouter
 from src.inventory.stock.infra.routes import StockRouter
