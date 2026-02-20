@@ -2,7 +2,12 @@
 
 from wireup import injectable
 
-from src.pos.sales.app.services import CancelSaleService, ConfirmSaleService
+from src.pos.sales.app.commands import (
+    POSCancelSaleCommand,
+    POSCancelSaleCommandHandler,
+    POSConfirmSaleCommand,
+    POSConfirmSaleCommandHandler,
+)
 from src.sales.app.commands import (
     AddSaleItemCommand,
     AddSaleItemCommandHandler,
@@ -37,18 +42,15 @@ from src.shared.infra.exceptions import NotFoundError
 class POSSaleController:
     def __init__(
         self,
-        # Command Handlers (operaciones simples)
         create_handler: CreateSaleCommandHandler,
         add_item_handler: AddSaleItemCommandHandler,
         remove_item_handler: RemoveSaleItemCommandHandler,
         register_payment_handler: RegisterPaymentCommandHandler,
-        # Query Handlers
         get_by_id_handler: GetSaleByIdQueryHandler,
         get_items_handler: GetSaleItemsQueryHandler,
         get_payments_handler: GetSalePaymentsQueryHandler,
-        # Servicios transaccionales
-        confirm_service: ConfirmSaleService,
-        cancel_service: CancelSaleService,
+        confirm_handler: POSConfirmSaleCommandHandler,
+        cancel_handler: POSCancelSaleCommandHandler,
     ):
         self.create_handler = create_handler
         self.add_item_handler = add_item_handler
@@ -57,8 +59,8 @@ class POSSaleController:
         self.get_by_id_handler = get_by_id_handler
         self.get_items_handler = get_items_handler
         self.get_payments_handler = get_payments_handler
-        self.confirm_service = confirm_service
-        self.cancel_service = cancel_service
+        self.confirm_handler = confirm_handler
+        self.cancel_handler = cancel_handler
 
     def create(self, request: SaleRequest) -> SaleResponse:
         command = CreateSaleCommand(**request.model_dump(exclude_none=True))
@@ -90,14 +92,16 @@ class POSSaleController:
         return [SaleItemResponse.model_validate(r) for r in results]
 
     def confirm(self, sale_id: int) -> SaleResponse:
-        result = self.confirm_service.execute(sale_id)
+        command = POSConfirmSaleCommand(sale_id=sale_id)
+        result = self.confirm_handler.handle(command)
         return SaleResponse.model_validate(result)
 
     def cancel(
         self, sale_id: int, request: CancelSaleRequest | None = None
     ) -> SaleResponse:
         reason = request.reason if request else None
-        result = self.cancel_service.execute(sale_id, reason)
+        command = POSCancelSaleCommand(sale_id=sale_id, reason=reason)
+        result = self.cancel_handler.handle(command)
         return SaleResponse.model_validate(result)
 
     def register_payment(

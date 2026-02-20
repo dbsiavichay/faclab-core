@@ -10,7 +10,7 @@ from src.shared.domain.exceptions import NotFoundError
 from src.shared.domain.specifications import Specification
 from src.shared.infra.mappers import Mapper
 
-from .db import Base
+from .database import Base
 
 M = TypeVar("T", bound="Base")
 E = TypeVar("E", bound="Entity")
@@ -22,18 +22,12 @@ OrderCriteria = str | Any
 class SqlAlchemyRepository(Repository[E], Generic[E]):
     __model__: ClassVar[type[M]]
 
-    def __init__(
-        self, session: Session, mapper: Mapper[E, M], auto_commit: bool = True
-    ):
+    def __init__(self, session: Session, mapper: Mapper[E, M]):
         self.session = session
         self.mapper = mapper
-        self._auto_commit = auto_commit
 
     def _save(self) -> None:
-        if self._auto_commit:
-            self.session.commit()
-        else:
-            self.session.flush()
+        self.session.flush()
 
     def create(self, entity: E) -> E:
         """

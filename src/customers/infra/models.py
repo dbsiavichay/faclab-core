@@ -4,7 +4,7 @@ from decimal import Decimal
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.shared.infra.db import Base
+from src.shared.infra.database import Base
 
 
 class CustomerModel(Base):

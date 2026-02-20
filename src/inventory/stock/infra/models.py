@@ -1,7 +1,7 @@
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.shared.infra.db import Base
+from src.shared.infra.database import Base
 
 
 class StockModel(Base):
