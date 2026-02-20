@@ -19,7 +19,6 @@ from src.catalog.product.app.queries.get_products import (
     GetProductByIdQueryHandler,
     SearchProductsQueryHandler,
 )
-from src.catalog.product.infra.controllers import CategoryController, ProductController
 from src.catalog.product.infra.mappers import CategoryMapper, ProductMapper
 from src.catalog.product.infra.repositories import CategoryRepository, ProductRepository
 
@@ -39,6 +38,4 @@ INJECTABLES = [
     GetAllProductsQueryHandler,
     GetProductByIdQueryHandler,
     SearchProductsQueryHandler,
-    CategoryController,
-    ProductController,
 ]

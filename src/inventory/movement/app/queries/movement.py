@@ -5,6 +5,7 @@ from wireup import injectable
 from src.inventory.movement.domain.entities import Movement
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
@@ -46,12 +47,12 @@ class GetMovementByIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetMovementByIdQueryHandler(QueryHandler[GetMovementByIdQuery, dict | None]):
+class GetMovementByIdQueryHandler(QueryHandler[GetMovementByIdQuery, dict]):
     def __init__(self, repo: Repository[Movement]):
         self.repo = repo
 
-    def _handle(self, query: GetMovementByIdQuery) -> dict | None:
+    def _handle(self, query: GetMovementByIdQuery) -> dict:
         movement = self.repo.get_by_id(query.id)
         if movement is None:
-            return None
+            raise NotFoundError(f"Movement with id {query.id} not found")
         return movement.dict()

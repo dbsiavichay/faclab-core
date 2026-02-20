@@ -3,7 +3,6 @@ from src.inventory.movement.app.queries.movement import (
     GetAllMovementsQueryHandler,
     GetMovementByIdQueryHandler,
 )
-from src.inventory.movement.infra.controllers import MovementController
 from src.inventory.movement.infra.mappers import MovementMapper
 from src.inventory.movement.infra.repositories import MovementRepository
 
@@ -13,5 +12,4 @@ INJECTABLES = [
     CreateMovementCommandHandler,
     GetAllMovementsQueryHandler,
     GetMovementByIdQueryHandler,
-    MovementController,
 ]

@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock
 
+import pytest
+
 from src.customers.app.queries.customer import (
     GetAllCustomersQuery,
     GetAllCustomersQueryHandler,
@@ -9,6 +11,7 @@ from src.customers.app.queries.customer import (
     GetCustomerByTaxIdQueryHandler,
 )
 from src.customers.domain.entities import Customer, TaxType
+from src.shared.domain.exceptions import NotFoundError
 
 
 def _make_customer(**overrides) -> Customer:
@@ -49,14 +52,13 @@ def test_get_customer_by_id_handler():
     assert result["name"] == "Test Customer"
 
 
-def test_get_customer_by_id_not_found_returns_none():
+def test_get_customer_by_id_not_found_raises():
     repo = MagicMock()
     repo.get_by_id.return_value = None
     handler = GetCustomerByIdQueryHandler(repo)
 
-    result = handler.handle(GetCustomerByIdQuery(id=999))
-
-    assert result is None
+    with pytest.raises(NotFoundError):
+        handler.handle(GetCustomerByIdQuery(id=999))
 
 
 def test_get_customer_by_tax_id_handler():

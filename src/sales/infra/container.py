@@ -10,7 +10,6 @@ from src.sales.app.queries.get_sales import (
     GetAllSalesQueryHandler,
     GetSaleByIdQueryHandler,
 )
-from src.sales.infra.controllers import SaleController
 from src.sales.infra.mappers import PaymentMapper, SaleItemMapper, SaleMapper
 from src.sales.infra.repositories import (
     PaymentRepository,
@@ -35,5 +34,4 @@ INJECTABLES = [
     GetSaleByIdQueryHandler,
     GetSaleItemsQueryHandler,
     GetSalePaymentsQueryHandler,
-    SaleController,
 ]

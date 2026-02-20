@@ -5,6 +5,7 @@ from wireup import injectable
 from src.customers.domain.entities import CustomerContact
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
@@ -14,15 +15,15 @@ class GetCustomerContactByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetCustomerContactByIdQueryHandler(
-    QueryHandler[GetCustomerContactByIdQuery, dict | None]
+    QueryHandler[GetCustomerContactByIdQuery, dict]
 ):
     def __init__(self, repo: Repository[CustomerContact]):
         self.repo = repo
 
-    def _handle(self, query: GetCustomerContactByIdQuery) -> dict | None:
+    def _handle(self, query: GetCustomerContactByIdQuery) -> dict:
         contact = self.repo.get_by_id(query.id)
         if contact is None:
-            return None
+            raise NotFoundError(f"Customer contact with id {query.id} not found")
         return contact.dict()
 
 

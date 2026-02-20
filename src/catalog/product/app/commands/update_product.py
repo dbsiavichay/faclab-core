@@ -6,6 +6,7 @@ from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.events import ProductUpdated
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError
 from src.shared.infra.events.event_bus import EventBus
 
 
@@ -26,6 +27,8 @@ class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
     def _handle(self, command: UpdateProductCommand) -> dict:
         # Get existing product to track changes
         existing = self.repo.get_by_id(command.product_id)
+        if existing is None:
+            raise NotFoundError(f"Product with id {command.product_id} not found")
 
         product = Product(
             id=command.product_id,
@@ -38,21 +41,20 @@ class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
 
         # Track what changed
         changes = {}
-        if existing:
-            if existing.sku != product.sku:
-                changes["sku"] = {"old": existing.sku, "new": product.sku}
-            if existing.name != product.name:
-                changes["name"] = {"old": existing.name, "new": product.name}
-            if existing.description != product.description:
-                changes["description"] = {
-                    "old": existing.description,
-                    "new": product.description,
-                }
-            if existing.category_id != product.category_id:
-                changes["category_id"] = {
-                    "old": existing.category_id,
-                    "new": product.category_id,
-                }
+        if existing.sku != product.sku:
+            changes["sku"] = {"old": existing.sku, "new": product.sku}
+        if existing.name != product.name:
+            changes["name"] = {"old": existing.name, "new": product.name}
+        if existing.description != product.description:
+            changes["description"] = {
+                "old": existing.description,
+                "new": product.description,
+            }
+        if existing.category_id != product.category_id:
+            changes["category_id"] = {
+                "old": existing.category_id,
+                "new": product.category_id,
+            }
 
         EventBus.publish(
             ProductUpdated(

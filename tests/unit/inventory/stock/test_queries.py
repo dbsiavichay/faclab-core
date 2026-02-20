@@ -13,6 +13,7 @@ from src.inventory.stock.app.queries import (
     GetStockByProductQueryHandler,
 )
 from src.inventory.stock.domain.entities import Stock
+from src.shared.domain.exceptions import NotFoundError
 
 
 @pytest.fixture
@@ -126,19 +127,17 @@ def test_get_stock_by_id_handler(mock_stock_repo):
     mock_stock_repo.get_by_id.assert_called_once_with(1)
 
 
-def test_get_stock_by_id_not_found_returns_none(mock_stock_repo):
-    """Test getting non-existent stock returns None"""
+def test_get_stock_by_id_not_found_raises(mock_stock_repo):
+    """Test getting non-existent stock raises NotFoundError"""
     # Arrange
     mock_stock_repo.get_by_id.return_value = None
 
     query = GetStockByIdQuery(id=999)
     handler = GetStockByIdQueryHandler(mock_stock_repo)
 
-    # Act
-    result = handler.handle(query)
-
-    # Assert
-    assert result is None
+    # Act / Assert
+    with pytest.raises(NotFoundError):
+        handler.handle(query)
     mock_stock_repo.get_by_id.assert_called_once_with(999)
 
 
@@ -161,17 +160,15 @@ def test_get_stock_by_product_handler(mock_stock_repo):
     mock_stock_repo.first.assert_called_once_with(product_id=1)
 
 
-def test_get_stock_by_product_not_found_returns_none(mock_stock_repo):
-    """Test getting stock for non-existent product returns None"""
+def test_get_stock_by_product_not_found_raises(mock_stock_repo):
+    """Test getting stock for non-existent product raises NotFoundError"""
     # Arrange
     mock_stock_repo.first.return_value = None
 
     query = GetStockByProductQuery(product_id=999)
     handler = GetStockByProductQueryHandler(mock_stock_repo)
 
-    # Act
-    result = handler.handle(query)
-
-    # Assert
-    assert result is None
+    # Act / Assert
+    with pytest.raises(NotFoundError):
+        handler.handle(query)
     mock_stock_repo.first.assert_called_once_with(product_id=999)

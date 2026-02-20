@@ -3,7 +3,39 @@
 from fastapi import APIRouter, status
 from wireup import Injected
 
-from src.pos.sales.infra.controllers import POSSaleController
+from src.pos.sales.app.commands.cancel_sale import (
+    POSCancelSaleCommand,
+    POSCancelSaleCommandHandler,
+)
+from src.pos.sales.app.commands.confirm_sale import (
+    POSConfirmSaleCommand,
+    POSConfirmSaleCommandHandler,
+)
+from src.sales.app.commands.add_sale_item import (
+    AddSaleItemCommand,
+    AddSaleItemCommandHandler,
+)
+from src.sales.app.commands.create_sale import (
+    CreateSaleCommand,
+    CreateSaleCommandHandler,
+)
+from src.sales.app.commands.register_payment import (
+    RegisterPaymentCommand,
+    RegisterPaymentCommandHandler,
+)
+from src.sales.app.commands.remove_sale_item import (
+    RemoveSaleItemCommand,
+    RemoveSaleItemCommandHandler,
+)
+from src.sales.app.queries.get_payments import (
+    GetSalePaymentsQuery,
+    GetSalePaymentsQueryHandler,
+)
+from src.sales.app.queries.get_sale_items import (
+    GetSaleItemsQuery,
+    GetSaleItemsQueryHandler,
+)
+from src.sales.app.queries.get_sales import GetSaleByIdQuery, GetSaleByIdQueryHandler
 from src.sales.infra.validators import (
     CancelSaleRequest,
     PaymentRequest,
@@ -51,67 +83,84 @@ class POSSaleRouter:
 
     def create_sale(
         self,
-        controller: Injected[POSSaleController],
+        handler: Injected[CreateSaleCommandHandler],
         sale: SaleRequest,
     ) -> SaleResponse:
-        return controller.create(sale)
+        result = handler.handle(CreateSaleCommand(**sale.model_dump(exclude_none=True)))
+        return SaleResponse.model_validate(result)
 
     def get_sale(
         self,
-        controller: Injected[POSSaleController],
+        handler: Injected[GetSaleByIdQueryHandler],
         sale_id: int,
     ) -> SaleResponse:
-        return controller.get_by_id(sale_id)
+        result = handler.handle(GetSaleByIdQuery(sale_id=sale_id))
+        return SaleResponse.model_validate(result)
 
     def add_sale_item(
         self,
-        controller: Injected[POSSaleController],
+        handler: Injected[AddSaleItemCommandHandler],
         sale_id: int,
         item: SaleItemRequest,
     ) -> SaleItemResponse:
-        return controller.add_item(sale_id, item)
+        result = handler.handle(
+            AddSaleItemCommand(sale_id=sale_id, **item.model_dump(exclude_none=True))
+        )
+        return SaleItemResponse.model_validate(result)
 
     def get_sale_items(
         self,
-        controller: Injected[POSSaleController],
+        handler: Injected[GetSaleItemsQueryHandler],
         sale_id: int,
     ) -> list[SaleItemResponse]:
-        return controller.get_items(sale_id)
+        result = handler.handle(GetSaleItemsQuery(sale_id=sale_id))
+        return [SaleItemResponse.model_validate(r) for r in result]
 
     def remove_sale_item(
         self,
-        controller: Injected[POSSaleController],
+        handler: Injected[RemoveSaleItemCommandHandler],
         sale_id: int,
         item_id: int,
     ) -> dict:
-        return controller.remove_item(sale_id, item_id)
+        return handler.handle(
+            RemoveSaleItemCommand(sale_id=sale_id, sale_item_id=item_id)
+        )
 
     def confirm_sale(
         self,
-        controller: Injected[POSSaleController],
+        handler: Injected[POSConfirmSaleCommandHandler],
         sale_id: int,
     ) -> SaleResponse:
-        return controller.confirm(sale_id)
+        result = handler.handle(POSConfirmSaleCommand(sale_id=sale_id))
+        return SaleResponse.model_validate(result)
 
     def cancel_sale(
         self,
-        controller: Injected[POSSaleController],
+        handler: Injected[POSCancelSaleCommandHandler],
         sale_id: int,
         cancel_input: CancelSaleRequest | None = None,
     ) -> SaleResponse:
-        return controller.cancel(sale_id, cancel_input)
+        reason = cancel_input.reason if cancel_input else None
+        result = handler.handle(POSCancelSaleCommand(sale_id=sale_id, reason=reason))
+        return SaleResponse.model_validate(result)
 
     def register_payment(
         self,
-        controller: Injected[POSSaleController],
+        handler: Injected[RegisterPaymentCommandHandler],
         sale_id: int,
         payment: PaymentRequest,
     ) -> PaymentResponse:
-        return controller.register_payment(sale_id, payment)
+        result = handler.handle(
+            RegisterPaymentCommand(
+                sale_id=sale_id, **payment.model_dump(exclude_none=True)
+            )
+        )
+        return PaymentResponse.model_validate(result)
 
     def get_sale_payments(
         self,
-        controller: Injected[POSSaleController],
+        handler: Injected[GetSalePaymentsQueryHandler],
         sale_id: int,
     ) -> list[PaymentResponse]:
-        return controller.get_payments(sale_id)
+        result = handler.handle(GetSalePaymentsQuery(sale_id=sale_id))
+        return [PaymentResponse.model_validate(r) for r in result]

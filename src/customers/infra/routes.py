@@ -1,9 +1,39 @@
 from fastapi import APIRouter, Query
 from wireup import Injected
 
-from src.customers.infra.controllers import (
-    CustomerContactController,
-    CustomerController,
+from src.customers.app.commands.customer import (
+    ActivateCustomerCommand,
+    ActivateCustomerCommandHandler,
+    CreateCustomerCommand,
+    CreateCustomerCommandHandler,
+    DeactivateCustomerCommand,
+    DeactivateCustomerCommandHandler,
+    DeleteCustomerCommand,
+    DeleteCustomerCommandHandler,
+    UpdateCustomerCommand,
+    UpdateCustomerCommandHandler,
+)
+from src.customers.app.commands.customer_contact import (
+    CreateCustomerContactCommand,
+    CreateCustomerContactCommandHandler,
+    DeleteCustomerContactCommand,
+    DeleteCustomerContactCommandHandler,
+    UpdateCustomerContactCommand,
+    UpdateCustomerContactCommandHandler,
+)
+from src.customers.app.queries.customer import (
+    GetAllCustomersQuery,
+    GetAllCustomersQueryHandler,
+    GetCustomerByIdQuery,
+    GetCustomerByIdQueryHandler,
+    GetCustomerByTaxIdQuery,
+    GetCustomerByTaxIdQueryHandler,
+)
+from src.customers.app.queries.customer_contact import (
+    GetContactsByCustomerIdQuery,
+    GetContactsByCustomerIdQueryHandler,
+    GetCustomerContactByIdQuery,
+    GetCustomerContactByIdQueryHandler,
 )
 from src.customers.infra.validators import (
     CustomerContactRequest,
@@ -61,69 +91,94 @@ class CustomerRouter:
 
     def create(
         self,
-        controller: Injected[CustomerController],
+        handler: Injected[CreateCustomerCommandHandler],
         new_customer: CustomerRequest,
-    ):
+    ) -> CustomerResponse:
         """Creates a new customer."""
-        return controller.create(new_customer)
+        result = handler.handle(
+            CreateCustomerCommand(**new_customer.model_dump(exclude_none=True))
+        )
+        return CustomerResponse.model_validate(result)
 
     def update(
         self,
-        controller: Injected[CustomerController],
+        handler: Injected[UpdateCustomerCommandHandler],
         id: int,
         customer: CustomerRequest,
-    ):
+    ) -> CustomerResponse:
         """Updates a customer."""
-        return controller.update(id, customer)
+        result = handler.handle(
+            UpdateCustomerCommand(id=id, **customer.model_dump(exclude_none=True))
+        )
+        return CustomerResponse.model_validate(result)
 
     def delete(
         self,
-        controller: Injected[CustomerController],
+        handler: Injected[DeleteCustomerCommandHandler],
         id: int,
-    ):
+    ) -> None:
         """Deletes a customer."""
-        return controller.delete(id)
+        handler.handle(DeleteCustomerCommand(id=id))
 
-    def get_all(self, controller: Injected[CustomerController]):
+    def get_all(
+        self, handler: Injected[GetAllCustomersQueryHandler]
+    ) -> list[CustomerResponse]:
         """Retrieves all customers."""
-        return controller.get_all()
+        result = handler.handle(GetAllCustomersQuery())
+        return [CustomerResponse.model_validate(c) for c in result]
 
-    def get_by_id(self, controller: Injected[CustomerController], id: int):
+    def get_by_id(
+        self, handler: Injected[GetCustomerByIdQueryHandler], id: int
+    ) -> CustomerResponse:
         """Retrieves a specific customer by its ID."""
-        return controller.get_by_id(id)
+        result = handler.handle(GetCustomerByIdQuery(id=id))
+        return CustomerResponse.model_validate(result)
 
     def get_by_tax_id(
         self,
-        controller: Injected[CustomerController],
+        handler: Injected[GetCustomerByTaxIdQueryHandler],
         tax_id: str = Query(..., description="Tax ID to search for"),
-    ):
+    ) -> CustomerResponse:
         """Retrieves a customer by tax ID."""
-        return controller.get_by_tax_id(tax_id)
+        result = handler.handle(GetCustomerByTaxIdQuery(tax_id=tax_id))
+        return CustomerResponse.model_validate(result)
 
-    def activate(self, controller: Injected[CustomerController], id: int):
+    def activate(
+        self, handler: Injected[ActivateCustomerCommandHandler], id: int
+    ) -> CustomerResponse:
         """Activates a customer."""
-        return controller.activate(id)
+        result = handler.handle(ActivateCustomerCommand(id=id))
+        return CustomerResponse.model_validate(result)
 
-    def deactivate(self, controller: Injected[CustomerController], id: int):
+    def deactivate(
+        self, handler: Injected[DeactivateCustomerCommandHandler], id: int
+    ) -> CustomerResponse:
         """Deactivates a customer."""
-        return controller.deactivate(id)
+        result = handler.handle(DeactivateCustomerCommand(id=id))
+        return CustomerResponse.model_validate(result)
 
     def create_contact(
         self,
-        controller: Injected[CustomerContactController],
+        handler: Injected[CreateCustomerContactCommandHandler],
         customer_id: int,
         new_contact: CustomerContactRequest,
-    ):
+    ) -> CustomerContactResponse:
         """Creates a new contact for a customer."""
-        return controller.create(customer_id, new_contact)
+        result = handler.handle(
+            CreateCustomerContactCommand(
+                customer_id=customer_id, **new_contact.model_dump(exclude_none=True)
+            )
+        )
+        return CustomerContactResponse.model_validate(result)
 
     def get_customer_contacts(
         self,
-        controller: Injected[CustomerContactController],
+        handler: Injected[GetContactsByCustomerIdQueryHandler],
         customer_id: int,
-    ):
+    ) -> list[CustomerContactResponse]:
         """Retrieves all contacts for a customer."""
-        return controller.get_by_customer_id(customer_id)
+        result = handler.handle(GetContactsByCustomerIdQuery(customer_id=customer_id))
+        return [CustomerContactResponse.model_validate(c) for c in result]
 
 
 class CustomerContactRouter:
@@ -147,25 +202,29 @@ class CustomerContactRouter:
 
     def update(
         self,
-        controller: Injected[CustomerContactController],
+        handler: Injected[UpdateCustomerContactCommandHandler],
         id: int,
         contact: CustomerContactRequest,
-    ):
+    ) -> CustomerContactResponse:
         """Updates a customer contact."""
-        return controller.update(id, contact)
+        result = handler.handle(
+            UpdateCustomerContactCommand(id=id, **contact.model_dump(exclude_none=True))
+        )
+        return CustomerContactResponse.model_validate(result)
 
     def delete(
         self,
-        controller: Injected[CustomerContactController],
+        handler: Injected[DeleteCustomerContactCommandHandler],
         id: int,
-    ):
+    ) -> None:
         """Deletes a customer contact."""
-        return controller.delete(id)
+        handler.handle(DeleteCustomerContactCommand(id=id))
 
     def get_by_id(
         self,
-        controller: Injected[CustomerContactController],
+        handler: Injected[GetCustomerContactByIdQueryHandler],
         id: int,
-    ):
+    ) -> CustomerContactResponse:
         """Retrieves a specific customer contact by its ID."""
-        return controller.get_by_id(id)
+        result = handler.handle(GetCustomerContactByIdQuery(id=id))
+        return CustomerContactResponse.model_validate(result)

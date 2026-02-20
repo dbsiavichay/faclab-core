@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
-from .controllers import StockController
-from .validators import StockQueryParams, StockResponse
+from src.inventory.stock.app.queries.stock import (
+    GetAllStocksQuery,
+    GetAllStocksQueryHandler,
+)
+from src.inventory.stock.infra.validators import StockQueryParams, StockResponse
 
 
 class StockRouter:
@@ -18,8 +21,11 @@ class StockRouter:
 
     def get_all(
         self,
-        controller: Injected[StockController],
+        handler: Injected[GetAllStocksQueryHandler],
         query_params: StockQueryParams = Depends(),
-    ):
+    ) -> list[StockResponse]:
         """Gets all products stock."""
-        return controller.get_all(query_params)
+        result = handler.handle(
+            GetAllStocksQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return [StockResponse.model_validate(s) for s in result]

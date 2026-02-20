@@ -2,6 +2,8 @@
 
 from unittest.mock import Mock
 
+import pytest
+
 from src.catalog.product.app.queries import (
     GetAllCategoriesQuery,
     GetAllCategoriesQueryHandler,
@@ -15,6 +17,7 @@ from src.catalog.product.app.queries import (
     SearchProductsQueryHandler,
 )
 from src.catalog.product.domain.entities import Category, Product
+from src.shared.domain.exceptions import NotFoundError
 
 
 # Product Query Tests
@@ -70,17 +73,16 @@ def test_get_product_by_id_handler():
     mock_repo.get_by_id.assert_called_once_with(1)
 
 
-def test_get_product_by_id_not_found_returns_none():
-    """Test GetProductByIdQueryHandler returns None when product not found."""
+def test_get_product_by_id_not_found_raises():
+    """Test GetProductByIdQueryHandler raises NotFoundError when product not found."""
     mock_repo = Mock()
     mock_repo.get_by_id.return_value = None
 
     handler = GetProductByIdQueryHandler(mock_repo)
     query = GetProductByIdQuery(product_id=999)
 
-    result = handler.handle(query)
-
-    assert result is None
+    with pytest.raises(NotFoundError):
+        handler.handle(query)
 
 
 def test_search_products_query_handler():
@@ -138,14 +140,13 @@ def test_get_category_by_id_handler():
     mock_repo.get_by_id.assert_called_once_with(1)
 
 
-def test_get_category_by_id_not_found_returns_none():
-    """Test GetCategoryByIdQueryHandler returns None when category not found."""
+def test_get_category_by_id_not_found_raises():
+    """Test GetCategoryByIdQueryHandler raises NotFoundError when category not found."""
     mock_repo = Mock()
     mock_repo.get_by_id.return_value = None
 
     handler = GetCategoryByIdQueryHandler(mock_repo)
     query = GetCategoryByIdQuery(category_id=999)
 
-    result = handler.handle(query)
-
-    assert result is None
+    with pytest.raises(NotFoundError):
+        handler.handle(query)

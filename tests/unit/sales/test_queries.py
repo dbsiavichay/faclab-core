@@ -1,6 +1,8 @@
 from decimal import Decimal
 from unittest.mock import MagicMock
 
+import pytest
+
 from src.sales.app.queries import (
     GetAllSalesQuery,
     GetAllSalesQueryHandler,
@@ -12,6 +14,7 @@ from src.sales.app.queries import (
     GetSalePaymentsQueryHandler,
 )
 from src.sales.domain.entities import Payment, PaymentMethod, Sale, SaleItem, SaleStatus
+from src.shared.domain.exceptions import NotFoundError
 
 
 def _make_sale(**overrides) -> Sale:
@@ -146,15 +149,13 @@ def test_get_sale_by_id_query_handler():
 
 
 def test_get_sale_by_id_not_found():
-    """Test obtener una venta que no existe"""
+    """Test obtener una venta que no existe lanza NotFoundError"""
     repo = _mock_repo()
     repo.get_by_id.return_value = None
     handler = GetSaleByIdQueryHandler(repo)
 
-    query = GetSaleByIdQuery(sale_id=999)
-    result = handler.handle(query)
-
-    assert result is None
+    with pytest.raises(NotFoundError):
+        handler.handle(GetSaleByIdQuery(sale_id=999))
 
 
 def test_get_sale_items_query_handler():

@@ -3,7 +3,44 @@
 from fastapi import APIRouter, status
 from wireup import Injected
 
-from src.sales.infra.controllers import SaleController
+from src.sales.app.commands.add_sale_item import (
+    AddSaleItemCommand,
+    AddSaleItemCommandHandler,
+)
+from src.sales.app.commands.cancel_sale import (
+    CancelSaleCommand,
+    CancelSaleCommandHandler,
+)
+from src.sales.app.commands.confirm_sale import (
+    ConfirmSaleCommand,
+    ConfirmSaleCommandHandler,
+)
+from src.sales.app.commands.create_sale import (
+    CreateSaleCommand,
+    CreateSaleCommandHandler,
+)
+from src.sales.app.commands.register_payment import (
+    RegisterPaymentCommand,
+    RegisterPaymentCommandHandler,
+)
+from src.sales.app.commands.remove_sale_item import (
+    RemoveSaleItemCommand,
+    RemoveSaleItemCommandHandler,
+)
+from src.sales.app.queries.get_payments import (
+    GetSalePaymentsQuery,
+    GetSalePaymentsQueryHandler,
+)
+from src.sales.app.queries.get_sale_items import (
+    GetSaleItemsQuery,
+    GetSaleItemsQueryHandler,
+)
+from src.sales.app.queries.get_sales import (
+    GetAllSalesQuery,
+    GetAllSalesQueryHandler,
+    GetSaleByIdQuery,
+    GetSaleByIdQueryHandler,
+)
 from src.sales.infra.validators import (
     CancelSaleRequest,
     PaymentRequest,
@@ -53,76 +90,88 @@ class SaleRouter:
 
     def create_sale(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[CreateSaleCommandHandler],
         sale: SaleRequest,
     ) -> SaleResponse:
         """Create a new sale in DRAFT status"""
-        return controller.create(sale)
+        result = handler.handle(CreateSaleCommand(**sale.model_dump(exclude_none=True)))
+        return SaleResponse.model_validate(result)
 
     def get_all_sales(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[GetAllSalesQueryHandler],
         customer_id: int | None = None,
         status: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
     ) -> list[SaleResponse]:
         """Get all sales with optional filters"""
-        return controller.get_all(
-            customer_id=customer_id,
-            status=status,
-            limit=limit,
-            offset=offset,
+        result = handler.handle(
+            GetAllSalesQuery(
+                customer_id=customer_id,
+                status=status,
+                limit=limit,
+                offset=offset,
+            )
         )
+        return [SaleResponse.model_validate(r) for r in result]
 
     def get_sale(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[GetSaleByIdQueryHandler],
         sale_id: int,
     ) -> SaleResponse:
         """Get a specific sale by ID"""
-        return controller.get_by_id(sale_id)
+        result = handler.handle(GetSaleByIdQuery(sale_id=sale_id))
+        return SaleResponse.model_validate(result)
 
     def add_sale_item(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[AddSaleItemCommandHandler],
         sale_id: int,
         item: SaleItemRequest,
     ) -> SaleItemResponse:
         """Add a new item to a sale (only in DRAFT status)"""
-        return controller.add_item(sale_id, item)
+        result = handler.handle(
+            AddSaleItemCommand(sale_id=sale_id, **item.model_dump(exclude_none=True))
+        )
+        return SaleItemResponse.model_validate(result)
 
     def get_sale_items(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[GetSaleItemsQueryHandler],
         sale_id: int,
     ) -> list[SaleItemResponse]:
         """Get all items of a sale"""
-        return controller.get_items(sale_id)
+        result = handler.handle(GetSaleItemsQuery(sale_id=sale_id))
+        return [SaleItemResponse.model_validate(r) for r in result]
 
     def remove_sale_item(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[RemoveSaleItemCommandHandler],
         sale_id: int,
         item_id: int,
     ) -> dict:
         """Remove an item from a sale (only in DRAFT status)"""
-        return controller.remove_item(sale_id, item_id)
+        return handler.handle(
+            RemoveSaleItemCommand(sale_id=sale_id, sale_item_id=item_id)
+        )
 
     def confirm_sale(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[ConfirmSaleCommandHandler],
         sale_id: int,
     ) -> SaleResponse:
         """
         Confirm a sale (only DRAFT sales can be confirmed).
         This will trigger inventory movements (OUT).
         """
-        return controller.confirm(sale_id)
+        result = handler.handle(ConfirmSaleCommand(sale_id=sale_id))
+        return SaleResponse.model_validate(result)
 
     def cancel_sale(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[CancelSaleCommandHandler],
         sale_id: int,
         cancel_input: CancelSaleRequest | None = None,
     ) -> SaleResponse:
@@ -130,21 +179,29 @@ class SaleRouter:
         Cancel a sale (only DRAFT or CONFIRMED sales can be cancelled).
         If the sale was confirmed, this will trigger inventory reversal (IN movements).
         """
-        return controller.cancel(sale_id, cancel_input)
+        reason = cancel_input.reason if cancel_input else None
+        result = handler.handle(CancelSaleCommand(sale_id=sale_id, reason=reason))
+        return SaleResponse.model_validate(result)
 
     def register_payment(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[RegisterPaymentCommandHandler],
         sale_id: int,
         payment: PaymentRequest,
     ) -> PaymentResponse:
         """Register a payment for a sale"""
-        return controller.register_payment(sale_id, payment)
+        result = handler.handle(
+            RegisterPaymentCommand(
+                sale_id=sale_id, **payment.model_dump(exclude_none=True)
+            )
+        )
+        return PaymentResponse.model_validate(result)
 
     def get_sale_payments(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[GetSalePaymentsQueryHandler],
         sale_id: int,
     ) -> list[PaymentResponse]:
         """Get all payments for a sale"""
-        return controller.get_payments(sale_id)
+        result = handler.handle(GetSalePaymentsQuery(sale_id=sale_id))
+        return [PaymentResponse.model_validate(r) for r in result]

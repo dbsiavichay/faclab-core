@@ -6,6 +6,7 @@ from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.specifications import ProductByName, ProductInCategory
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
@@ -37,13 +38,15 @@ class GetProductByIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetProductByIdQueryHandler(QueryHandler[GetProductByIdQuery, dict | None]):
+class GetProductByIdQueryHandler(QueryHandler[GetProductByIdQuery, dict]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
 
-    def _handle(self, query: GetProductByIdQuery) -> dict | None:
+    def _handle(self, query: GetProductByIdQuery) -> dict:
         product = self.repo.get_by_id(query.product_id)
-        return product.dict() if product else None
+        if product is None:
+            raise NotFoundError(f"Product with id {query.product_id} not found")
+        return product.dict()
 
 
 @dataclass

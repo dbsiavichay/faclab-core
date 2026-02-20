@@ -5,6 +5,7 @@ from wireup import injectable
 from src.sales.domain.entities import Sale
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
@@ -51,13 +52,15 @@ class GetSaleByIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetSaleByIdQueryHandler(QueryHandler[GetSaleByIdQuery, dict | None]):
+class GetSaleByIdQueryHandler(QueryHandler[GetSaleByIdQuery, dict]):
     """Handler para obtener una venta por ID"""
 
     def __init__(self, repo: Repository[Sale]):
         self.repo = repo
 
-    def _handle(self, query: GetSaleByIdQuery) -> dict | None:
+    def _handle(self, query: GetSaleByIdQuery) -> dict:
         """Obtiene una venta específica por ID"""
         sale = self.repo.get_by_id(query.sale_id)
-        return sale.dict() if sale else None
+        if sale is None:
+            raise NotFoundError(f"Sale with id {query.sale_id} not found")
+        return sale.dict()
