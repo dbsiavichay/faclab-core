@@ -5,6 +5,7 @@ from wireup import injectable
 from src.customers.domain.entities import Customer
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
@@ -28,14 +29,14 @@ class GetCustomerByIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetCustomerByIdQueryHandler(QueryHandler[GetCustomerByIdQuery, dict | None]):
+class GetCustomerByIdQueryHandler(QueryHandler[GetCustomerByIdQuery, dict]):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def _handle(self, query: GetCustomerByIdQuery) -> dict | None:
+    def _handle(self, query: GetCustomerByIdQuery) -> dict:
         customer = self.repo.get_by_id(query.id)
         if customer is None:
-            return None
+            raise NotFoundError(f"Customer with id {query.id} not found")
         return customer.dict()
 
 
@@ -45,14 +46,12 @@ class GetCustomerByTaxIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetCustomerByTaxIdQueryHandler(
-    QueryHandler[GetCustomerByTaxIdQuery, dict | None]
-):
+class GetCustomerByTaxIdQueryHandler(QueryHandler[GetCustomerByTaxIdQuery, dict]):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def _handle(self, query: GetCustomerByTaxIdQuery) -> dict | None:
+    def _handle(self, query: GetCustomerByTaxIdQuery) -> dict:
         customer = self.repo.first(tax_id=query.tax_id)
         if customer is None:
-            return None
+            raise NotFoundError(f"Customer with tax_id {query.tax_id} not found")
         return customer.dict()

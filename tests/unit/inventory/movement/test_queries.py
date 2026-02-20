@@ -13,6 +13,7 @@ from src.inventory.movement.app.queries import (
 )
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
+from src.shared.domain.exceptions import NotFoundError
 
 
 @pytest.fixture
@@ -209,17 +210,15 @@ def test_get_movement_by_id_handler(mock_movement_repo):
     mock_movement_repo.get_by_id.assert_called_once_with(1)
 
 
-def test_get_movement_by_id_not_found_returns_none(mock_movement_repo):
-    """Test getting non-existent movement returns None"""
+def test_get_movement_by_id_not_found_raises(mock_movement_repo):
+    """Test getting non-existent movement raises NotFoundError"""
     # Arrange
     mock_movement_repo.get_by_id.return_value = None
 
     query = GetMovementByIdQuery(id=999)
     handler = GetMovementByIdQueryHandler(mock_movement_repo)
 
-    # Act
-    result = handler.handle(query)
-
-    # Assert
-    assert result is None
+    # Act / Assert
+    with pytest.raises(NotFoundError):
+        handler.handle(query)
     mock_movement_repo.get_by_id.assert_called_once_with(999)

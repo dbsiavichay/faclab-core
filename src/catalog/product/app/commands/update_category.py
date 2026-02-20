@@ -6,6 +6,7 @@ from src.catalog.product.domain.entities import Category
 from src.catalog.product.domain.events import CategoryUpdated
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError
 from src.shared.infra.events.event_bus import EventBus
 
 
@@ -24,6 +25,8 @@ class UpdateCategoryCommandHandler(CommandHandler[UpdateCategoryCommand, dict]):
     def _handle(self, command: UpdateCategoryCommand) -> dict:
         # Get existing category to track changes
         existing = self.repo.get_by_id(command.category_id)
+        if existing is None:
+            raise NotFoundError(f"Category with id {command.category_id} not found")
 
         category = Category(
             id=command.category_id,
@@ -34,14 +37,13 @@ class UpdateCategoryCommandHandler(CommandHandler[UpdateCategoryCommand, dict]):
 
         # Track what changed
         changes = {}
-        if existing:
-            if existing.name != category.name:
-                changes["name"] = {"old": existing.name, "new": category.name}
-            if existing.description != category.description:
-                changes["description"] = {
-                    "old": existing.description,
-                    "new": category.description,
-                }
+        if existing.name != category.name:
+            changes["name"] = {"old": existing.name, "new": category.name}
+        if existing.description != category.description:
+            changes["description"] = {
+                "old": existing.description,
+                "new": category.description,
+            }
 
         EventBus.publish(
             CategoryUpdated(

@@ -1,13 +1,19 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.inventory.movement.app.commands.movement import (
+    CreateMovementCommand,
+    CreateMovementCommandHandler,
+)
+from src.inventory.movement.app.queries.movement import (
+    GetAllMovementsQuery,
+    GetAllMovementsQueryHandler,
+)
 from src.inventory.movement.infra.validators import (
     MovementQueryParams,
     MovementRequest,
     MovementResponse,
 )
-
-from .controllers import MovementController
 
 
 class MovementRouter:
@@ -27,15 +33,21 @@ class MovementRouter:
     def create(
         self,
         new_movement: MovementRequest,
-        movement_controller: Injected[MovementController],
+        handler: Injected[CreateMovementCommandHandler],
     ) -> MovementResponse:
         """Save a new movement."""
-        return movement_controller.create(new_movement)
+        result = handler.handle(
+            CreateMovementCommand(**new_movement.model_dump(exclude_none=True))
+        )
+        return MovementResponse.model_validate(result)
 
     def get_all(
         self,
-        movement_controller: Injected[MovementController],
+        handler: Injected[GetAllMovementsQueryHandler],
         query_params: MovementQueryParams = Depends(),
     ) -> list[MovementResponse]:
         """Get all movements."""
-        return movement_controller.get_all(query_params)
+        result = handler.handle(
+            GetAllMovementsQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return [MovementResponse.model_validate(m) for m in result]

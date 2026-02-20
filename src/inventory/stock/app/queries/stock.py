@@ -5,6 +5,7 @@ from wireup import injectable
 from src.inventory.stock.domain.entities import Stock
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
@@ -42,14 +43,14 @@ class GetStockByIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetStockByIdQueryHandler(QueryHandler[GetStockByIdQuery, dict | None]):
+class GetStockByIdQueryHandler(QueryHandler[GetStockByIdQuery, dict]):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def _handle(self, query: GetStockByIdQuery) -> dict | None:
+    def _handle(self, query: GetStockByIdQuery) -> dict:
         stock = self.repo.get_by_id(query.id)
         if stock is None:
-            return None
+            raise NotFoundError(f"Stock with id {query.id} not found")
         return stock.dict()
 
 
@@ -61,12 +62,12 @@ class GetStockByProductQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetStockByProductQueryHandler(QueryHandler[GetStockByProductQuery, dict | None]):
+class GetStockByProductQueryHandler(QueryHandler[GetStockByProductQuery, dict]):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def _handle(self, query: GetStockByProductQuery) -> dict | None:
+    def _handle(self, query: GetStockByProductQuery) -> dict:
         stock = self.repo.first(product_id=query.product_id)
         if stock is None:
-            return None
+            raise NotFoundError(f"Stock for product_id {query.product_id} not found")
         return stock.dict()

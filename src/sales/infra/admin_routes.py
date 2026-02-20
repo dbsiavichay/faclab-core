@@ -3,7 +3,20 @@
 from fastapi import APIRouter
 from wireup import Injected
 
-from src.sales.infra.controllers import SaleController
+from src.sales.app.queries.get_payments import (
+    GetSalePaymentsQuery,
+    GetSalePaymentsQueryHandler,
+)
+from src.sales.app.queries.get_sale_items import (
+    GetSaleItemsQuery,
+    GetSaleItemsQueryHandler,
+)
+from src.sales.app.queries.get_sales import (
+    GetAllSalesQuery,
+    GetAllSalesQueryHandler,
+    GetSaleByIdQuery,
+    GetSaleByIdQueryHandler,
+)
 from src.sales.infra.validators import PaymentResponse, SaleItemResponse, SaleResponse
 
 
@@ -24,36 +37,42 @@ class AdminSaleRouter:
 
     def get_all_sales(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[GetAllSalesQueryHandler],
         customer_id: int | None = None,
         status: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
     ) -> list[SaleResponse]:
-        return controller.get_all(
-            customer_id=customer_id,
-            status=status,
-            limit=limit,
-            offset=offset,
+        result = handler.handle(
+            GetAllSalesQuery(
+                customer_id=customer_id,
+                status=status,
+                limit=limit,
+                offset=offset,
+            )
         )
+        return [SaleResponse.model_validate(r) for r in result]
 
     def get_sale(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[GetSaleByIdQueryHandler],
         sale_id: int,
     ) -> SaleResponse:
-        return controller.get_by_id(sale_id)
+        result = handler.handle(GetSaleByIdQuery(sale_id=sale_id))
+        return SaleResponse.model_validate(result)
 
     def get_sale_items(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[GetSaleItemsQueryHandler],
         sale_id: int,
     ) -> list[SaleItemResponse]:
-        return controller.get_items(sale_id)
+        result = handler.handle(GetSaleItemsQuery(sale_id=sale_id))
+        return [SaleItemResponse.model_validate(r) for r in result]
 
     def get_sale_payments(
         self,
-        controller: Injected[SaleController],
+        handler: Injected[GetSalePaymentsQueryHandler],
         sale_id: int,
     ) -> list[PaymentResponse]:
-        return controller.get_payments(sale_id)
+        result = handler.handle(GetSalePaymentsQuery(sale_id=sale_id))
+        return [PaymentResponse.model_validate(r) for r in result]

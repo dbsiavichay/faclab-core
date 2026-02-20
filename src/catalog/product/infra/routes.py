@@ -1,7 +1,42 @@
 from fastapi import APIRouter
 from wireup import Injected
 
-from src.catalog.product.infra.controllers import CategoryController, ProductController
+from src.catalog.product.app.commands.create_category import (
+    CreateCategoryCommand,
+    CreateCategoryCommandHandler,
+)
+from src.catalog.product.app.commands.create_product import (
+    CreateProductCommand,
+    CreateProductCommandHandler,
+)
+from src.catalog.product.app.commands.delete_category import (
+    DeleteCategoryCommand,
+    DeleteCategoryCommandHandler,
+)
+from src.catalog.product.app.commands.delete_product import (
+    DeleteProductCommand,
+    DeleteProductCommandHandler,
+)
+from src.catalog.product.app.commands.update_category import (
+    UpdateCategoryCommand,
+    UpdateCategoryCommandHandler,
+)
+from src.catalog.product.app.commands.update_product import (
+    UpdateProductCommand,
+    UpdateProductCommandHandler,
+)
+from src.catalog.product.app.queries.get_categories import (
+    GetAllCategoriesQuery,
+    GetAllCategoriesQueryHandler,
+    GetCategoryByIdQuery,
+    GetCategoryByIdQueryHandler,
+)
+from src.catalog.product.app.queries.get_products import (
+    GetAllProductsQuery,
+    GetAllProductsQueryHandler,
+    GetProductByIdQuery,
+    GetProductByIdQueryHandler,
+)
 from src.catalog.product.infra.validators import (
     CategoryRequest,
     CategoryResponse,
@@ -34,31 +69,45 @@ class CategoryRouter:
     def create(
         self,
         new_category: CategoryRequest,
-        controller: Injected[CategoryController],
-    ):
+        handler: Injected[CreateCategoryCommandHandler],
+    ) -> CategoryResponse:
         """Saves a category."""
-        return controller.create(new_category)
+        result = handler.handle(
+            CreateCategoryCommand(**new_category.model_dump(exclude_none=True))
+        )
+        return CategoryResponse.model_validate(result)
 
     def update(
         self,
         id: int,
         category: CategoryRequest,
-        controller: Injected[CategoryController],
-    ):
+        handler: Injected[UpdateCategoryCommandHandler],
+    ) -> CategoryResponse:
         """Updates a category."""
-        return controller.update(id, category)
+        result = handler.handle(
+            UpdateCategoryCommand(
+                category_id=id, **category.model_dump(exclude_none=True)
+            )
+        )
+        return CategoryResponse.model_validate(result)
 
-    def delete(self, id: int, controller: Injected[CategoryController]):
+    def delete(self, id: int, handler: Injected[DeleteCategoryCommandHandler]) -> None:
         """Deletes a category."""
-        return controller.delete(id)
+        handler.handle(DeleteCategoryCommand(category_id=id))
 
-    def get_all(self, controller: Injected[CategoryController]):
+    def get_all(
+        self, handler: Injected[GetAllCategoriesQueryHandler]
+    ) -> list[CategoryResponse]:
         """Retrieves all categories."""
-        return controller.get_all()
+        result = handler.handle(GetAllCategoriesQuery())
+        return [CategoryResponse.model_validate(c) for c in result]
 
-    def get_by_id(self, id: int, controller: Injected[CategoryController]):
+    def get_by_id(
+        self, id: int, handler: Injected[GetCategoryByIdQueryHandler]
+    ) -> CategoryResponse:
         """Retrieves a specific category by its ID."""
-        return controller.get_by_id(id)
+        result = handler.handle(GetCategoryByIdQuery(category_id=id))
+        return CategoryResponse.model_validate(result)
 
 
 class ProductRouter:
@@ -85,28 +134,40 @@ class ProductRouter:
     def create(
         self,
         new_product: ProductRequest,
-        controller: Injected[ProductController],
-    ):
+        handler: Injected[CreateProductCommandHandler],
+    ) -> ProductResponse:
         """Saves a product."""
-        return controller.create(new_product)
+        result = handler.handle(
+            CreateProductCommand(**new_product.model_dump(exclude_none=True))
+        )
+        return ProductResponse.model_validate(result)
 
     def update(
         self,
         id: int,
         product: ProductRequest,
-        controller: Injected[ProductController],
-    ):
+        handler: Injected[UpdateProductCommandHandler],
+    ) -> ProductResponse:
         """Updates a product."""
-        return controller.update(id, product)
+        result = handler.handle(
+            UpdateProductCommand(product_id=id, **product.model_dump(exclude_none=True))
+        )
+        return ProductResponse.model_validate(result)
 
-    def delete(self, id: int, controller: Injected[ProductController]):
+    def delete(self, id: int, handler: Injected[DeleteProductCommandHandler]) -> None:
         """Deletes a product."""
-        return controller.delete(id)
+        handler.handle(DeleteProductCommand(product_id=id))
 
-    def get_all(self, controller: Injected[ProductController]):
+    def get_all(
+        self, handler: Injected[GetAllProductsQueryHandler]
+    ) -> list[ProductResponse]:
         """Retrieves all products."""
-        return controller.get_all()
+        result = handler.handle(GetAllProductsQuery())
+        return [ProductResponse.model_validate(p) for p in result]
 
-    def get_by_id(self, id: int, controller: Injected[ProductController]):
+    def get_by_id(
+        self, id: int, handler: Injected[GetProductByIdQueryHandler]
+    ) -> ProductResponse:
         """Retrieves a specific product by its ID."""
-        return controller.get_by_id(id)
+        result = handler.handle(GetProductByIdQuery(product_id=id))
+        return ProductResponse.model_validate(result)

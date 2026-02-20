@@ -19,10 +19,6 @@ from src.customers.app.queries.customer_contact import (
     GetContactsByCustomerIdQueryHandler,
     GetCustomerContactByIdQueryHandler,
 )
-from src.customers.infra.controllers import (
-    CustomerContactController,
-    CustomerController,
-)
 from src.customers.infra.mappers import CustomerContactMapper, CustomerMapper
 from src.customers.infra.repositories import (
     CustomerContactRepository,
@@ -47,6 +43,4 @@ INJECTABLES = [
     DeleteCustomerContactCommandHandler,
     GetCustomerContactByIdQueryHandler,
     GetContactsByCustomerIdQueryHandler,
-    CustomerController,
-    CustomerContactController,
 ]
