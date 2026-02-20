@@ -10,7 +10,7 @@ from src.catalog.product.infra.models import CategoryModel, ProductModel  # noqa
 from src.inventory.movement.infra.models import MovementModel  # noqa: F401
 from src.inventory.stock.infra.models import StockModel  # noqa: F401
 from src.sales.infra.models import PaymentModel, SaleItemModel, SaleModel  # noqa: F401
-from src.shared.infra.db import Base
+from src.shared.infra.database import Base
 
 env = Env()
 env.read_env()

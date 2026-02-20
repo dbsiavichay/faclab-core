@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.shared.infra.db import Base
+from src.shared.infra.database import Base
 
 
 class CategoryModel(Base):

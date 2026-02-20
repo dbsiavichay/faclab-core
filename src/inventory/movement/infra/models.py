@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.inventory.movement.domain.constants import MovementType
-from src.shared.infra.db import Base
+from src.shared.infra.database import Base
 
 
 class MovementModel(Base):

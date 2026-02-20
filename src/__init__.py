@@ -96,7 +96,10 @@ def create_wireup_container():
     from src.inventory.stock.infra.controllers import StockController
     from src.inventory.stock.infra.mappers import StockMapper
     from src.inventory.stock.infra.repositories import StockRepository
-    from src.pos.sales.app.services import CancelSaleService, ConfirmSaleService
+    from src.pos.sales.app.commands import (
+        POSCancelSaleCommandHandler,
+        POSConfirmSaleCommandHandler,
+    )
     from src.pos.sales.infra.controllers import POSSaleController
     from src.sales.app.commands.add_sale_item import AddSaleItemCommandHandler
     from src.sales.app.commands.cancel_sale import CancelSaleCommandHandler
@@ -117,13 +120,13 @@ def create_wireup_container():
         SaleItemRepository,
         SaleRepository,
     )
-    from src.shared.infra.db_session import configure_session_factory, get_db_session
+    from src.shared.infra.database import create_session_factory
 
     db_connection_string = config.DB_CONNECTION_STRING
     if not db_connection_string:
         raise ValueError("Database connection string not found in environment")
 
-    configure_session_factory(db_connection_string)
+    get_db_session = create_session_factory(db_connection_string)
 
     container = create_sync_container(
         injectables=[
@@ -193,8 +196,8 @@ def create_wireup_container():
             GetSaleItemsQueryHandler,
             GetSalePaymentsQueryHandler,
             SaleController,
-            ConfirmSaleService,
-            CancelSaleService,
+            POSConfirmSaleCommandHandler,
+            POSCancelSaleCommandHandler,
             POSSaleController,
         ]
     )

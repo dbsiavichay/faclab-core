@@ -52,290 +52,240 @@ def _make_stock(**overrides) -> Stock:
     return Stock(**defaults)
 
 
-def _build_confirm_service(sale=None, items=None, stock=None, session=None):
-    """Build a ConfirmSaleService with mocked repos"""
-    from src.pos.sales.app.services import ConfirmSaleService
+def _build_confirm_handler(sale=None, items=None, stock=None):
+    from src.pos.sales.app.commands import POSConfirmSaleCommandHandler
 
-    session = session or MagicMock()
-    sale_mapper = MagicMock()
-    sale_item_mapper = MagicMock()
-    movement_mapper = MagicMock()
-    stock_mapper = MagicMock()
-
-    service = ConfirmSaleService(
-        session=session,
-        sale_mapper=sale_mapper,
-        sale_item_mapper=sale_item_mapper,
-        movement_mapper=movement_mapper,
-        stock_mapper=stock_mapper,
-    )
-
-    # Mock repos
-    service.sale_repo = MagicMock()
-    service.sale_item_repo = MagicMock()
-    service.movement_repo = MagicMock()
-    service.stock_repo = MagicMock()
+    handler = POSConfirmSaleCommandHandler.__new__(POSConfirmSaleCommandHandler)
+    handler.sale_repo = MagicMock()
+    handler.sale_item_repo = MagicMock()
+    handler.movement_repo = MagicMock()
+    handler.stock_repo = MagicMock()
 
     if sale is not None:
-        service.sale_repo.get_by_id.return_value = sale
-        service.sale_repo.update.return_value = sale
+        handler.sale_repo.get_by_id.return_value = sale
+        handler.sale_repo.update.return_value = sale
     if items is not None:
-        service.sale_item_repo.filter_by.return_value = items
+        handler.sale_item_repo.filter_by.return_value = items
     if stock is not None:
-        service.stock_repo.first.return_value = stock
+        handler.stock_repo.first.return_value = stock
 
-    return service
+    return handler
 
 
-def _build_cancel_service(sale=None, items=None, stock=None, session=None):
-    """Build a CancelSaleService with mocked repos"""
-    from src.pos.sales.app.services import CancelSaleService
+def _build_cancel_handler(sale=None, items=None, stock=None):
+    from src.pos.sales.app.commands import POSCancelSaleCommandHandler
 
-    session = session or MagicMock()
-    sale_mapper = MagicMock()
-    sale_item_mapper = MagicMock()
-    movement_mapper = MagicMock()
-    stock_mapper = MagicMock()
-
-    service = CancelSaleService(
-        session=session,
-        sale_mapper=sale_mapper,
-        sale_item_mapper=sale_item_mapper,
-        movement_mapper=movement_mapper,
-        stock_mapper=stock_mapper,
-    )
-
-    # Mock repos
-    service.sale_repo = MagicMock()
-    service.sale_item_repo = MagicMock()
-    service.movement_repo = MagicMock()
-    service.stock_repo = MagicMock()
+    handler = POSCancelSaleCommandHandler.__new__(POSCancelSaleCommandHandler)
+    handler.sale_repo = MagicMock()
+    handler.sale_item_repo = MagicMock()
+    handler.movement_repo = MagicMock()
+    handler.stock_repo = MagicMock()
 
     if sale is not None:
-        service.sale_repo.get_by_id.return_value = sale
-        service.sale_repo.update.return_value = sale
+        handler.sale_repo.get_by_id.return_value = sale
+        handler.sale_repo.update.return_value = sale
     if items is not None:
-        service.sale_item_repo.filter_by.return_value = items
+        handler.sale_item_repo.filter_by.return_value = items
     if stock is not None:
-        service.stock_repo.first.return_value = stock
+        handler.stock_repo.first.return_value = stock
 
-    return service
-
-
-# === ConfirmSaleService Tests ===
+    return handler
 
 
-class TestConfirmSaleService:
+# === POSConfirmSaleCommandHandler Tests ===
+
+
+class TestPOSConfirmSaleCommandHandler:
     def test_confirm_happy_path(self):
+        from src.pos.sales.app.commands import POSConfirmSaleCommand
+
         sale = _make_sale()
         items = [_make_sale_item()]
         stock = _make_stock(quantity=50)
-        session = MagicMock()
 
-        service = _build_confirm_service(
-            sale=sale, items=items, stock=stock, session=session
-        )
-
-        result = service.execute(sale_id=1)
+        handler = _build_confirm_handler(sale=sale, items=items, stock=stock)
+        result = handler._handle(POSConfirmSaleCommand(sale_id=1))
 
         assert result["status"] == SaleStatus.CONFIRMED
-        session.commit.assert_called_once()
-        service.sale_repo.update.assert_called_once()
-        service.movement_repo.create.assert_called_once()
-        service.stock_repo.update.assert_called_once()
+        handler.sale_repo.update.assert_called_once()
+        handler.movement_repo.create.assert_called_once()
+        handler.stock_repo.update.assert_called_once()
 
     def test_confirm_insufficient_stock_raises_error(self):
+        from src.pos.sales.app.commands import POSConfirmSaleCommand
+
         sale = _make_sale()
         items = [_make_sale_item(quantity=10)]
-        stock = _make_stock(quantity=3)  # Not enough
-        session = MagicMock()
+        stock = _make_stock(quantity=3)
 
-        service = _build_confirm_service(
-            sale=sale, items=items, stock=stock, session=session
-        )
+        handler = _build_confirm_handler(sale=sale, items=items, stock=stock)
 
         with pytest.raises(InsufficientStockError):
-            service.execute(sale_id=1)
+            handler._handle(POSConfirmSaleCommand(sale_id=1))
 
-        session.commit.assert_not_called()
-        session.rollback.assert_not_called()
+        handler.sale_repo.update.assert_not_called()
+        handler.movement_repo.create.assert_not_called()
 
     def test_confirm_no_stock_record_raises_error(self):
+        from src.pos.sales.app.commands import POSConfirmSaleCommand
+
         sale = _make_sale()
         items = [_make_sale_item(quantity=5)]
-        session = MagicMock()
 
-        service = _build_confirm_service(
-            sale=sale, items=items, stock=None, session=session
-        )
-        service.stock_repo.first.return_value = None
+        handler = _build_confirm_handler(sale=sale, items=items)
+        handler.stock_repo.first.return_value = None
 
         with pytest.raises(InsufficientStockError):
-            service.execute(sale_id=1)
+            handler._handle(POSConfirmSaleCommand(sale_id=1))
 
     def test_confirm_no_items_raises_error(self):
-        sale = _make_sale()
-        session = MagicMock()
+        from src.pos.sales.app.commands import POSConfirmSaleCommand
 
-        service = _build_confirm_service(sale=sale, items=[], session=session)
+        sale = _make_sale()
+
+        handler = _build_confirm_handler(sale=sale, items=[])
 
         with pytest.raises(SaleHasNoItemsError):
-            service.execute(sale_id=1)
+            handler._handle(POSConfirmSaleCommand(sale_id=1))
 
     def test_confirm_sale_not_found_raises_error(self):
-        session = MagicMock()
+        from src.pos.sales.app.commands import POSConfirmSaleCommand
 
-        service = _build_confirm_service(sale=None, session=session)
-        service.sale_repo.get_by_id.return_value = None
+        handler = _build_confirm_handler()
+        handler.sale_repo.get_by_id.return_value = None
 
         with pytest.raises(NotFoundError):
-            service.execute(sale_id=999)
+            handler._handle(POSConfirmSaleCommand(sale_id=999))
 
-    def test_confirm_rollback_on_unexpected_error(self):
+    def test_confirm_propagates_unexpected_error(self):
+        from src.pos.sales.app.commands import POSConfirmSaleCommand
+
         sale = _make_sale()
         items = [_make_sale_item()]
         stock = _make_stock(quantity=50)
-        session = MagicMock()
 
-        service = _build_confirm_service(
-            sale=sale, items=items, stock=stock, session=session
-        )
-        service.movement_repo.create.side_effect = RuntimeError("DB error")
+        handler = _build_confirm_handler(sale=sale, items=items, stock=stock)
+        handler.movement_repo.create.side_effect = RuntimeError("DB error")
 
         with pytest.raises(RuntimeError, match="DB error"):
-            service.execute(sale_id=1)
-
-        session.rollback.assert_called_once()
-        session.commit.assert_not_called()
+            handler._handle(POSConfirmSaleCommand(sale_id=1))
 
     def test_confirm_publishes_event_with_pos_source(self):
-        published_events = []
+        from src.pos.sales.app.commands import POSConfirmSaleCommand
         from src.sales.domain.events import SaleConfirmed
 
+        published_events = []
         EventBus.subscribe(SaleConfirmed, lambda e: published_events.append(e))
 
         sale = _make_sale()
         items = [_make_sale_item()]
         stock = _make_stock(quantity=50)
-        session = MagicMock()
 
-        service = _build_confirm_service(
-            sale=sale, items=items, stock=stock, session=session
-        )
-        service.execute(sale_id=1)
+        handler = _build_confirm_handler(sale=sale, items=items, stock=stock)
+        handler._handle(POSConfirmSaleCommand(sale_id=1))
 
         assert len(published_events) == 1
         assert published_events[0].source == "pos"
 
     def test_confirm_multiple_items(self):
+        from src.pos.sales.app.commands import POSConfirmSaleCommand
+
         sale = _make_sale()
         items = [
             _make_sale_item(id=1, product_id=100, quantity=3),
             _make_sale_item(id=2, product_id=200, quantity=2),
         ]
         stock = _make_stock(quantity=50)
-        session = MagicMock()
 
-        service = _build_confirm_service(
-            sale=sale, items=items, stock=stock, session=session
-        )
-        result = service.execute(sale_id=1)
+        handler = _build_confirm_handler(sale=sale, items=items, stock=stock)
+        result = handler._handle(POSConfirmSaleCommand(sale_id=1))
 
         assert result["status"] == SaleStatus.CONFIRMED
-        assert service.movement_repo.create.call_count == 2
-        assert service.stock_repo.update.call_count == 2
-        session.commit.assert_called_once()
+        assert handler.movement_repo.create.call_count == 2
+        assert handler.stock_repo.update.call_count == 2
 
 
-# === CancelSaleService Tests ===
+# === POSCancelSaleCommandHandler Tests ===
 
 
-class TestCancelSaleService:
+class TestPOSCancelSaleCommandHandler:
     def test_cancel_draft_sale(self):
-        sale = _make_sale(status=SaleStatus.DRAFT)
-        session = MagicMock()
+        from src.pos.sales.app.commands import POSCancelSaleCommand
 
-        service = _build_cancel_service(sale=sale, session=session)
-        result = service.execute(sale_id=1)
+        sale = _make_sale(status=SaleStatus.DRAFT)
+
+        handler = _build_cancel_handler(sale=sale)
+        result = handler._handle(POSCancelSaleCommand(sale_id=1))
 
         assert result["status"] == SaleStatus.CANCELLED
-        session.commit.assert_called_once()
-        # No inventory operations for DRAFT
-        service.movement_repo.create.assert_not_called()
-        service.stock_repo.update.assert_not_called()
+        handler.movement_repo.create.assert_not_called()
+        handler.stock_repo.update.assert_not_called()
 
     def test_cancel_confirmed_sale_reverses_inventory(self):
+        from src.pos.sales.app.commands import POSCancelSaleCommand
+
         sale = _make_sale(status=SaleStatus.CONFIRMED)
         items = [_make_sale_item()]
         stock = _make_stock(quantity=45)
-        session = MagicMock()
 
-        service = _build_cancel_service(
-            sale=sale, items=items, stock=stock, session=session
-        )
-        result = service.execute(sale_id=1)
+        handler = _build_cancel_handler(sale=sale, items=items, stock=stock)
+        result = handler._handle(POSCancelSaleCommand(sale_id=1))
 
         assert result["status"] == SaleStatus.CANCELLED
-        session.commit.assert_called_once()
-        service.movement_repo.create.assert_called_once()
-        service.stock_repo.update.assert_called_once()
+        handler.movement_repo.create.assert_called_once()
+        handler.stock_repo.update.assert_called_once()
 
     def test_cancel_sale_not_found(self):
-        session = MagicMock()
+        from src.pos.sales.app.commands import POSCancelSaleCommand
 
-        service = _build_cancel_service(sale=None, session=session)
-        service.sale_repo.get_by_id.return_value = None
+        handler = _build_cancel_handler()
+        handler.sale_repo.get_by_id.return_value = None
 
         with pytest.raises(NotFoundError):
-            service.execute(sale_id=999)
+            handler._handle(POSCancelSaleCommand(sale_id=999))
 
-    def test_cancel_confirmed_rollback_on_error(self):
+    def test_cancel_confirmed_propagates_error(self):
+        from src.pos.sales.app.commands import POSCancelSaleCommand
+
         sale = _make_sale(status=SaleStatus.CONFIRMED)
         items = [_make_sale_item()]
         stock = _make_stock(quantity=45)
-        session = MagicMock()
 
-        service = _build_cancel_service(
-            sale=sale, items=items, stock=stock, session=session
-        )
-        service.movement_repo.create.side_effect = RuntimeError("DB error")
+        handler = _build_cancel_handler(sale=sale, items=items, stock=stock)
+        handler.movement_repo.create.side_effect = RuntimeError("DB error")
 
         with pytest.raises(RuntimeError, match="DB error"):
-            service.execute(sale_id=1)
-
-        session.rollback.assert_called_once()
+            handler._handle(POSCancelSaleCommand(sale_id=1))
 
     def test_cancel_publishes_event_with_pos_source(self):
-        published_events = []
+        from src.pos.sales.app.commands import POSCancelSaleCommand
         from src.sales.domain.events import SaleCancelled
 
+        published_events = []
         EventBus.subscribe(SaleCancelled, lambda e: published_events.append(e))
 
         sale = _make_sale(status=SaleStatus.CONFIRMED)
         items = [_make_sale_item()]
         stock = _make_stock(quantity=45)
-        session = MagicMock()
 
-        service = _build_cancel_service(
-            sale=sale, items=items, stock=stock, session=session
-        )
-        service.execute(sale_id=1)
+        handler = _build_cancel_handler(sale=sale, items=items, stock=stock)
+        handler._handle(POSCancelSaleCommand(sale_id=1))
 
         assert len(published_events) == 1
         assert published_events[0].source == "pos"
         assert published_events[0].was_confirmed is True
 
     def test_cancel_draft_publishes_event_with_pos_source(self):
-        published_events = []
+        from src.pos.sales.app.commands import POSCancelSaleCommand
         from src.sales.domain.events import SaleCancelled
 
+        published_events = []
         EventBus.subscribe(SaleCancelled, lambda e: published_events.append(e))
 
         sale = _make_sale(status=SaleStatus.DRAFT)
-        session = MagicMock()
 
-        service = _build_cancel_service(sale=sale, session=session)
-        service.execute(sale_id=1)
+        handler = _build_cancel_handler(sale=sale)
+        handler._handle(POSCancelSaleCommand(sale_id=1))
 
         assert len(published_events) == 1
         assert published_events[0].source == "pos"
@@ -359,7 +309,6 @@ class TestEventHandlerGuards:
             source="pos",
         )
 
-        # Should not raise or call wireup_container
         handle_sale_confirmed(event)
 
     def test_sale_cancelled_pos_source_skips_inventory(self):
@@ -376,11 +325,9 @@ class TestEventHandlerGuards:
             source="pos",
         )
 
-        # Should not raise or call wireup_container
         handle_sale_cancelled(event)
 
     def test_sale_confirmed_admin_source_processes_normally(self):
-        """Admin source events should attempt to process (will fail without wireup_container)"""
         from src.inventory.infra.event_handlers import handle_sale_confirmed
         from src.sales.domain.events import SaleConfirmed
 
@@ -393,8 +340,6 @@ class TestEventHandlerGuards:
             source="admin",
         )
 
-        # Admin source should try to process — will fail because wireup_container is None
-        # This proves the guard is NOT skipping admin events
         with pytest.raises((AttributeError, TypeError)):
             handle_sale_confirmed(event)
 
