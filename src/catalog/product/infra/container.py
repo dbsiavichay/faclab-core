@@ -1,0 +1,44 @@
+from src.catalog.product.app.commands.create_category import (
+    CreateCategoryCommandHandler,
+)
+from src.catalog.product.app.commands.create_product import CreateProductCommandHandler
+from src.catalog.product.app.commands.delete_category import (
+    DeleteCategoryCommandHandler,
+)
+from src.catalog.product.app.commands.delete_product import DeleteProductCommandHandler
+from src.catalog.product.app.commands.update_category import (
+    UpdateCategoryCommandHandler,
+)
+from src.catalog.product.app.commands.update_product import UpdateProductCommandHandler
+from src.catalog.product.app.queries.get_categories import (
+    GetAllCategoriesQueryHandler,
+    GetCategoryByIdQueryHandler,
+)
+from src.catalog.product.app.queries.get_products import (
+    GetAllProductsQueryHandler,
+    GetProductByIdQueryHandler,
+    SearchProductsQueryHandler,
+)
+from src.catalog.product.infra.controllers import CategoryController, ProductController
+from src.catalog.product.infra.mappers import CategoryMapper, ProductMapper
+from src.catalog.product.infra.repositories import CategoryRepository, ProductRepository
+
+INJECTABLES = [
+    CategoryMapper,
+    ProductMapper,
+    CategoryRepository,
+    ProductRepository,
+    CreateCategoryCommandHandler,
+    UpdateCategoryCommandHandler,
+    DeleteCategoryCommandHandler,
+    GetAllCategoriesQueryHandler,
+    GetCategoryByIdQueryHandler,
+    CreateProductCommandHandler,
+    UpdateProductCommandHandler,
+    DeleteProductCommandHandler,
+    GetAllProductsQueryHandler,
+    GetProductByIdQueryHandler,
+    SearchProductsQueryHandler,
+    CategoryController,
+    ProductController,
+]
