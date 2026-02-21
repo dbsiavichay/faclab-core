@@ -76,10 +76,12 @@ def test_create_handler_publishes_event():
     repo = MagicMock()
     repo.create.return_value = customer
 
+    from src.shared.infra.events.event_bus_publisher import EventBusPublisher
+
     events_received = []
     EventBus.subscribe(CustomerCreated, lambda e: events_received.append(e))
 
-    handler = CreateCustomerCommandHandler(repo)
+    handler = CreateCustomerCommandHandler(repo, EventBusPublisher())
     handler.handle(
         CreateCustomerCommand(name="Test", tax_id="1234567890123", tax_type=1)
     )

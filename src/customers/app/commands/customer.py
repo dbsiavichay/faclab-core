@@ -11,10 +11,10 @@ from src.customers.domain.events import (
     CustomerUpdated,
 )
 from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 from src.shared.domain.value_objects import Email, TaxId
-from src.shared.infra.events.event_bus import EventBus
 
 
 @dataclass
@@ -35,8 +35,9 @@ class CreateCustomerCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateCustomerCommandHandler(CommandHandler[CreateCustomerCommand, dict]):
-    def __init__(self, repo: Repository[Customer]):
+    def __init__(self, repo: Repository[Customer], event_publisher: EventPublisher):
         self.repo = repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: CreateCustomerCommand) -> dict:
         if command.email:
@@ -59,7 +60,7 @@ class CreateCustomerCommandHandler(CommandHandler[CreateCustomerCommand, dict]):
         )
         customer = self.repo.create(customer)
 
-        EventBus.publish(
+        self.event_publisher.publish(
             CustomerCreated(
                 aggregate_id=customer.id,
                 customer_id=customer.id,
@@ -89,8 +90,9 @@ class UpdateCustomerCommand(Command):
 
 @injectable(lifetime="scoped")
 class UpdateCustomerCommandHandler(CommandHandler[UpdateCustomerCommand, dict]):
-    def __init__(self, repo: Repository[Customer]):
+    def __init__(self, repo: Repository[Customer], event_publisher: EventPublisher):
         self.repo = repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: UpdateCustomerCommand) -> dict:
         if command.email:
@@ -114,7 +116,7 @@ class UpdateCustomerCommandHandler(CommandHandler[UpdateCustomerCommand, dict]):
         )
         customer = self.repo.update(customer)
 
-        EventBus.publish(
+        self.event_publisher.publish(
             CustomerUpdated(
                 aggregate_id=customer.id,
                 customer_id=customer.id,
@@ -145,8 +147,9 @@ class ActivateCustomerCommand(Command):
 
 @injectable(lifetime="scoped")
 class ActivateCustomerCommandHandler(CommandHandler[ActivateCustomerCommand, dict]):
-    def __init__(self, repo: Repository[Customer]):
+    def __init__(self, repo: Repository[Customer], event_publisher: EventPublisher):
         self.repo = repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: ActivateCustomerCommand) -> dict:
         customer = self.repo.get_by_id(command.id)
@@ -156,7 +159,7 @@ class ActivateCustomerCommandHandler(CommandHandler[ActivateCustomerCommand, dic
         updated_customer = replace(customer, is_active=True)
         updated_customer = self.repo.update(updated_customer)
 
-        EventBus.publish(
+        self.event_publisher.publish(
             CustomerActivated(
                 aggregate_id=updated_customer.id,
                 customer_id=updated_customer.id,
@@ -172,8 +175,9 @@ class DeactivateCustomerCommand(Command):
 
 @injectable(lifetime="scoped")
 class DeactivateCustomerCommandHandler(CommandHandler[DeactivateCustomerCommand, dict]):
-    def __init__(self, repo: Repository[Customer]):
+    def __init__(self, repo: Repository[Customer], event_publisher: EventPublisher):
         self.repo = repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: DeactivateCustomerCommand) -> dict:
         customer = self.repo.get_by_id(command.id)
@@ -183,7 +187,7 @@ class DeactivateCustomerCommandHandler(CommandHandler[DeactivateCustomerCommand,
         updated_customer = replace(customer, is_active=False)
         updated_customer = self.repo.update(updated_customer)
 
-        EventBus.publish(
+        self.event_publisher.publish(
             CustomerDeactivated(
                 aggregate_id=updated_customer.id,
                 customer_id=updated_customer.id,

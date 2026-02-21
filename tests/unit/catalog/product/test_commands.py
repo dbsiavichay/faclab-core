@@ -1,8 +1,6 @@
 """Unit tests for catalog product command handlers."""
 
-from unittest.mock import Mock
-
-import pytest
+from unittest.mock import MagicMock, Mock
 
 from src.catalog.product.app.commands import (
     CreateCategoryCommand,
@@ -20,15 +18,6 @@ from src.catalog.product.app.commands import (
 )
 from src.catalog.product.domain.entities import Category, Product
 from src.catalog.product.domain.events import CategoryCreated, ProductCreated
-from src.shared.infra.events.event_bus import EventBus
-
-
-@pytest.fixture(autouse=True)
-def clear_event_bus():
-    """Clear EventBus before each test."""
-    EventBus.clear()
-    yield
-    EventBus.clear()
 
 
 # Product Command Tests
@@ -38,7 +27,7 @@ def test_create_product_command_handler():
     created_product = Product(id=1, sku="TEST-001", name="Test Product", category_id=1)
     mock_repo.create.return_value = created_product
 
-    handler = CreateProductCommandHandler(mock_repo)
+    handler = CreateProductCommandHandler(mock_repo, MagicMock())
     command = CreateProductCommand(sku="TEST-001", name="Test Product", category_id=1)
 
     result = handler.handle(command)
@@ -55,21 +44,15 @@ def test_create_product_publishes_event():
     created_product = Product(id=1, sku="TEST-001", name="Test Product")
     mock_repo.create.return_value = created_product
 
-    published_events = []
+    event_publisher = MagicMock()
+    handler = CreateProductCommandHandler(mock_repo, event_publisher)
+    handler.handle(CreateProductCommand(sku="TEST-001", name="Test Product"))
 
-    def capture_event(event):
-        published_events.append(event)
-
-    EventBus.subscribe(ProductCreated, capture_event)
-
-    handler = CreateProductCommandHandler(mock_repo)
-    command = CreateProductCommand(sku="TEST-001", name="Test Product")
-    handler.handle(command)
-
-    assert len(published_events) == 1
-    assert isinstance(published_events[0], ProductCreated)
-    assert published_events[0].product_id == 1
-    assert published_events[0].sku == "TEST-001"
+    event_publisher.publish.assert_called_once()
+    published_event = event_publisher.publish.call_args[0][0]
+    assert isinstance(published_event, ProductCreated)
+    assert published_event.product_id == 1
+    assert published_event.sku == "TEST-001"
 
 
 def test_update_product_command_handler():
@@ -80,7 +63,7 @@ def test_update_product_command_handler():
     mock_repo.get_by_id.return_value = existing_product
     mock_repo.update.return_value = updated_product
 
-    handler = UpdateProductCommandHandler(mock_repo)
+    handler = UpdateProductCommandHandler(mock_repo, MagicMock())
     command = UpdateProductCommand(product_id=1, sku="NEW-001", name="New Name")
 
     result = handler.handle(command)
@@ -95,7 +78,7 @@ def test_delete_product_command_handler():
     """Test DeleteProductCommandHandler deletes a product and publishes event."""
     mock_repo = Mock()
 
-    handler = DeleteProductCommandHandler(mock_repo)
+    handler = DeleteProductCommandHandler(mock_repo, MagicMock())
     command = DeleteProductCommand(product_id=1)
 
     result = handler.handle(command)
@@ -113,7 +96,7 @@ def test_create_category_command_handler():
     )
     mock_repo.create.return_value = created_category
 
-    handler = CreateCategoryCommandHandler(mock_repo)
+    handler = CreateCategoryCommandHandler(mock_repo, MagicMock())
     command = CreateCategoryCommand(name="Electronics", description="Electronic items")
 
     result = handler.handle(command)
@@ -132,21 +115,15 @@ def test_create_category_publishes_event():
     )
     mock_repo.create.return_value = created_category
 
-    published_events = []
+    event_publisher = MagicMock()
+    handler = CreateCategoryCommandHandler(mock_repo, event_publisher)
+    handler.handle(CreateCategoryCommand(name="Electronics"))
 
-    def capture_event(event):
-        published_events.append(event)
-
-    EventBus.subscribe(CategoryCreated, capture_event)
-
-    handler = CreateCategoryCommandHandler(mock_repo)
-    command = CreateCategoryCommand(name="Electronics")
-    handler.handle(command)
-
-    assert len(published_events) == 1
-    assert isinstance(published_events[0], CategoryCreated)
-    assert published_events[0].category_id == 1
-    assert published_events[0].name == "Electronics"
+    event_publisher.publish.assert_called_once()
+    published_event = event_publisher.publish.call_args[0][0]
+    assert isinstance(published_event, CategoryCreated)
+    assert published_event.category_id == 1
+    assert published_event.name == "Electronics"
 
 
 def test_update_category_command_handler():
@@ -157,7 +134,7 @@ def test_update_category_command_handler():
     mock_repo.get_by_id.return_value = existing_category
     mock_repo.update.return_value = updated_category
 
-    handler = UpdateCategoryCommandHandler(mock_repo)
+    handler = UpdateCategoryCommandHandler(mock_repo, MagicMock())
     command = UpdateCategoryCommand(
         category_id=1, name="New Name", description="New desc"
     )
@@ -174,7 +151,7 @@ def test_delete_category_command_handler():
     """Test DeleteCategoryCommandHandler deletes a category and publishes event."""
     mock_repo = Mock()
 
-    handler = DeleteCategoryCommandHandler(mock_repo)
+    handler = DeleteCategoryCommandHandler(mock_repo, MagicMock())
     command = DeleteCategoryCommand(category_id=1)
 
     result = handler.handle(command)

@@ -7,8 +7,8 @@ from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
 from src.inventory.movement.domain.events import MovementCreated
 from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
-from src.shared.infra.events.event_bus import EventBus
 
 
 @dataclass
@@ -27,8 +27,9 @@ class CreateMovementCommandHandler(CommandHandler[CreateMovementCommand, dict]):
     Publica el evento MovementCreated que será consumido por el Stock event handler.
     """
 
-    def __init__(self, repo: Repository[Movement]):
+    def __init__(self, repo: Repository[Movement], event_publisher: EventPublisher):
         self.repo = repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: CreateMovementCommand) -> dict:
         # Convert string type to enum
@@ -47,7 +48,7 @@ class CreateMovementCommandHandler(CommandHandler[CreateMovementCommand, dict]):
         movement = self.repo.create(movement)
 
         # Publish domain event
-        EventBus.publish(
+        self.event_publisher.publish(
             MovementCreated(
                 aggregate_id=movement.id,
                 product_id=movement.product_id,

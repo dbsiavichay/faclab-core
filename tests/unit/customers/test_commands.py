@@ -16,14 +16,6 @@ from src.customers.app.commands.customer import (
 )
 from src.customers.domain.entities import Customer, TaxType
 from src.shared.domain.exceptions import NotFoundError
-from src.shared.infra.events.event_bus import EventBus
-
-
-@pytest.fixture(autouse=True)
-def clear_event_bus():
-    EventBus.clear()
-    yield
-    EventBus.clear()
 
 
 def _make_customer(**overrides) -> Customer:
@@ -52,7 +44,7 @@ def _mock_repo(customer=None, customers=None):
 def test_create_customer_command_handler():
     customer = _make_customer()
     repo = _mock_repo(customer=customer)
-    handler = CreateCustomerCommandHandler(repo)
+    handler = CreateCustomerCommandHandler(repo, MagicMock())
 
     command = CreateCustomerCommand(
         name="Test Customer",
@@ -68,7 +60,7 @@ def test_create_customer_command_handler():
 
 def test_create_customer_invalid_email_raises():
     repo = _mock_repo(customer=_make_customer())
-    handler = CreateCustomerCommandHandler(repo)
+    handler = CreateCustomerCommandHandler(repo, MagicMock())
 
     command = CreateCustomerCommand(
         name="Test",
@@ -81,7 +73,7 @@ def test_create_customer_invalid_email_raises():
 
 def test_create_customer_invalid_tax_id_raises():
     repo = _mock_repo(customer=_make_customer())
-    handler = CreateCustomerCommandHandler(repo)
+    handler = CreateCustomerCommandHandler(repo, MagicMock())
 
     command = CreateCustomerCommand(
         name="Test",
@@ -94,7 +86,7 @@ def test_create_customer_invalid_tax_id_raises():
 def test_update_customer_command_handler():
     customer = _make_customer(name="Updated Name")
     repo = _mock_repo(customer=customer)
-    handler = UpdateCustomerCommandHandler(repo)
+    handler = UpdateCustomerCommandHandler(repo, MagicMock())
 
     command = UpdateCustomerCommand(
         id=1,
@@ -123,7 +115,7 @@ def test_activate_customer_command_handler():
     repo = MagicMock()
     repo.get_by_id.return_value = customer
     repo.update.return_value = activated
-    handler = ActivateCustomerCommandHandler(repo)
+    handler = ActivateCustomerCommandHandler(repo, MagicMock())
 
     result = handler.handle(ActivateCustomerCommand(id=1))
 
@@ -134,7 +126,7 @@ def test_activate_customer_command_handler():
 def test_activate_customer_not_found_raises():
     repo = MagicMock()
     repo.get_by_id.return_value = None
-    handler = ActivateCustomerCommandHandler(repo)
+    handler = ActivateCustomerCommandHandler(repo, MagicMock())
 
     with pytest.raises(NotFoundError, match="Customer with id 1 not found"):
         handler.handle(ActivateCustomerCommand(id=1))
@@ -146,7 +138,7 @@ def test_deactivate_customer_command_handler():
     repo = MagicMock()
     repo.get_by_id.return_value = customer
     repo.update.return_value = deactivated
-    handler = DeactivateCustomerCommandHandler(repo)
+    handler = DeactivateCustomerCommandHandler(repo, MagicMock())
 
     result = handler.handle(DeactivateCustomerCommand(id=1))
 
