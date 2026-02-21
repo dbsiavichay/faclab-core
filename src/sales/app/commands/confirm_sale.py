@@ -6,9 +6,9 @@ from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleConfirmed
 from src.sales.domain.exceptions import SaleHasNoItemsError
 from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
-from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundError
+from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
@@ -30,9 +30,11 @@ class ConfirmSaleCommandHandler(CommandHandler[ConfirmSaleCommand, dict]):
         self,
         sale_repo: Repository[Sale],
         sale_item_repo: Repository[SaleItem],
+        event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: ConfirmSaleCommand) -> dict:
         """Confirma la venta si pasa todas las validaciones"""
@@ -64,7 +66,7 @@ class ConfirmSaleCommandHandler(CommandHandler[ConfirmSaleCommand, dict]):
 
         # Publicar evento SaleConfirmed
         # Este evento será escuchado por Inventory para crear movimientos OUT
-        EventBus.publish(
+        self.event_publisher.publish(
             SaleConfirmed(
                 aggregate_id=sale.id,
                 sale_id=sale.id,

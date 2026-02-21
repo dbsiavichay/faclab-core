@@ -5,8 +5,8 @@ from wireup import injectable
 from src.sales.domain.entities import Sale
 from src.sales.domain.events import SaleCreated
 from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
-from src.shared.infra.events.event_bus import EventBus
 
 
 @dataclass
@@ -22,8 +22,9 @@ class CreateSaleCommand(Command):
 class CreateSaleCommandHandler(CommandHandler[CreateSaleCommand, dict]):
     """Handler para crear una nueva venta en estado DRAFT"""
 
-    def __init__(self, repo: Repository[Sale]):
+    def __init__(self, repo: Repository[Sale], event_publisher: EventPublisher):
         self.repo = repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: CreateSaleCommand) -> dict:
         """Crea una nueva venta en estado DRAFT"""
@@ -36,7 +37,7 @@ class CreateSaleCommandHandler(CommandHandler[CreateSaleCommand, dict]):
         sale = self.repo.create(sale)
 
         # Publicar evento
-        EventBus.publish(
+        self.event_publisher.publish(
             SaleCreated(
                 aggregate_id=sale.id,
                 sale_id=sale.id,

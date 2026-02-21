@@ -6,10 +6,9 @@ from wireup import injectable
 from src.sales.domain.entities import Payment, PaymentMethod, Sale
 from src.sales.domain.events import PaymentReceived
 from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
-from src.shared.domain.exceptions import ValidationError
-from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundError
+from src.shared.domain.exceptions import NotFoundError, ValidationError
 
 
 @dataclass
@@ -31,9 +30,11 @@ class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]
         self,
         sale_repo: Repository[Sale],
         payment_repo: Repository[Payment],
+        event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo
         self.payment_repo = payment_repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: RegisterPaymentCommand) -> dict:
         """Registra el pago y actualiza el estado de la venta"""
@@ -71,7 +72,7 @@ class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]
         self.sale_repo.update(sale)
 
         # Publicar evento
-        EventBus.publish(
+        self.event_publisher.publish(
             PaymentReceived(
                 aggregate_id=payment.id,
                 payment_id=payment.id,

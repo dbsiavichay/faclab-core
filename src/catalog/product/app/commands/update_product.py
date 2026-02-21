@@ -5,9 +5,9 @@ from wireup import injectable
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.events import ProductUpdated
 from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
-from src.shared.infra.events.event_bus import EventBus
 
 
 @dataclass
@@ -21,8 +21,9 @@ class UpdateProductCommand(Command):
 
 @injectable(lifetime="scoped")
 class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
-    def __init__(self, repo: Repository[Product]):
+    def __init__(self, repo: Repository[Product], event_publisher: EventPublisher):
         self.repo = repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: UpdateProductCommand) -> dict:
         # Get existing product to track changes
@@ -56,7 +57,7 @@ class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
                 "new": product.category_id,
             }
 
-        EventBus.publish(
+        self.event_publisher.publish(
             ProductUpdated(
                 aggregate_id=product.id,
                 product_id=product.id,

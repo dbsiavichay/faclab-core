@@ -5,8 +5,8 @@ from wireup import injectable
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.events import ProductCreated
 from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
-from src.shared.infra.events.event_bus import EventBus
 
 
 @dataclass
@@ -19,8 +19,9 @@ class CreateProductCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateProductCommandHandler(CommandHandler[CreateProductCommand, dict]):
-    def __init__(self, repo: Repository[Product]):
+    def __init__(self, repo: Repository[Product], event_publisher: EventPublisher):
         self.repo = repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: CreateProductCommand) -> dict:
         product = Product(
@@ -31,7 +32,7 @@ class CreateProductCommandHandler(CommandHandler[CreateProductCommand, dict]):
         )
         product = self.repo.create(product)
 
-        EventBus.publish(
+        self.event_publisher.publish(
             ProductCreated(
                 aggregate_id=product.id,
                 product_id=product.id,

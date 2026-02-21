@@ -5,9 +5,9 @@ from wireup import injectable
 from src.sales.domain.entities import Sale, SaleItem, SaleStatus
 from src.sales.domain.events import SaleCancelled
 from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
-from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundError
+from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
@@ -29,9 +29,11 @@ class CancelSaleCommandHandler(CommandHandler[CancelSaleCommand, dict]):
         self,
         sale_repo: Repository[Sale],
         sale_item_repo: Repository[SaleItem],
+        event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: CancelSaleCommand) -> dict:
         """Cancela la venta y emite evento si es necesario"""
@@ -61,7 +63,7 @@ class CancelSaleCommandHandler(CommandHandler[CancelSaleCommand, dict]):
 
         # Publicar evento SaleCancelled
         # Si was_confirmed=True, Inventory creará movimientos IN de reversión
-        EventBus.publish(
+        self.event_publisher.publish(
             SaleCancelled(
                 aggregate_id=sale.id,
                 sale_id=sale.id,

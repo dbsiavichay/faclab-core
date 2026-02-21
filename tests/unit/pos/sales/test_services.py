@@ -6,15 +6,7 @@ import pytest
 from src.inventory.stock.domain.entities import Stock
 from src.sales.domain.entities import Sale, SaleItem, SaleStatus
 from src.sales.domain.exceptions import InsufficientStockError, SaleHasNoItemsError
-from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundError
-
-
-@pytest.fixture(autouse=True)
-def clear_event_bus():
-    EventBus.clear()
-    yield
-    EventBus.clear()
+from src.shared.domain.exceptions import NotFoundError
 
 
 def _make_sale(**overrides) -> Sale:
@@ -60,6 +52,7 @@ def _build_confirm_handler(sale=None, items=None, stock=None):
     handler.sale_item_repo = MagicMock()
     handler.movement_repo = MagicMock()
     handler.stock_repo = MagicMock()
+    handler.event_publisher = MagicMock()
 
     if sale is not None:
         handler.sale_repo.get_by_id.return_value = sale
@@ -80,6 +73,7 @@ def _build_cancel_handler(sale=None, items=None, stock=None):
     handler.sale_item_repo = MagicMock()
     handler.movement_repo = MagicMock()
     handler.stock_repo = MagicMock()
+    handler.event_publisher = MagicMock()
 
     if sale is not None:
         handler.sale_repo.get_by_id.return_value = sale
@@ -174,9 +168,6 @@ class TestPOSConfirmSaleCommandHandler:
         from src.pos.sales.app.commands import POSConfirmSaleCommand
         from src.sales.domain.events import SaleConfirmed
 
-        published_events = []
-        EventBus.subscribe(SaleConfirmed, lambda e: published_events.append(e))
-
         sale = _make_sale()
         items = [_make_sale_item()]
         stock = _make_stock(quantity=50)
@@ -184,8 +175,10 @@ class TestPOSConfirmSaleCommandHandler:
         handler = _build_confirm_handler(sale=sale, items=items, stock=stock)
         handler._handle(POSConfirmSaleCommand(sale_id=1))
 
-        assert len(published_events) == 1
-        assert published_events[0].source == "pos"
+        handler.event_publisher.publish.assert_called_once()
+        published_event = handler.event_publisher.publish.call_args[0][0]
+        assert isinstance(published_event, SaleConfirmed)
+        assert published_event.source == "pos"
 
     def test_confirm_multiple_items(self):
         from src.pos.sales.app.commands import POSConfirmSaleCommand
@@ -261,9 +254,6 @@ class TestPOSCancelSaleCommandHandler:
         from src.pos.sales.app.commands import POSCancelSaleCommand
         from src.sales.domain.events import SaleCancelled
 
-        published_events = []
-        EventBus.subscribe(SaleCancelled, lambda e: published_events.append(e))
-
         sale = _make_sale(status=SaleStatus.CONFIRMED)
         items = [_make_sale_item()]
         stock = _make_stock(quantity=45)
@@ -271,25 +261,26 @@ class TestPOSCancelSaleCommandHandler:
         handler = _build_cancel_handler(sale=sale, items=items, stock=stock)
         handler._handle(POSCancelSaleCommand(sale_id=1))
 
-        assert len(published_events) == 1
-        assert published_events[0].source == "pos"
-        assert published_events[0].was_confirmed is True
+        handler.event_publisher.publish.assert_called_once()
+        published_event = handler.event_publisher.publish.call_args[0][0]
+        assert isinstance(published_event, SaleCancelled)
+        assert published_event.source == "pos"
+        assert published_event.was_confirmed is True
 
     def test_cancel_draft_publishes_event_with_pos_source(self):
         from src.pos.sales.app.commands import POSCancelSaleCommand
         from src.sales.domain.events import SaleCancelled
-
-        published_events = []
-        EventBus.subscribe(SaleCancelled, lambda e: published_events.append(e))
 
         sale = _make_sale(status=SaleStatus.DRAFT)
 
         handler = _build_cancel_handler(sale=sale)
         handler._handle(POSCancelSaleCommand(sale_id=1))
 
-        assert len(published_events) == 1
-        assert published_events[0].source == "pos"
-        assert published_events[0].was_confirmed is False
+        handler.event_publisher.publish.assert_called_once()
+        published_event = handler.event_publisher.publish.call_args[0][0]
+        assert isinstance(published_event, SaleCancelled)
+        assert published_event.source == "pos"
+        assert published_event.was_confirmed is False
 
 
 # === Event Handler Guard Tests ===

@@ -19,16 +19,7 @@ from src.sales.app.commands import (
 )
 from src.sales.domain.entities import Payment, PaymentMethod, Sale, SaleItem, SaleStatus
 from src.sales.domain.exceptions import InvalidSaleStatusError, SaleHasNoItemsError
-from src.shared.domain.exceptions import ValidationError
-from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundError
-
-
-@pytest.fixture(autouse=True)
-def clear_event_bus():
-    EventBus.clear()
-    yield
-    EventBus.clear()
+from src.shared.domain.exceptions import NotFoundError, ValidationError
 
 
 def _make_sale(**overrides) -> Sale:
@@ -84,7 +75,8 @@ def test_create_sale_command_handler():
     """Test crear una venta"""
     sale = _make_sale()
     repo = _mock_repo(entity=sale)
-    handler = CreateSaleCommandHandler(repo)
+    event_publisher = MagicMock()
+    handler = CreateSaleCommandHandler(repo, event_publisher)
 
     command = CreateSaleCommand(customer_id=10, notes="Test sale")
     result = handler.handle(command)
@@ -96,18 +88,20 @@ def test_create_sale_command_handler():
 
 def test_create_sale_publishes_event():
     """Test que crear una venta publica evento"""
-    published_events = []
-    EventBus.subscribe(type(None), lambda e: published_events.append(e))
+    from src.sales.domain.events import SaleCreated
 
     sale = _make_sale()
     repo = _mock_repo(entity=sale)
-    handler = CreateSaleCommandHandler(repo)
+    event_publisher = MagicMock()
+    handler = CreateSaleCommandHandler(repo, event_publisher)
 
-    command = CreateSaleCommand(customer_id=10)
-    handler.handle(command)
+    handler.handle(CreateSaleCommand(customer_id=10))
 
-    # Verificar que se publicó un evento (aunque no lo validamos en detalle aquí)
-    # En producción verificaríamos el tipo específico
+    event_publisher.publish.assert_called_once()
+    published_event = event_publisher.publish.call_args[0][0]
+    assert isinstance(published_event, SaleCreated)
+    assert published_event.sale_id == 1
+    assert published_event.customer_id == 10
 
 
 def test_add_sale_item_command_handler():
@@ -116,7 +110,8 @@ def test_add_sale_item_command_handler():
     sale_item = _make_sale_item()
     sale_repo = _mock_repo(entity=sale)
     item_repo = _mock_repo(entity=sale_item, entities=[sale_item])
-    handler = AddSaleItemCommandHandler(sale_repo, item_repo)
+    event_publisher = MagicMock()
+    handler = AddSaleItemCommandHandler(sale_repo, item_repo, event_publisher)
 
     command = AddSaleItemCommand(
         sale_id=1,
@@ -139,7 +134,7 @@ def test_add_sale_item_only_draft():
     sale_item = _make_sale_item()
     sale_repo = _mock_repo(entity=sale)
     item_repo = _mock_repo(entity=sale_item)
-    handler = AddSaleItemCommandHandler(sale_repo, item_repo)
+    handler = AddSaleItemCommandHandler(sale_repo, item_repo, MagicMock())
 
     command = AddSaleItemCommand(
         sale_id=1, product_id=100, quantity=10, unit_price=100.0
@@ -154,7 +149,7 @@ def test_add_sale_item_sale_not_found():
     sale_repo = _mock_repo()
     sale_repo.get_by_id.return_value = None
     item_repo = _mock_repo()
-    handler = AddSaleItemCommandHandler(sale_repo, item_repo)
+    handler = AddSaleItemCommandHandler(sale_repo, item_repo, MagicMock())
 
     command = AddSaleItemCommand(
         sale_id=999, product_id=100, quantity=10, unit_price=100.0
@@ -170,7 +165,7 @@ def test_remove_sale_item_command_handler():
     sale_item = _make_sale_item()
     sale_repo = _mock_repo(entity=sale)
     item_repo = _mock_repo(entity=sale_item, entities=[])
-    handler = RemoveSaleItemCommandHandler(sale_repo, item_repo)
+    handler = RemoveSaleItemCommandHandler(sale_repo, item_repo, MagicMock())
 
     command = RemoveSaleItemCommand(sale_id=1, sale_item_id=1)
     result = handler.handle(command)
@@ -186,7 +181,7 @@ def test_confirm_sale_command_handler():
     items = [_make_sale_item()]
     sale_repo = _mock_repo(entity=sale)
     item_repo = _mock_repo(entities=items)
-    handler = ConfirmSaleCommandHandler(sale_repo, item_repo)
+    handler = ConfirmSaleCommandHandler(sale_repo, item_repo, MagicMock())
 
     command = ConfirmSaleCommand(sale_id=1)
     result = handler.handle(command)
@@ -200,7 +195,7 @@ def test_confirm_sale_without_items_fails():
     sale = _make_sale()
     sale_repo = _mock_repo(entity=sale)
     item_repo = _mock_repo(entities=[])
-    handler = ConfirmSaleCommandHandler(sale_repo, item_repo)
+    handler = ConfirmSaleCommandHandler(sale_repo, item_repo, MagicMock())
 
     command = ConfirmSaleCommand(sale_id=1)
 
@@ -213,7 +208,7 @@ def test_confirm_sale_not_found():
     sale_repo = _mock_repo()
     sale_repo.get_by_id.return_value = None
     item_repo = _mock_repo()
-    handler = ConfirmSaleCommandHandler(sale_repo, item_repo)
+    handler = ConfirmSaleCommandHandler(sale_repo, item_repo, MagicMock())
 
     command = ConfirmSaleCommand(sale_id=999)
 
@@ -227,7 +222,7 @@ def test_cancel_sale_command_handler():
     items = [_make_sale_item()]
     sale_repo = _mock_repo(entity=sale)
     item_repo = _mock_repo(entities=items)
-    handler = CancelSaleCommandHandler(sale_repo, item_repo)
+    handler = CancelSaleCommandHandler(sale_repo, item_repo, MagicMock())
 
     command = CancelSaleCommand(sale_id=1, reason="Customer request")
     result = handler.handle(command)
@@ -241,7 +236,7 @@ def test_cancel_sale_draft_no_reversal():
     sale = _make_sale(status=SaleStatus.DRAFT)
     sale_repo = _mock_repo(entity=sale)
     item_repo = _mock_repo(entities=[])
-    handler = CancelSaleCommandHandler(sale_repo, item_repo)
+    handler = CancelSaleCommandHandler(sale_repo, item_repo, MagicMock())
 
     command = CancelSaleCommand(sale_id=1)
     handler.handle(command)
@@ -256,7 +251,7 @@ def test_register_payment_command_handler():
     payment = _make_payment()
     sale_repo = _mock_repo(entity=sale)
     payment_repo = _mock_repo(entity=payment, entities=[payment])
-    handler = RegisterPaymentCommandHandler(sale_repo, payment_repo)
+    handler = RegisterPaymentCommandHandler(sale_repo, payment_repo, MagicMock())
 
     command = RegisterPaymentCommand(
         sale_id=1,
@@ -276,7 +271,7 @@ def test_register_payment_invalid_method():
     sale = _make_sale()
     sale_repo = _mock_repo(entity=sale)
     payment_repo = _mock_repo()
-    handler = RegisterPaymentCommandHandler(sale_repo, payment_repo)
+    handler = RegisterPaymentCommandHandler(sale_repo, payment_repo, MagicMock())
 
     command = RegisterPaymentCommand(
         sale_id=1,
@@ -293,7 +288,7 @@ def test_register_payment_sale_not_found():
     sale_repo = _mock_repo()
     sale_repo.get_by_id.return_value = None
     payment_repo = _mock_repo()
-    handler = RegisterPaymentCommandHandler(sale_repo, payment_repo)
+    handler = RegisterPaymentCommandHandler(sale_repo, payment_repo, MagicMock())
 
     command = RegisterPaymentCommand(sale_id=999, amount=500.0, payment_method="CASH")
 

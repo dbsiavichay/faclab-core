@@ -13,6 +13,7 @@ def create_wireup_container():
     from src.pos.sales.infra.container import INJECTABLES as POS_SALES_INJECTABLES
     from src.sales.infra.container import INJECTABLES as SALES_INJECTABLES
     from src.shared.infra.database import create_session_factory
+    from src.shared.infra.events.event_bus_publisher import EventBusPublisher
 
     db_connection_string = config.DB_CONNECTION_STRING
     if not db_connection_string:
@@ -23,6 +24,7 @@ def create_wireup_container():
     container = create_sync_container(
         injectables=[
             get_db_session,
+            EventBusPublisher,
             *CATALOG_INJECTABLES,
             *MOVEMENT_INJECTABLES,
             *STOCK_INJECTABLES,

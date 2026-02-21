@@ -7,10 +7,9 @@ from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleItemRemoved
 from src.sales.domain.exceptions import InvalidSaleStatusError
 from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
-from src.shared.domain.exceptions import DomainError
-from src.shared.infra.events.event_bus import EventBus
-from src.shared.infra.exceptions import NotFoundError
+from src.shared.domain.exceptions import DomainError, NotFoundError
 
 
 @dataclass
@@ -29,9 +28,11 @@ class RemoveSaleItemCommandHandler(CommandHandler[RemoveSaleItemCommand, dict]):
         self,
         sale_repo: Repository[Sale],
         sale_item_repo: Repository[SaleItem],
+        event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
+        self.event_publisher = event_publisher
 
     def _handle(self, command: RemoveSaleItemCommand) -> dict:
         """Elimina un item de la venta y recalcula los totales"""
@@ -80,7 +81,7 @@ class RemoveSaleItemCommandHandler(CommandHandler[RemoveSaleItemCommand, dict]):
         self.sale_repo.update(sale)
 
         # Publicar evento
-        EventBus.publish(
+        self.event_publisher.publish(
             SaleItemRemoved(
                 aggregate_id=sale.id,
                 sale_id=sale.id,
