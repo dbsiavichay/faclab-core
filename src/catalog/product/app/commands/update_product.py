@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 
 from wireup import injectable
 
@@ -16,7 +17,17 @@ class UpdateProductCommand(Command):
     sku: str
     name: str
     description: str | None = None
+    barcode: str | None = None
     category_id: int | None = None
+    unit_of_measure_id: int | None = None
+    purchase_price: Decimal | None = None
+    sale_price: Decimal | None = None
+    is_active: bool = True
+    is_service: bool = False
+    min_stock: int = 0
+    max_stock: int | None = None
+    reorder_point: int = 0
+    lead_time_days: int | None = None
 
 
 @injectable(lifetime="scoped")
@@ -26,7 +37,6 @@ class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
         self.event_publisher = event_publisher
 
     def _handle(self, command: UpdateProductCommand) -> dict:
-        # Get existing product to track changes
         existing = self.repo.get_by_id(command.product_id)
         if existing is None:
             raise NotFoundError(f"Product with id {command.product_id} not found")
@@ -36,26 +46,41 @@ class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
             sku=command.sku,
             name=command.name,
             description=command.description,
+            barcode=command.barcode,
             category_id=command.category_id,
+            unit_of_measure_id=command.unit_of_measure_id,
+            purchase_price=command.purchase_price,
+            sale_price=command.sale_price,
+            is_active=command.is_active,
+            is_service=command.is_service,
+            min_stock=command.min_stock,
+            max_stock=command.max_stock,
+            reorder_point=command.reorder_point,
+            lead_time_days=command.lead_time_days,
         )
         product = self.repo.update(product)
 
-        # Track what changed
         changes = {}
-        if existing.sku != product.sku:
-            changes["sku"] = {"old": existing.sku, "new": product.sku}
-        if existing.name != product.name:
-            changes["name"] = {"old": existing.name, "new": product.name}
-        if existing.description != product.description:
-            changes["description"] = {
-                "old": existing.description,
-                "new": product.description,
-            }
-        if existing.category_id != product.category_id:
-            changes["category_id"] = {
-                "old": existing.category_id,
-                "new": product.category_id,
-            }
+        for field in (
+            "sku",
+            "name",
+            "description",
+            "barcode",
+            "category_id",
+            "unit_of_measure_id",
+            "purchase_price",
+            "sale_price",
+            "is_active",
+            "is_service",
+            "min_stock",
+            "max_stock",
+            "reorder_point",
+            "lead_time_days",
+        ):
+            old_val = getattr(existing, field)
+            new_val = getattr(product, field)
+            if old_val != new_val:
+                changes[field] = {"old": old_val, "new": new_val}
 
         self.event_publisher.publish(
             ProductUpdated(

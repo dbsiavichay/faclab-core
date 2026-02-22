@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 
 from wireup import injectable
 
@@ -14,7 +15,17 @@ class CreateProductCommand(Command):
     sku: str
     name: str
     description: str | None = None
+    barcode: str | None = None
     category_id: int | None = None
+    unit_of_measure_id: int | None = None
+    purchase_price: Decimal | None = None
+    sale_price: Decimal | None = None
+    is_active: bool = True
+    is_service: bool = False
+    min_stock: int = 0
+    max_stock: int | None = None
+    reorder_point: int = 0
+    lead_time_days: int | None = None
 
 
 @injectable(lifetime="scoped")
@@ -28,7 +39,17 @@ class CreateProductCommandHandler(CommandHandler[CreateProductCommand, dict]):
             sku=command.sku,
             name=command.name,
             description=command.description,
+            barcode=command.barcode,
             category_id=command.category_id,
+            unit_of_measure_id=command.unit_of_measure_id,
+            purchase_price=command.purchase_price,
+            sale_price=command.sale_price,
+            is_active=command.is_active,
+            is_service=command.is_service,
+            min_stock=command.min_stock,
+            max_stock=command.max_stock,
+            reorder_point=command.reorder_point,
+            lead_time_days=command.lead_time_days,
         )
         product = self.repo.create(product)
 

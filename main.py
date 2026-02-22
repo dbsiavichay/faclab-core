@@ -7,6 +7,7 @@ from wireup.integration.fastapi import setup as wireup_fastapi_setup
 import src
 from config import config
 from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
+from src.catalog.uom.infra.routes import UnitOfMeasureRouter
 from src.container import create_wireup_container
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.movement.infra.routes import MovementRouter
@@ -41,6 +42,11 @@ src.wireup_container = wireup_container
 admin_router = APIRouter(prefix="/api/admin")
 admin_router.include_router(
     CategoryRouter().router, prefix="/categories", tags=["admin - categories"]
+)
+admin_router.include_router(
+    UnitOfMeasureRouter().router,
+    prefix="/units-of-measure",
+    tags=["admin - units of measure"],
 )
 admin_router.include_router(
     ProductRouter().router, prefix="/products", tags=["admin - products"]
