@@ -19,12 +19,15 @@ logger = structlog.get_logger(__name__)
 def handle_movement_created(event: MovementCreated) -> None:
     """
     Cuando se crea un movimiento, actualizar o crear el stock correspondiente.
+    El stock se maneja por (product_id, location_id). Si location_id es None,
+    se actualiza el stock sin ubicación asignada.
     """
     logger.info(
         "handling_movement_created",
         movement_id=event.aggregate_id,
         product_id=event.product_id,
         quantity=event.quantity,
+        location_id=event.location_id,
     )
 
     from src import wireup_container
@@ -32,14 +35,26 @@ def handle_movement_created(event: MovementCreated) -> None:
     with wireup_container.enter_scope() as scope:
         try:
             stock_repo = scope.get(Repository[Stock])
-            stock = stock_repo.first(product_id=event.product_id)
+
+            # Find stock by (product_id, location_id)
+            if event.location_id is not None:
+                stock = stock_repo.first(
+                    product_id=event.product_id, location_id=event.location_id
+                )
+            else:
+                stock = stock_repo.first(product_id=event.product_id, location_id=None)
 
             if stock is None:
                 logger.info(
                     "creating_new_stock",
                     product_id=event.product_id,
+                    location_id=event.location_id,
                 )
-                stock = Stock(product_id=event.product_id, quantity=event.quantity)
+                stock = Stock(
+                    product_id=event.product_id,
+                    quantity=event.quantity,
+                    location_id=event.location_id,
+                )
                 stock = stock_repo.create(stock)
 
                 EventBus.publish(
@@ -47,7 +62,7 @@ def handle_movement_created(event: MovementCreated) -> None:
                         aggregate_id=stock.id,
                         product_id=stock.product_id,
                         quantity=stock.quantity,
-                        location=stock.location,
+                        location_id=stock.location_id,
                     )
                 )
                 logger.info(
@@ -55,6 +70,7 @@ def handle_movement_created(event: MovementCreated) -> None:
                     stock_id=stock.id,
                     product_id=stock.product_id,
                     quantity=stock.quantity,
+                    location_id=stock.location_id,
                 )
             else:
                 old_quantity = stock.quantity
@@ -63,9 +79,10 @@ def handle_movement_created(event: MovementCreated) -> None:
                     stock_id=stock.id,
                     current_quantity=old_quantity,
                     delta=event.quantity,
+                    location_id=stock.location_id,
                 )
 
-                stock.update_quantity(event.quantity)
+                stock = stock.update_quantity(event.quantity)
                 stock = stock_repo.update(stock)
 
                 EventBus.publish(
@@ -74,7 +91,7 @@ def handle_movement_created(event: MovementCreated) -> None:
                         product_id=stock.product_id,
                         old_quantity=old_quantity,
                         new_quantity=stock.quantity,
-                        location=stock.location,
+                        location_id=stock.location_id,
                     )
                 )
                 logger.info(
@@ -82,6 +99,7 @@ def handle_movement_created(event: MovementCreated) -> None:
                     stock_id=stock.id,
                     old_quantity=old_quantity,
                     new_quantity=stock.quantity,
+                    location_id=stock.location_id,
                 )
 
         except Exception as e:

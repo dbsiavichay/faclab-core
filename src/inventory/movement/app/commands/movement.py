@@ -16,6 +16,10 @@ class CreateMovementCommand(Command):
     product_id: int = 0
     quantity: int = 0
     type: str = ""  # "in" or "out" string value
+    location_id: int | None = None
+    source_location_id: int | None = None
+    reference_type: str | None = None
+    reference_id: int | None = None
     reason: str | None = None
     date: datetime | None = None
 
@@ -32,28 +36,29 @@ class CreateMovementCommandHandler(CommandHandler[CreateMovementCommand, dict]):
         self.event_publisher = event_publisher
 
     def _handle(self, command: CreateMovementCommand) -> dict:
-        # Convert string type to enum
         movement_type = MovementType(command.type)
 
-        # Create Movement entity (validates in __post_init__)
         movement = Movement(
             product_id=command.product_id,
             quantity=command.quantity,
             type=movement_type,
+            location_id=command.location_id,
+            source_location_id=command.source_location_id,
+            reference_type=command.reference_type,
+            reference_id=command.reference_id,
             reason=command.reason,
             date=command.date,
         )
 
-        # Persist movement
         movement = self.repo.create(movement)
 
-        # Publish domain event
         self.event_publisher.publish(
             MovementCreated(
                 aggregate_id=movement.id,
                 product_id=movement.product_id,
                 quantity=movement.quantity,
                 type=movement.type.value,
+                location_id=movement.location_id,
                 reason=movement.reason,
                 date=movement.date,
             )

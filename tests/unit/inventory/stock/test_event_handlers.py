@@ -55,7 +55,7 @@ def test_handle_movement_created_creates_new_stock(mock_container):
     handle_movement_created(event)
 
     # Assert
-    mock_repo.first.assert_called_once_with(product_id=10)
+    mock_repo.first.assert_called_once_with(product_id=10, location_id=None)
     mock_repo.create.assert_called_once()
 
     # Verify the created stock
@@ -106,7 +106,7 @@ def test_handle_movement_created_updates_existing_stock(mock_container):
     handle_movement_created(event)
 
     # Assert
-    mock_repo.first.assert_called_once_with(product_id=10)
+    mock_repo.first.assert_called_once_with(product_id=10, location_id=None)
     mock_repo.update.assert_called_once()
 
     # Verify the stock was updated
@@ -150,7 +150,7 @@ def test_handle_movement_created_decreases_stock_on_out(mock_container):
     handle_movement_created(event)
 
     # Assert
-    mock_repo.first.assert_called_once_with(product_id=10)
+    mock_repo.first.assert_called_once_with(product_id=10, location_id=None)
     mock_repo.update.assert_called_once()
 
     # Verify the stock was decreased
@@ -194,7 +194,7 @@ def test_handle_movement_created_publishes_stock_created_event(mock_container):
     mock_repo = Mock()
     mock_repo.first.return_value = None
 
-    new_stock = Stock(id=1, product_id=10, quantity=5, location="A1")
+    new_stock = Stock(id=1, product_id=10, quantity=5)
     mock_repo.create.return_value = new_stock
 
     # Mock the scope context manager
@@ -225,7 +225,7 @@ def test_handle_movement_created_publishes_stock_created_event(mock_container):
     assert stock_event.aggregate_id == 1
     assert stock_event.product_id == 10
     assert stock_event.quantity == 5
-    assert stock_event.location == "A1"
+    assert stock_event.location_id is None
 
 
 @patch("src.wireup_container")
@@ -272,12 +272,12 @@ def test_handle_movement_created_publishes_stock_updated_event(mock_container):
 
 @patch("src.wireup_container")
 def test_handle_movement_created_with_location(mock_container):
-    """Test creating stock with location"""
+    """Test creating stock with location_id"""
     # Arrange
     mock_repo = Mock()
     mock_repo.first.return_value = None
 
-    new_stock = Stock(id=1, product_id=10, quantity=5, location="Warehouse A")
+    new_stock = Stock(id=1, product_id=10, quantity=5, location_id=42)
     mock_repo.create.return_value = new_stock
 
     # Mock the scope context manager

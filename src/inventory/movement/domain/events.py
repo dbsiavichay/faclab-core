@@ -16,6 +16,7 @@ class MovementCreated(DomainEvent):
     product_id: int = 0
     quantity: int = 0
     type: str = ""  # "in" or "out"
+    location_id: int | None = None
     reason: str | None = None
     date: datetime | None = None
 
@@ -25,6 +26,7 @@ class MovementCreated(DomainEvent):
             "product_id": self.product_id,
             "quantity": self.quantity,
             "type": self.type,
+            "location_id": self.location_id,
             "reason": self.reason,
             "date": self.date.isoformat() if self.date else None,
         }

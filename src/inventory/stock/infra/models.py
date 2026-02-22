@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.shared.infra.database import Base
@@ -6,11 +6,15 @@ from src.shared.infra.database import Base
 
 class StockModel(Base):
     __tablename__ = "stocks"
+    __table_args__ = (
+        UniqueConstraint("product_id", "location_id", name="uq_stock_product_location"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"), nullable=False)
     quantity: Mapped[int] = mapped_column(nullable=False)
-    location: Mapped[str | None] = mapped_column(String(128))
+    location_id: Mapped[int | None] = mapped_column(ForeignKey("locations.id"))
+    reserved_quantity: Mapped[int] = mapped_column(default=0)
 
     product: Mapped["ProductModel"] = relationship(  # NOQA: F821
         back_populates="stocks"

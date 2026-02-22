@@ -17,6 +17,21 @@ class MovementBase(BaseModel):
     )
     quantity: int = Field(..., ge=1, description="Quantity")
     type: MovementType
+    location_id: int | None = Field(
+        None,
+        validation_alias=AliasChoices("locationId", "location_id"),
+        serialization_alias="locationId",
+    )
+    reference_type: str | None = Field(
+        None,
+        validation_alias=AliasChoices("referenceType", "reference_type"),
+        serialization_alias="referenceType",
+    )
+    reference_id: int | None = Field(
+        None,
+        validation_alias=AliasChoices("referenceId", "reference_id"),
+        serialization_alias="referenceId",
+    )
     reason: str | None = None
     date: datetime | None = None
 

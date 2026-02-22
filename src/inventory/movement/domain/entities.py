@@ -13,6 +13,10 @@ class Movement(Entity):
     quantity: int
     type: MovementType
     id: int | None = None
+    location_id: int | None = None
+    source_location_id: int | None = None
+    reference_type: str | None = None
+    reference_id: int | None = None
     reason: str | None = None
     date: datetime | None = None
     created_at: datetime | None = None
