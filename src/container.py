@@ -5,6 +5,7 @@ def create_wireup_container():
     from wireup import create_sync_container
 
     from src.catalog.product.infra.container import INJECTABLES as CATALOG_INJECTABLES
+    from src.catalog.uom.infra.container import INJECTABLES as UOM_INJECTABLES
     from src.customers.infra.container import INJECTABLES as CUSTOMER_INJECTABLES
     from src.inventory.movement.infra.container import (
         INJECTABLES as MOVEMENT_INJECTABLES,
@@ -26,6 +27,7 @@ def create_wireup_container():
             get_db_session,
             EventBusPublisher,
             *CATALOG_INJECTABLES,
+            *UOM_INJECTABLES,
             *MOVEMENT_INJECTABLES,
             *STOCK_INJECTABLES,
             *CUSTOMER_INJECTABLES,

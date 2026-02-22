@@ -7,6 +7,8 @@ from alembic import context
 
 # Import all models for autogenerate support
 from src.catalog.product.infra.models import CategoryModel, ProductModel  # noqa: F401
+from src.catalog.uom.infra.models import UnitOfMeasureModel  # noqa: F401
+from src.customers.infra.models import CustomerContactModel, CustomerModel  # noqa: F401
 from src.inventory.movement.infra.models import MovementModel  # noqa: F401
 from src.inventory.stock.infra.models import StockModel  # noqa: F401
 from src.sales.infra.models import PaymentModel, SaleItemModel, SaleModel  # noqa: F401
