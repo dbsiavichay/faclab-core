@@ -14,6 +14,10 @@ class MovementModel(Base):
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
     quantity: Mapped[int]
     type: Mapped[MovementType]
+    location_id: Mapped[int | None] = mapped_column(ForeignKey("locations.id"))
+    source_location_id: Mapped[int | None] = mapped_column(ForeignKey("locations.id"))
+    reference_type: Mapped[str | None] = mapped_column(String(64))
+    reference_id: Mapped[int | None]
     reason: Mapped[str | None] = mapped_column(String(128))
     date: Mapped[datetime | None] = mapped_column(default=datetime.now)
     created_at: Mapped[datetime | None] = mapped_column(default=datetime.now)

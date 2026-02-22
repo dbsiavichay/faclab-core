@@ -348,7 +348,7 @@ def test_multiple_movements_accumulate_stock(mock_stock_container):
     # Start with no stock
     call_count = [0]
 
-    def mock_first(product_id):
+    def mock_first(**kwargs):
         call_count[0] += 1
         if call_count[0] == 1:
             return None  # First call: no stock
