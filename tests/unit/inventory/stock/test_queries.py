@@ -27,8 +27,8 @@ def test_get_all_stocks_query_handler(mock_stock_repo):
     """Test getting all stocks"""
     # Arrange
     stocks = [
-        Stock(id=1, product_id=1, quantity=100, location="A1"),
-        Stock(id=2, product_id=2, quantity=50, location="B2"),
+        Stock(id=1, product_id=1, quantity=100),
+        Stock(id=2, product_id=2, quantity=50),
     ]
     mock_stock_repo.filter_by.return_value = stocks
 
@@ -51,7 +51,7 @@ def test_get_all_stocks_with_product_filter(mock_stock_repo):
     """Test getting stocks filtered by product_id"""
     # Arrange
     stocks = [
-        Stock(id=1, product_id=1, quantity=100, location="A1"),
+        Stock(id=1, product_id=1, quantity=100),
     ]
     mock_stock_repo.filter_by.return_value = stocks
 
@@ -90,8 +90,8 @@ def test_get_all_stocks_with_pagination(mock_stock_repo):
     """Test getting stocks with pagination"""
     # Arrange
     stocks = [
-        Stock(id=1, product_id=1, quantity=100, location="A1"),
-        Stock(id=2, product_id=2, quantity=50, location="B2"),
+        Stock(id=1, product_id=1, quantity=100),
+        Stock(id=2, product_id=2, quantity=50),
     ]
     mock_stock_repo.filter_by.return_value = stocks
 
@@ -109,7 +109,7 @@ def test_get_all_stocks_with_pagination(mock_stock_repo):
 def test_get_stock_by_id_handler(mock_stock_repo):
     """Test getting a stock by ID"""
     # Arrange
-    stock = Stock(id=1, product_id=1, quantity=100, location="A1")
+    stock = Stock(id=1, product_id=1, quantity=100, location_id=5)
     mock_stock_repo.get_by_id.return_value = stock
 
     query = GetStockByIdQuery(id=1)
@@ -123,7 +123,7 @@ def test_get_stock_by_id_handler(mock_stock_repo):
     assert result["id"] == 1
     assert result["product_id"] == 1
     assert result["quantity"] == 100
-    assert result["location"] == "A1"
+    assert result["location_id"] == 5
     mock_stock_repo.get_by_id.assert_called_once_with(1)
 
 
@@ -144,7 +144,7 @@ def test_get_stock_by_id_not_found_raises(mock_stock_repo):
 def test_get_stock_by_product_handler(mock_stock_repo):
     """Test getting stock by product_id"""
     # Arrange
-    stock = Stock(id=1, product_id=1, quantity=100, location="A1")
+    stock = Stock(id=1, product_id=1, quantity=100)
     mock_stock_repo.first.return_value = stock
 
     query = GetStockByProductQuery(product_id=1)

@@ -167,10 +167,11 @@ Migración: `make migrations m="enhance products with pricing and stock controls
 
 ---
 
-## FASE 2: Almacenes y Ubicaciones
+## FASE 2: Almacenes y Ubicaciones ✅ COMPLETADA (2026-02-22)
 
 **Objetivo:** Soporte multi-almacén con ubicaciones físicas dentro de cada almacén.
 **Impacto en BD:** Nuevas tablas `warehouses`, `locations`. Stock pasa a ser por ubicación.
+**Migración aplicada:** `49b16d5da943_phase_2_warehouses_locations_stock_.py`
 
 ### 2.1 Almacenes (`src/inventory/warehouse/`)
 
@@ -265,18 +266,26 @@ class Movement(Entity):
 
 ### 2.5 Checklist Fase 2
 
-- [ ] Crear `src/inventory/warehouse/` completo
-- [ ] Crear `src/inventory/location/` completo
-- [ ] Refactorizar `Stock` entity → `location_id` (reemplaza `location: str`)
-- [ ] Agregar `location_id`, `source_location_id`, `reference_type`, `reference_id` a `Movement`
-- [ ] Actualizar event handler `MovementCreated` → usa location_id para actualizar Stock
-- [ ] Actualizar `StockModel` (migration: rename location → location_id, add reserved_quantity)
-- [ ] Agregar `MovementModel` columnas nuevas
-- [ ] Handlers: CRUD warehouses, CRUD locations, GetStock (filtrado por warehouse/location/product)
-- [ ] Rutas: `/api/admin/warehouses`, `/api/admin/locations`, `/api/admin/stock`
-- [ ] Registrar en container y main.py
-- [ ] Migración y aplicar
-- [ ] Tests: warehouse CRUD, location CRUD, stock multi-ubicación
+- [x] Crear `src/inventory/warehouse/` completo
+- [x] Crear `src/inventory/location/` completo
+- [x] Refactorizar `Stock` entity → `location_id` (reemplaza `location: str`), `reserved_quantity`, `available_quantity`, `update_quantity()` inmutable
+- [x] Agregar `location_id`, `source_location_id`, `reference_type`, `reference_id` a `Movement`
+- [x] Actualizar event handler `MovementCreated` → usa (product_id, location_id) para actualizar Stock
+- [x] Actualizar `StockModel` (migration: rename location → location_id, add reserved_quantity, UNIQUE constraint)
+- [x] Agregar `MovementModel` columnas nuevas (location_id, source_location_id, reference_type, reference_id)
+- [x] Handlers: CRUD warehouses, CRUD locations, GetStock (filtrado por location_id/product_id)
+- [x] Rutas: `/api/admin/warehouses`, `/api/admin/locations`, `/api/admin/stock`
+- [x] Registrar en container y main.py
+- [x] Migración y aplicar (`49b16d5da943`)
+- [x] Tests: warehouse CRUD (13 tests), location CRUD (18 tests), stock entity (19 tests), event handlers actualizados
+
+### 2.6 Notas de implementación (para sesiones futuras)
+
+- `location_id` en Stock es opcional (`int | None`) para mantener compatibilidad con movimientos de ventas que no tienen ubicación asignada. Stock sin ubicación = stock "global" del producto.
+- El event handler `handle_movement_created` busca stock por `(product_id, location_id)` — si `location_id=None`, busca el stock sin ubicación.
+- `update_quantity()` ahora es inmutable: retorna un nuevo `Stock` con `replace()` en lugar de mutar `self.quantity`.
+- `StockUpdated` y `StockCreated` events usan `location_id` en lugar de `location: str`.
+- La migración agregó `server_default='0'` a `reserved_quantity` para compatibilidad con filas existentes.
 
 ---
 
@@ -1092,4 +1101,4 @@ class MiEntidadResponse(BaseModel):
 ---
 
 *Última actualización: 2026-02-22*
-*Próxima fase a desarrollar: FASE 2 — Almacenes y Ubicaciones*
+*Próxima fase a desarrollar: FASE 3 — Gestión de Proveedores*

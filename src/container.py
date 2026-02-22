@@ -7,10 +7,16 @@ def create_wireup_container():
     from src.catalog.product.infra.container import INJECTABLES as CATALOG_INJECTABLES
     from src.catalog.uom.infra.container import INJECTABLES as UOM_INJECTABLES
     from src.customers.infra.container import INJECTABLES as CUSTOMER_INJECTABLES
+    from src.inventory.location.infra.container import (
+        INJECTABLES as LOCATION_INJECTABLES,
+    )
     from src.inventory.movement.infra.container import (
         INJECTABLES as MOVEMENT_INJECTABLES,
     )
     from src.inventory.stock.infra.container import INJECTABLES as STOCK_INJECTABLES
+    from src.inventory.warehouse.infra.container import (
+        INJECTABLES as WAREHOUSE_INJECTABLES,
+    )
     from src.pos.sales.infra.container import INJECTABLES as POS_SALES_INJECTABLES
     from src.sales.infra.container import INJECTABLES as SALES_INJECTABLES
     from src.shared.infra.database import create_session_factory
@@ -28,6 +34,8 @@ def create_wireup_container():
             EventBusPublisher,
             *CATALOG_INJECTABLES,
             *UOM_INJECTABLES,
+            *WAREHOUSE_INJECTABLES,
+            *LOCATION_INJECTABLES,
             *MOVEMENT_INJECTABLES,
             *STOCK_INJECTABLES,
             *CUSTOMER_INJECTABLES,

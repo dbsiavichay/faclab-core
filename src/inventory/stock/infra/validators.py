@@ -13,7 +13,16 @@ class StockResponse(BaseModel):
         serialization_alias="productId",
     )
     quantity: int
-    location: str | None = None
+    location_id: int | None = Field(
+        None,
+        validation_alias=AliasChoices("locationId", "location_id"),
+        serialization_alias="locationId",
+    )
+    reserved_quantity: int = Field(
+        0,
+        validation_alias=AliasChoices("reservedQuantity", "reserved_quantity"),
+        serialization_alias="reservedQuantity",
+    )
 
 
 class StockQueryParams(QueryParams):
@@ -22,4 +31,10 @@ class StockQueryParams(QueryParams):
         ge=1,
         validation_alias=AliasChoices("productId", "product_id"),
         serialization_alias="productId",
+    )
+    location_id: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("locationId", "location_id"),
+        serialization_alias="locationId",
     )
