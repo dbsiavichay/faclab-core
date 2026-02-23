@@ -571,10 +571,11 @@ POST /api/admin/purchase-orders/{id}/receive
 
 ---
 
-## FASE 5: Lotes y Números de Serie
+## FASE 5: Lotes y Números de Serie ✅ COMPLETADA (2026-02-22)
 
 **Objetivo:** Trazabilidad completa de mercancía por lote (farmacia, alimentos) o serial (electrónicos).
 **Módulo:** Extender `src/inventory/`
+**Migración aplicada:** `19e11200eb19_phase_5_lots_serial_numbers_and_.py`
 
 ### 5.1 Lotes (`src/inventory/lot/`)
 
@@ -649,16 +650,38 @@ Tabla: `movement_lot_items` (id, movement_id FK, lot_id FK, quantity)
 
 ### 5.4 Checklist Fase 5
 
-- [ ] Crear `src/inventory/lot/` completo
-- [ ] Crear `src/inventory/serial/` completo
-- [ ] Crear `MovementLotItem` entity/model
-- [ ] Actualizar `PurchaseReceiptItem` para incluir lot_number/serial_numbers
-- [ ] Actualizar event handler de PurchaseOrderReceived → crear/actualizar lotes
-- [ ] Commands: CreateLot, UpdateLot (quantity manual), CreateSerialNumber, UpdateSerialStatus
-- [ ] Queries: GetLotsByProduct, GetExpiringLots (próximos N días), GetSerialByNumber, GetSerialsByProduct
-- [ ] Especificaciones: `ExpiringLots(days: int)`, `ActiveSerials`, `SerialsByStatus`
-- [ ] Rutas: `/api/admin/lots`, `/api/admin/serials`
-- [ ] Tests: control de lotes, expiración, seriales
+- [x] Crear `src/inventory/lot/` completo (domain, app, infra)
+- [x] Crear `src/inventory/serial/` completo (domain, app, infra)
+- [x] Crear `MovementLotItem` entity/model/mapper/repository
+- [x] Actualizar `PurchaseReceiptItem` para incluir `lot_number` y `serial_numbers`
+- [x] Actualizar `PurchaseReceiptItemModel` con columnas `lot_number` (String) y `serial_numbers` (JSON)
+- [x] Actualizar `ReceiveItemRequest` validator y `ReceiveItemInput` command con los nuevos campos
+- [x] Event handler `handle_purchase_order_received_lots` → crear/actualizar lotes + `MovementLotItem`
+- [x] Event handler `handle_purchase_order_received_serials` → crear seriales con lot_id resuelto
+- [x] Commands: `CreateLotCommandHandler`, `UpdateLotCommandHandler`
+- [x] Commands: `CreateSerialNumberCommandHandler`, `UpdateSerialStatusCommandHandler`
+- [x] Queries: `GetLotsByProductQueryHandler`, `GetExpiringLotsQueryHandler`, `GetLotByIdQueryHandler`
+- [x] Queries: `GetSerialsByProductQueryHandler`, `GetSerialByNumberQueryHandler`, `GetSerialByIdQueryHandler`
+- [x] Especificaciones: `ExpiringLots(days)`, `ExpiredLots`, `LotsByProduct`
+- [x] Rutas: `GET/POST /api/admin/lots`, `GET/PUT /api/admin/lots/{id}`
+- [x] Rutas: `GET/POST /api/admin/serials`, `GET /api/admin/serials/{id}`, `PUT /api/admin/serials/{id}/status`
+- [x] Registrar en `src/container.py` y `main.py`
+- [x] Actualizar `config/base.py` con tags y tag group "Admin — Lots & Serials"
+- [x] Actualizar `alembic/env.py` con `LotModel`, `MovementLotItemModel`, `SerialNumberModel`
+- [x] Migración aplicada (`19e11200eb19`)
+- [x] Tests: entidades (is_expired, days_to_expiry, mark_sold/reserved/returned/scrapped), especificaciones, commands, queries, event handlers (437 tests, 100% pass)
+
+**Completada:** 2026-02-22
+
+### Notas de implementación Fase 5
+
+- **DI pattern crítico**: handlers SIEMPRE inyectan `Repository[T]` (la interfaz), NUNCA la clase concreta (`LotRepository`). Wireup registra repos con `as_type=Repository[E]` — si se inyecta la clase concreta falla al resolver.
+- **Métodos del repo**: Usar `repo.first(product_id=..., lot_number=...)` en lugar de métodos custom en la clase concreta. El método `first(**kwargs)` filtra por keyword arguments y está disponible en la interfaz `Repository`.
+- **`Specification` no es genérica**: `class LotsByProduct(Specification)` — NO `Specification[Lot]`. La clase base no soporta subscripción.
+- **Event handlers**: usan `scope.get(Repository[Lot])`, `scope.get(Repository[MovementLotItem])`. Tests parchean `@patch("src.wireup_container")` (módulo raíz), no el módulo del handler.
+- **`SerialStatus` usa `StrEnum`** — las transiciones inválidas lanzan `DomainError`. Transiciones válidas: AVAILABLE→SOLD, AVAILABLE→RESERVED, SOLD→RETURNED, cualquiera→SCRAPPED.
+- **Lot event handler resuelve movement**: busca `Movement` por `reference_type="purchase_order"` y `reference_id=purchase_order_id` para crear `MovementLotItem` que vincula movimiento ↔ lote.
+- **Serial event handler** resuelve `lot_id` buscando el lote por `(product_id, lot_number)` antes de crear el serial — permite vincular serial a lote en la misma recepción.
 
 ---
 
@@ -1122,4 +1145,4 @@ class MiEntidadResponse(BaseModel):
 ---
 
 *Última actualización: 2026-02-22*
-*Próxima fase a desarrollar: FASE 5 — Lotes & Números de Serie*
+*Próxima fase a desarrollar: FASE 6 — Ajustes e Inventarios Físicos*

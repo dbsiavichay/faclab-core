@@ -22,6 +22,8 @@ class ReceiveItemInput:
     purchase_order_item_id: int
     quantity_received: int
     location_id: int | None = None
+    lot_number: str | None = None
+    serial_numbers: list[str] | None = None
 
 
 @dataclass
@@ -109,6 +111,8 @@ class CreatePurchaseReceiptCommandHandler(
                 product_id=po_item.product_id,
                 quantity_received=receive_item.quantity_received,
                 location_id=receive_item.location_id,
+                lot_number=receive_item.lot_number,
+                serial_numbers=receive_item.serial_numbers,
             )
             receipt_item = self.receipt_item_repo.create(receipt_item)
             receipt_items_data.append(
@@ -116,6 +120,9 @@ class CreatePurchaseReceiptCommandHandler(
                     "product_id": po_item.product_id,
                     "quantity": receive_item.quantity_received,
                     "location_id": receive_item.location_id,
+                    "lot_number": receive_item.lot_number,
+                    "serial_numbers": receive_item.serial_numbers or [],
+                    "purchase_order_id": command.purchase_order_id,
                 }
             )
 

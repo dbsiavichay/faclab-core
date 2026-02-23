@@ -10,9 +10,11 @@ def create_wireup_container():
     from src.inventory.location.infra.container import (
         INJECTABLES as LOCATION_INJECTABLES,
     )
+    from src.inventory.lot.infra.container import LOT_INJECTABLES
     from src.inventory.movement.infra.container import (
         INJECTABLES as MOVEMENT_INJECTABLES,
     )
+    from src.inventory.serial.infra.container import SERIAL_INJECTABLES
     from src.inventory.stock.infra.container import INJECTABLES as STOCK_INJECTABLES
     from src.inventory.warehouse.infra.container import (
         INJECTABLES as WAREHOUSE_INJECTABLES,
@@ -40,6 +42,8 @@ def create_wireup_container():
             *LOCATION_INJECTABLES,
             *MOVEMENT_INJECTABLES,
             *STOCK_INJECTABLES,
+            *LOT_INJECTABLES,
+            *SERIAL_INJECTABLES,
             *CUSTOMER_INJECTABLES,
             *SUPPLIER_INJECTABLES,
             *PURCHASING_INJECTABLES,
@@ -49,6 +53,8 @@ def create_wireup_container():
     )
 
     import src.inventory.infra.event_handlers  # noqa: F401
+    import src.inventory.lot.infra.event_handlers  # noqa: F401
+    import src.inventory.serial.infra.event_handlers  # noqa: F401
     import src.inventory.stock.infra.event_handlers  # noqa: F401
     import src.purchasing.infra.event_handlers  # noqa: F401
 

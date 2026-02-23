@@ -30,7 +30,7 @@ Domain Layer    Entidades, Value Objects, Domain Events, Specifications
       |
 Application     Commands, Queries, Handlers, Repository interfaces
       |
-Infrastructure  Controllers, Routes, SQLAlchemy Models, Mappers, Repositories
+Infrastructure  Routes, SQLAlchemy Models, Mappers, Repositories
 ```
 
 ### Estructura del Proyecto
@@ -67,10 +67,8 @@ modulo/
 │   └── exceptions.py               # Excepciones de dominio
 ├── app/
 │   ├── commands/                   # Handlers de escritura (Create, Update, Delete)
-│   ├── queries/                    # Handlers de lectura (GetAll, GetById, Search)
-│   └── types.py                    # TypedDicts para entrada/salida
+│   └── queries/                    # Handlers de lectura (GetAll, GetById, Search)
 └── infra/
-    ├── controllers.py              # Controladores HTTP
     ├── routes.py                   # Rutas FastAPI
     ├── validators.py               # Esquemas Pydantic
     ├── models.py                   # Modelos SQLAlchemy
@@ -135,7 +133,7 @@ Registrados como `SINGLETON` por ser stateless.
 
 El contenedor DI (wireup) gestiona el ciclo de vida de los componentes:
 - **SINGLETON**: Mappers (stateless, compartidos)
-- **SCOPED**: Repositorios, handlers, controladores, sesiones DB (por peticion)
+- **SCOPED**: Repositorios, handlers, sesiones DB (por peticion)
 - **TRANSIENT**: Nueva instancia por resolucion
 
 ## Flujo de Datos
@@ -146,7 +144,6 @@ El contenedor DI (wireup) gestiona el ciclo de vida de los componentes:
 HTTP Request
     -> FastAPI Router
     -> ErrorHandlingMiddleware
-    -> Controller (inyectado via wireup)
     -> CommandHandler / QueryHandler
         -> OpenTelemetry span + metricas
         -> Logica de negocio
@@ -407,18 +404,16 @@ pip install -r requirements.txt -r requirements_dev.txt
    │   └── specifications.py    # Specification subclasses
    ├── app/
    │   ├── commands/             # CommandHandler[TCmd, TResult]
-   │   ├── queries/              # QueryHandler[TQuery, TResult]
-   │   └── types.py              # TypedDicts de entrada/salida
+   │   └── queries/              # QueryHandler[TQuery, TResult]
    └── infra/
        ├── models.py             # SQLAlchemy Model(Base)
        ├── mappers.py            # Mapper declarativo (__entity__, __exclude_fields__)
        ├── repositories.py       # Repository factories
-       ├── controllers.py        # Controller con wireup injection
        ├── routes.py             # APIRouter
        └── validators.py         # Pydantic schemas
    ```
 
-2. Registrar dependencias en `src/__init__.py` (mappers, repositorios, handlers, controladores)
+2. Registrar dependencias en `src/__init__.py` (mappers, repositorios, handlers)
 
 3. Incluir router en `main.py`
 

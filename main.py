@@ -15,7 +15,9 @@ from src.catalog.uom.infra.routes import UnitOfMeasureRouter
 from src.container import create_wireup_container
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.location.infra.routes import LocationRouter
+from src.inventory.lot.infra.routes import LotRouter
 from src.inventory.movement.infra.routes import MovementRouter
+from src.inventory.serial.infra.routes import SerialRouter
 from src.inventory.stock.infra.routes import StockRouter
 from src.inventory.warehouse.infra.routes import WarehouseRouter
 from src.pos.infra.routes import POSCustomerRouter, POSProductRouter
@@ -169,6 +171,10 @@ admin_router.include_router(
 )
 admin_router.include_router(
     MovementRouter().router, prefix="/movements", tags=["admin - movements"]
+)
+admin_router.include_router(LotRouter().router, prefix="/lots", tags=["admin - lots"])
+admin_router.include_router(
+    SerialRouter().router, prefix="/serials", tags=["admin - serials"]
 )
 admin_router.include_router(
     CustomerRouter().router, prefix="/customers", tags=["admin - customers"]
