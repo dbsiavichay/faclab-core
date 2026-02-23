@@ -2,7 +2,7 @@ from config import config
 
 
 def create_wireup_container():
-    from wireup import create_sync_container
+    from wireup import create_async_container
 
     from src.catalog.product.infra.container import INJECTABLES as CATALOG_INJECTABLES
     from src.catalog.uom.infra.container import INJECTABLES as UOM_INJECTABLES
@@ -21,6 +21,7 @@ def create_wireup_container():
     from src.sales.infra.container import INJECTABLES as SALES_INJECTABLES
     from src.shared.infra.database import create_session_factory
     from src.shared.infra.events.event_bus_publisher import EventBusPublisher
+    from src.suppliers.infra.container import INJECTABLES as SUPPLIER_INJECTABLES
 
     db_connection_string = config.DB_CONNECTION_STRING
     if not db_connection_string:
@@ -28,7 +29,7 @@ def create_wireup_container():
 
     get_db_session = create_session_factory(db_connection_string)
 
-    container = create_sync_container(
+    container = create_async_container(
         injectables=[
             get_db_session,
             EventBusPublisher,
@@ -39,6 +40,7 @@ def create_wireup_container():
             *MOVEMENT_INJECTABLES,
             *STOCK_INJECTABLES,
             *CUSTOMER_INJECTABLES,
+            *SUPPLIER_INJECTABLES,
             *SALES_INJECTABLES,
             *POS_SALES_INJECTABLES,
         ]

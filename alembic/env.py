@@ -15,6 +15,11 @@ from src.inventory.stock.infra.models import StockModel  # noqa: F401
 from src.inventory.warehouse.infra.models import WarehouseModel  # noqa: F401
 from src.sales.infra.models import PaymentModel, SaleItemModel, SaleModel  # noqa: F401
 from src.shared.infra.database import Base
+from src.suppliers.infra.models import (  # noqa: F401
+    SupplierContactModel,
+    SupplierModel,
+    SupplierProductModel,
+)
 
 env = Env()
 env.read_env()
