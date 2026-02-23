@@ -20,6 +20,7 @@ from src.inventory.lot.infra.routes import LotRouter
 from src.inventory.movement.infra.routes import MovementRouter
 from src.inventory.serial.infra.routes import SerialRouter
 from src.inventory.stock.infra.routes import StockRouter
+from src.inventory.transfer.infra.routes import TransferItemRouter, TransferRouter
 from src.inventory.warehouse.infra.routes import WarehouseRouter
 from src.pos.infra.routes import POSCustomerRouter, POSProductRouter
 from src.pos.sales.infra.routes import POSSaleRouter
@@ -220,6 +221,16 @@ admin_router.include_router(
     AdjustmentItemRouter().router,
     prefix="/adjustment-items",
     tags=["admin - adjustment-items"],
+)
+admin_router.include_router(
+    TransferRouter().router,
+    prefix="/transfers",
+    tags=["admin - transfers"],
+)
+admin_router.include_router(
+    TransferItemRouter().router,
+    prefix="/transfer-items",
+    tags=["admin - transfer-items"],
 )
 
 # POS API

@@ -782,10 +782,11 @@ POST /api/admin/adjustments/{id}/confirm
 
 ---
 
-## FASE 7: Transferencias entre Ubicaciones
+## FASE 7: Transferencias entre Ubicaciones ✅ COMPLETADA (2026-02-23)
 
 **Objetivo:** Mover stock entre ubicaciones o almacenes con trazabilidad.
 **Módulo:** `src/inventory/transfer/`
+**Migración aplicada:** `e1b2f1e9e74e_phase_7_stock_transfers_between_.py`
 
 ### 7.1 Orden de Transferencia
 
@@ -793,8 +794,7 @@ POST /api/admin/adjustments/{id}/confirm
 class TransferStatus(StrEnum):
     DRAFT = "draft"
     CONFIRMED = "confirmed"    # Stock reservado en origen
-    IN_TRANSIT = "in_transit"  # En movimiento (para inter-almacén)
-    RECEIVED = "received"      # Recibido en destino
+    RECEIVED = "received"      # Movimientos creados, stock movido
     CANCELLED = "cancelled"
 
 @dataclass
@@ -808,31 +808,78 @@ class StockTransfer(Entity):
     notes: str | None = None
     created_at: datetime | None = None
 
+    def confirm(self) -> "StockTransfer": ...   # DRAFT → CONFIRMED
+    def receive(self) -> "StockTransfer": ...   # CONFIRMED → RECEIVED
+    def cancel(self) -> "StockTransfer": ...    # DRAFT/CONFIRMED → CANCELLED
+
 @dataclass
 class StockTransferItem(Entity):
     transfer_id: int
     product_id: int
-    quantity: int
+    quantity: int              # siempre positivo
     id: int | None = None
     lot_id: int | None = None
+    notes: str | None = None
 ```
 
 ### 7.2 Flujo
 
 ```
-Confirmar → reservar stock en origen (reserved_quantity += qty)
-Recibir  → crear Movement OUT origen + Movement IN destino
-           → liberar reserva en origen
-           → actualizar stock en destino
+POST /api/admin/transfers/{id}/confirm
+    → ConfirmStockTransferCommandHandler
+        → Valida source != destination (en Create)
+        → Valida que haya ítems
+        → Para cada ítem: verifica stock.available_quantity >= item.quantity
+        → stock.reserved_quantity += item.quantity para cada ítem en origen
+        → DRAFT → CONFIRMED
+        → Publica StockTransferConfirmed
+
+POST /api/admin/transfers/{id}/receive
+    → ReceiveStockTransferCommandHandler
+        → Para cada ítem:
+            → stock.reserved_quantity -= item.quantity (liberar reserva)
+            → crear Movement OUT en origen (reference_type="transfer")
+            → crear Movement IN en destino (source_location_id=origen)
+            → MovementCreated → StockEventHandler actualiza cantidades
+        → CONFIRMED → RECEIVED
+        → Publica StockTransferReceived
+
+POST /api/admin/transfers/{id}/cancel
+    → CancelStockTransferCommandHandler
+        → Si era CONFIRMED: stock.reserved_quantity -= item.quantity por cada ítem
+        → DRAFT/CONFIRMED → CANCELLED
+        → Publica StockTransferCancelled(was_confirmed)
 ```
 
 ### 7.3 Checklist Fase 7
 
-- [ ] Crear `src/inventory/transfer/` completo
-- [ ] Entities + Models + Handlers
-- [ ] Integración con `reserved_quantity` en Stock
-- [ ] Rutas: `/api/admin/transfers`
-- [ ] Tests: transferencia simple, inter-almacén
+- [x] Crear `src/inventory/transfer/` completo
+- [x] Entities: `StockTransfer`, `StockTransferItem`, `TransferStatus`
+- [x] Events: `StockTransferConfirmed`, `StockTransferReceived`, `StockTransferCancelled`
+- [x] Specifications: `TransfersByStatus`, `TransfersBySourceLocation`
+- [x] Commands: Create/Update/Delete/Confirm/Receive/Cancel StockTransfer
+- [x] Commands: AddTransferItem, UpdateTransferItem, RemoveTransferItem
+- [x] Queries: GetAllTransfers (filtros: status, source_location_id), GetTransferById, GetTransferItems
+- [x] Integración con `reserved_quantity` en Stock (Confirm reserva, Receive/Cancel libera)
+- [x] Integración con `CreateMovementCommandHandler` (Receive crea OUT+IN síncronos)
+- [x] Rutas: `GET/POST /api/admin/transfers`, `GET/PUT/DELETE /{id}`, `POST /{id}/confirm`, `POST /{id}/receive`, `POST /{id}/cancel`, `POST/GET /{id}/items`
+- [x] Rutas: `PUT/DELETE /api/admin/transfer-items/{id}`
+- [x] Registrar en `src/container.py` y `main.py`
+- [x] Actualizar `config/base.py` con tags y tag group "Admin — Transfers"
+- [x] Actualizar `alembic/env.py` con `StockTransferModel`, `StockTransferItemModel`
+- [x] Migración aplicada (`e1b2f1e9e74e`)
+- [x] Tests: 55 tests — entidades (11), commands (27), queries (9), especificaciones (8) — 535 total, 100% pass
+
+**Completada:** 2026-02-23
+
+### Notas de implementación Fase 7
+
+- `ConfirmStockTransferCommandHandler` lanza `DomainError` si la transferencia no tiene ítems — evita confirmaciones vacías.
+- La validación de `source != destination` ocurre en `CreateStockTransferCommandHandler`, no en la entidad — decisión de diseño para mantener la entidad simple.
+- `ReceiveStockTransferCommandHandler` inyecta `CreateMovementCommandHandler` directamente (igual que Fase 6). Los movimientos OUT+IN se crean síncronamente; `MovementCreated` se propaga normalmente para actualizar Stock vía `StockEventHandler`.
+- Al cancelar una transferencia CONFIRMED, se libera `reserved_quantity` antes de cambiar el estado — si el stock_repo no encuentra el stock (edge case), se omite sin error.
+- `StockTransferCancelled` incluye `was_confirmed: bool` para que futuros event handlers sepan si había reservas que liberar (auditoría).
+- No se implementó `IN_TRANSIT` — el ciclo DRAFT→CONFIRMED→RECEIVED es suficiente para transferencias intra-almacén; inter-almacén puede agregarse en una sub-fase futura.
 
 ---
 
@@ -1023,8 +1070,8 @@ Phase 10: Integración POS (futura, depende: Seriales + Lotes + Reservas)
 | 3 | `create_suppliers` | Nuevas tablas |
 | 4 | `create_purchase_orders` | Nuevas tablas |
 | 5 | `create_lots_and_serials` | Nuevas tablas |
-| 6 | `create_adjustments` | Nuevas tablas |
-| 7 | `create_transfers` | Nuevas tablas |
+| 6 | `c1ef129d19ad_create_inventory_adjustments_tables` | Nuevas tablas |
+| 7 | `e1b2f1e9e74e_phase_7_stock_transfers_between_` | Nuevas tablas |
 
 ---
 
@@ -1163,4 +1210,4 @@ class MiEntidadResponse(BaseModel):
 ---
 
 *Última actualización: 2026-02-23*
-*Próxima fase a desarrollar: FASE 7 — Transferencias entre Ubicaciones*
+*Próxima fase a desarrollar: FASE 8 — Alertas y Monitoreo de Stock*
