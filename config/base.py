@@ -126,6 +126,25 @@ Faclab Core is a sales and inventory management API.
             "name": "admin - customer-contacts",
             "description": "Manage individual contacts associated with a customer.",
         },
+        # Admin — Suppliers
+        {
+            "name": "admin - suppliers",
+            "description": (
+                "Manage supplier profiles: tax ID, payment terms, lead times, "
+                "and activation status."
+            ),
+        },
+        {
+            "name": "admin - supplier-contacts",
+            "description": "Manage individual contacts associated with a supplier.",
+        },
+        {
+            "name": "admin - supplier-products",
+            "description": (
+                "Manage the purchase catalog: link products to suppliers with "
+                "purchase price, supplier SKU, and minimum order quantity."
+            ),
+        },
         # Admin — Sales
         {
             "name": "admin - sales",
@@ -170,6 +189,14 @@ Faclab Core is a sales and inventory management API.
         {
             "name": "Admin — Customers",
             "tags": ["admin - customers", "admin - customer-contacts"],
+        },
+        {
+            "name": "Admin — Suppliers",
+            "tags": [
+                "admin - suppliers",
+                "admin - supplier-contacts",
+                "admin - supplier-products",
+            ],
         },
         {
             "name": "Admin — Sales",

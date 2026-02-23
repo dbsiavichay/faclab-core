@@ -24,6 +24,11 @@ from src.sales.infra.admin_routes import AdminSaleRouter
 from src.shared.infra.adapters import OpenTelemetry
 from src.shared.infra.logging import configure_logging
 from src.shared.infra.middlewares import ErrorHandlingMiddleware
+from src.suppliers.infra.routes import (
+    SupplierContactRouter,
+    SupplierProductRouter,
+    SupplierRouter,
+)
 
 configure_logging(
     log_level=config.LOG_LEVEL,
@@ -170,6 +175,19 @@ admin_router.include_router(
     CustomerContactRouter().router,
     prefix="/customer-contacts",
     tags=["admin - customer-contacts"],
+)
+admin_router.include_router(
+    SupplierRouter().router, prefix="/suppliers", tags=["admin - suppliers"]
+)
+admin_router.include_router(
+    SupplierContactRouter().router,
+    prefix="/supplier-contacts",
+    tags=["admin - supplier-contacts"],
+)
+admin_router.include_router(
+    SupplierProductRouter().router,
+    prefix="/supplier-products",
+    tags=["admin - supplier-products"],
 )
 admin_router.include_router(
     AdminSaleRouter().router, prefix="/sales", tags=["admin - sales"]

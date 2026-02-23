@@ -370,17 +370,28 @@ class SupplierDeactivated(DomainEvent):
 
 ### 3.5 Checklist Fase 3
 
-- [ ] Crear `src/suppliers/` con estructura completa
-- [ ] Entities: `Supplier`, `SupplierContact`, `SupplierProduct`
-- [ ] Models: `SupplierModel`, `SupplierContactModel`, `SupplierProductModel`
-- [ ] Commands: Create/Update/Delete/Activate/Deactivate Supplier
-- [ ] Commands: Create/Update/Delete SupplierContact
-- [ ] Commands: Create/Update/Delete SupplierProduct (catálogo de compra)
-- [ ] Queries: GetAll/GetById Supplier, GetContacts, GetSupplierProducts, GetProductSuppliers
-- [ ] Rutas: `/api/admin/suppliers`, `/api/admin/suppliers/{id}/contacts`, `/api/admin/suppliers/{id}/products`
-- [ ] Eventos: SupplierCreated, SupplierActivated, SupplierDeactivated
+- [x] Crear `src/suppliers/` con estructura completa
+- [x] Entities: `Supplier`, `SupplierContact`, `SupplierProduct`
+- [x] Models: `SupplierModel`, `SupplierContactModel`, `SupplierProductModel`
+- [x] Commands: Create/Update/Delete/Activate/Deactivate Supplier
+- [x] Commands: Create/Update/Delete SupplierContact
+- [x] Commands: Create/Update/Delete SupplierProduct (catálogo de compra)
+- [x] Queries: GetAll/GetById Supplier, GetContacts, GetSupplierProducts, GetProductSuppliers
+- [x] Rutas: `/api/admin/suppliers`, `/api/admin/suppliers/{id}/contacts`, `/api/admin/suppliers/{id}/products`
+- [x] Eventos: SupplierCreated, SupplierActivated, SupplierDeactivated
 - [ ] Migración y aplicar
-- [ ] Tests: CRUD supplier, contactos, catálogo de compra
+- [x] Tests: CRUD supplier, contactos, catálogo de compra (32 tests, 100% pass)
+
+**Completada:** 2026-02-22
+
+### Notas de implementación Fase 3
+
+- `TaxType` reutilizado de `src.customers.domain.entities` (no duplicado)
+- `SupplierProduct` usa `UniqueConstraint("supplier_id", "product_id")` en el modelo
+- Rutas anidadas en `SupplierRouter`: `/{supplier_id}/contacts` y `/{supplier_id}/products`
+- Routers independientes: `SupplierContactRouter` y `SupplierProductRouter` para PUT/DELETE/GET por ID
+- `SupplierProductRouter` incluye ruta `GET /by-product/{product_id}` para consultar todos los proveedores de un producto
+- Migración pendiente: `make migrations m="create suppliers tables" && make upgrade`
 
 ---
 
@@ -1101,4 +1112,4 @@ class MiEntidadResponse(BaseModel):
 ---
 
 *Última actualización: 2026-02-22*
-*Próxima fase a desarrollar: FASE 3 — Gestión de Proveedores*
+*Próxima fase a desarrollar: FASE 4 — Órdenes de Compra*
