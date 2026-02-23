@@ -14,6 +14,7 @@ from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
 from src.catalog.uom.infra.routes import UnitOfMeasureRouter
 from src.container import create_wireup_container
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
+from src.inventory.adjustment.infra.routes import AdjustmentItemRouter, AdjustmentRouter
 from src.inventory.location.infra.routes import LocationRouter
 from src.inventory.lot.infra.routes import LotRouter
 from src.inventory.movement.infra.routes import MovementRouter
@@ -209,6 +210,16 @@ admin_router.include_router(
 )
 admin_router.include_router(
     AdminSaleRouter().router, prefix="/sales", tags=["admin - sales"]
+)
+admin_router.include_router(
+    AdjustmentRouter().router,
+    prefix="/adjustments",
+    tags=["admin - adjustments"],
+)
+admin_router.include_router(
+    AdjustmentItemRouter().router,
+    prefix="/adjustment-items",
+    tags=["admin - adjustment-items"],
 )
 
 # POS API

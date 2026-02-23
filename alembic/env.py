@@ -9,6 +9,10 @@ from alembic import context
 from src.catalog.product.infra.models import CategoryModel, ProductModel  # noqa: F401
 from src.catalog.uom.infra.models import UnitOfMeasureModel  # noqa: F401
 from src.customers.infra.models import CustomerContactModel, CustomerModel  # noqa: F401
+from src.inventory.adjustment.infra.models import (  # noqa: F401
+    AdjustmentItemModel,
+    InventoryAdjustmentModel,
+)
 from src.inventory.location.infra.models import LocationModel  # noqa: F401
 from src.inventory.lot.infra.models import LotModel, MovementLotItemModel  # noqa: F401
 from src.inventory.movement.infra.models import MovementModel  # noqa: F401

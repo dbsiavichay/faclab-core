@@ -163,6 +163,15 @@ Faclab Core is a sales and inventory management API.
             "name": "admin - purchase-order-items",
             "description": "Manage line items within a purchase order.",
         },
+        # Admin — Adjustments
+        {
+            "name": "admin - adjustments",
+            "description": "Manage inventory adjustments — physical counts, corrections, write-offs, and expiration entries.",
+        },
+        {
+            "name": "admin - adjustment-items",
+            "description": "Manage individual line items within an inventory adjustment.",
+        },
         # Admin — Sales
         {
             "name": "admin - sales",
@@ -223,6 +232,10 @@ Faclab Core is a sales and inventory management API.
         {
             "name": "Admin — Purchasing",
             "tags": ["admin - purchase-orders", "admin - purchase-order-items"],
+        },
+        {
+            "name": "Admin — Adjustments",
+            "tags": ["admin - adjustments", "admin - adjustment-items"],
         },
         {
             "name": "Admin — Sales",
