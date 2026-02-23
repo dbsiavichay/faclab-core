@@ -1,7 +1,11 @@
+import copy
+import json
+
 import structlog
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from wireup.integration.fastapi import setup as wireup_fastapi_setup
 
 import src
@@ -30,15 +34,109 @@ logger = structlog.get_logger(__name__)
 
 origins = ["http://localhost:3000", "http://localhost:5173"]
 
+# ---------------------------------------------------------------------------
+# App
+# ---------------------------------------------------------------------------
+
+_docs = config.get_docs_config()
+
 app = FastAPI(
-    title="Faclab core API", version="1.0.0", description="API for Faclab core services"
+    title=_docs.title,
+    version=_docs.version,
+    description=_docs.description,
+    openapi_tags=_docs.openapi_tags,
+    docs_url=None,
+    redoc_url=None,
 )
+
+
+def _custom_openapi() -> dict:
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+        tags=_docs.openapi_tags,
+    )
+    schema["x-tagGroups"] = _docs.tag_groups
+    app.openapi_schema = schema
+    return schema
+
+
+app.openapi = _custom_openapi  # type: ignore[method-assign]
+
+# ---------------------------------------------------------------------------
+# Scalar docs helpers
+# ---------------------------------------------------------------------------
+
+_SCALAR_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+  <title>{title}</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>body {{ margin: 0; }}</style>
+</head>
+<body>
+  <script
+    id="api-reference"
+    data-url="{schema_url}"
+    data-configuration='{config}'
+  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+</body>
+</html>"""
+
+
+def _scalar_response(title: str, schema_url: str) -> HTMLResponse:
+    cfg = json.dumps({"layout": "sidebar", "theme": "default", "searchHotKey": "k"})
+    return HTMLResponse(
+        _SCALAR_TEMPLATE.format(title=title, schema_url=schema_url, config=cfg)
+    )
+
+
+def _filtered_schema(tag_prefix: str) -> dict:
+    """Return a deepcopy of the full schema containing only operations whose tags start with *tag_prefix*."""
+    schema = copy.deepcopy(app.openapi())
+    used_tags: set[str] = set()
+    filtered_paths: dict = {}
+
+    for path, path_item in schema.get("paths", {}).items():
+        filtered_ops: dict = {}
+        for method, operation in path_item.items():
+            if isinstance(operation, dict) and any(
+                t.startswith(tag_prefix) for t in operation.get("tags", [])
+            ):
+                filtered_ops[method] = operation
+                used_tags.update(operation.get("tags", []))
+        if filtered_ops:
+            filtered_paths[path] = filtered_ops
+
+    schema["paths"] = filtered_paths
+    schema["tags"] = [t for t in schema.get("tags", []) if t["name"] in used_tags]
+    schema["x-tagGroups"] = [
+        g
+        for g in schema.get("x-tagGroups", [])
+        if any(t in used_tags for t in g["tags"])
+    ]
+    return schema
+
+
+# ---------------------------------------------------------------------------
+# OTEL + DI
+# ---------------------------------------------------------------------------
 
 otel = OpenTelemetry()
 otel.instrument(app, config.get_otel_config())
 
 wireup_container = create_wireup_container()
 src.wireup_container = wireup_container
+
+# ---------------------------------------------------------------------------
+# Routers
+# ---------------------------------------------------------------------------
 
 # Admin API
 admin_router = APIRouter(prefix="/api/admin")
@@ -87,6 +185,10 @@ pos_router.include_router(
     POSCustomerRouter().router, prefix="/customers", tags=["pos - customers"]
 )
 
+# ---------------------------------------------------------------------------
+# Middleware
+# ---------------------------------------------------------------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -99,8 +201,42 @@ app.add_middleware(ErrorHandlingMiddleware)
 app.include_router(admin_router)
 app.include_router(pos_router)
 
+# ---------------------------------------------------------------------------
+# Doc endpoints (only registered when DOCS_ENABLED=true)
+# ---------------------------------------------------------------------------
 
-@app.get("/")
+if _docs.enabled:
+
+    @app.get("/docs", include_in_schema=False)
+    async def scalar_docs():
+        """Interactive API reference — all endpoints."""
+        return _scalar_response(f"{_docs.title} — Reference", "/openapi.json")
+
+    @app.get("/docs/admin", include_in_schema=False)
+    async def scalar_admin_docs():
+        """Interactive API reference — Admin endpoints only."""
+        return _scalar_response(f"{_docs.title} — Admin", "/openapi/admin.json")
+
+    @app.get("/docs/pos", include_in_schema=False)
+    async def scalar_pos_docs():
+        """Interactive API reference — POS endpoints only."""
+        return _scalar_response(f"{_docs.title} — POS", "/openapi/pos.json")
+
+    @app.get("/openapi/admin.json", include_in_schema=False)
+    async def admin_openapi_schema():
+        return JSONResponse(_filtered_schema("admin"))
+
+    @app.get("/openapi/pos.json", include_in_schema=False)
+    async def pos_openapi_schema():
+        return JSONResponse(_filtered_schema("pos"))
+
+
+# ---------------------------------------------------------------------------
+# Root + lifecycle
+# ---------------------------------------------------------------------------
+
+
+@app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse("/docs")
 

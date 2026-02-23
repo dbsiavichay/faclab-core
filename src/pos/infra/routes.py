@@ -27,8 +27,12 @@ class POSProductRouter:
         self._setup_routes()
 
     def _setup_routes(self):
-        self.router.get("", response_model=list[ProductResponse])(self.get_all)
-        self.router.get("/{id}", response_model=ProductResponse)(self.get_by_id)
+        self.router.get(
+            "", response_model=list[ProductResponse], summary="List products"
+        )(self.get_all)
+        self.router.get("/{id}", response_model=ProductResponse, summary="Get product")(
+            self.get_by_id
+        )
 
     def get_all(
         self, handler: Injected[GetAllProductsQueryHandler]
@@ -49,12 +53,17 @@ class POSCustomerRouter:
         self._setup_routes()
 
     def _setup_routes(self):
-        self.router.get("", response_model=list[CustomerResponse])(self.get_all)
+        self.router.get(
+            "", response_model=list[CustomerResponse], summary="List customers"
+        )(self.get_all)
         self.router.get(
             "/search/by-tax-id",
             response_model=CustomerResponse,
+            summary="Search customer by tax ID",
         )(self.get_by_tax_id)
-        self.router.get("/{id}", response_model=CustomerResponse)(self.get_by_id)
+        self.router.get(
+            "/{id}", response_model=CustomerResponse, summary="Get customer"
+        )(self.get_by_id)
 
     def get_all(
         self, handler: Injected[GetAllCustomersQueryHandler]

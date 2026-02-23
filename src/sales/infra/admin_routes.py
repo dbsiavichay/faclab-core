@@ -26,14 +26,22 @@ class AdminSaleRouter:
         self._setup_routes()
 
     def _setup_routes(self):
-        self.router.get("", response_model=list[SaleResponse])(self.get_all_sales)
-        self.router.get("/{sale_id}", response_model=SaleResponse)(self.get_sale)
-        self.router.get("/{sale_id}/items", response_model=list[SaleItemResponse])(
-            self.get_sale_items
+        self.router.get(
+            "", response_model=list[SaleResponse], summary="List all sales"
+        )(self.get_all_sales)
+        self.router.get("/{sale_id}", response_model=SaleResponse, summary="Get sale")(
+            self.get_sale
         )
-        self.router.get("/{sale_id}/payments", response_model=list[PaymentResponse])(
-            self.get_sale_payments
-        )
+        self.router.get(
+            "/{sale_id}/items",
+            response_model=list[SaleItemResponse],
+            summary="List sale items",
+        )(self.get_sale_items)
+        self.router.get(
+            "/{sale_id}/payments",
+            response_model=list[PaymentResponse],
+            summary="List sale payments",
+        )(self.get_sale_payments)
 
     def get_all_sales(
         self,

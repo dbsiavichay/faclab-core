@@ -60,33 +60,48 @@ class SaleRouter:
     def _setup_routes(self):
         """Configura todas las rutas del router"""
         self.router.post(
-            "", response_model=SaleResponse, status_code=status.HTTP_201_CREATED
+            "",
+            response_model=SaleResponse,
+            status_code=status.HTTP_201_CREATED,
+            summary="Create sale",
         )(self.create_sale)
-        self.router.get("", response_model=list[SaleResponse])(self.get_all_sales)
-        self.router.get("/{sale_id}", response_model=SaleResponse)(self.get_sale)
+        self.router.get("", response_model=list[SaleResponse], summary="List sales")(
+            self.get_all_sales
+        )
+        self.router.get("/{sale_id}", response_model=SaleResponse, summary="Get sale")(
+            self.get_sale
+        )
         self.router.post(
             "/{sale_id}/items",
             response_model=SaleItemResponse,
             status_code=status.HTTP_201_CREATED,
+            summary="Add item to sale",
         )(self.add_sale_item)
-        self.router.get("/{sale_id}/items", response_model=list[SaleItemResponse])(
-            self.get_sale_items
-        )
-        self.router.delete("/{sale_id}/items/{item_id}")(self.remove_sale_item)
-        self.router.post("/{sale_id}/confirm", response_model=SaleResponse)(
-            self.confirm_sale
-        )
-        self.router.post("/{sale_id}/cancel", response_model=SaleResponse)(
-            self.cancel_sale
-        )
+        self.router.get(
+            "/{sale_id}/items",
+            response_model=list[SaleItemResponse],
+            summary="List sale items",
+        )(self.get_sale_items)
+        self.router.delete(
+            "/{sale_id}/items/{item_id}", summary="Remove item from sale"
+        )(self.remove_sale_item)
+        self.router.post(
+            "/{sale_id}/confirm", response_model=SaleResponse, summary="Confirm sale"
+        )(self.confirm_sale)
+        self.router.post(
+            "/{sale_id}/cancel", response_model=SaleResponse, summary="Cancel sale"
+        )(self.cancel_sale)
         self.router.post(
             "/{sale_id}/payments",
             response_model=PaymentResponse,
             status_code=status.HTTP_201_CREATED,
+            summary="Register payment",
         )(self.register_payment)
-        self.router.get("/{sale_id}/payments", response_model=list[PaymentResponse])(
-            self.get_sale_payments
-        )
+        self.router.get(
+            "/{sale_id}/payments",
+            response_model=list[PaymentResponse],
+            summary="List sale payments",
+        )(self.get_sale_payments)
 
     def create_sale(
         self,

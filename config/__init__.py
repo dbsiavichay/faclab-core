@@ -1,9 +1,9 @@
 import structlog
 from environs import Env
 
-from .base import OpenTelemetryConfig
+from .base import DocsConfig, OpenTelemetryConfig
 
-__all__ = ["OpenTelemetryConfig"]
+__all__ = ["DocsConfig", "OpenTelemetryConfig"]
 
 env = Env()
 logger = structlog.get_logger(__name__)
