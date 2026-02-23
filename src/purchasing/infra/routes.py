@@ -186,6 +186,8 @@ class PurchaseOrderRouter:
                 purchase_order_item_id=item.purchase_order_item_id,
                 quantity_received=item.quantity_received,
                 location_id=item.location_id,
+                lot_number=item.lot_number,
+                serial_numbers=item.serial_numbers,
             )
             for item in body.items
         ]

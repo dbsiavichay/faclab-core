@@ -145,6 +145,15 @@ Faclab Core is a sales and inventory management API.
                 "purchase price, supplier SKU, and minimum order quantity."
             ),
         },
+        # Admin — Lots & Serials
+        {
+            "name": "admin - lots",
+            "description": "Lot management — expiry tracking, lot quantities, and perishable product control.",
+        },
+        {
+            "name": "admin - serials",
+            "description": "Serial number tracking — unit-level traceability for electronics and equipment.",
+        },
         # Admin — Purchasing
         {
             "name": "admin - purchase-orders",
@@ -194,6 +203,10 @@ Faclab Core is a sales and inventory management API.
                 "admin - stock",
                 "admin - movements",
             ],
+        },
+        {
+            "name": "Admin — Lots & Serials",
+            "tags": ["admin - lots", "admin - serials"],
         },
         {
             "name": "Admin — Customers",

@@ -1,0 +1,127 @@
+import pytest
+
+from src.inventory.serial.domain.entities import SerialNumber, SerialStatus
+from src.shared.domain.exceptions import DomainError
+
+
+def _make_serial(**overrides) -> SerialNumber:
+    defaults = {
+        "id": 1,
+        "product_id": 5,
+        "serial_number": "SN-001",
+        "status": SerialStatus.AVAILABLE,
+    }
+    defaults.update(overrides)
+    return SerialNumber(**defaults)
+
+
+# ---------------------------------------------------------------------------
+# mark_sold
+# ---------------------------------------------------------------------------
+
+
+def test_mark_sold_from_available():
+    serial = _make_serial(status=SerialStatus.AVAILABLE)
+    sold = serial.mark_sold()
+    assert sold.status == SerialStatus.SOLD
+    assert serial.status == SerialStatus.AVAILABLE  # immutable
+
+
+def test_mark_sold_from_reserved_raises():
+    serial = _make_serial(status=SerialStatus.RESERVED)
+    with pytest.raises(DomainError, match="Only AVAILABLE serials can be sold"):
+        serial.mark_sold()
+
+
+def test_mark_sold_from_sold_raises():
+    serial = _make_serial(status=SerialStatus.SOLD)
+    with pytest.raises(DomainError):
+        serial.mark_sold()
+
+
+def test_mark_sold_from_returned_raises():
+    serial = _make_serial(status=SerialStatus.RETURNED)
+    with pytest.raises(DomainError):
+        serial.mark_sold()
+
+
+# ---------------------------------------------------------------------------
+# mark_reserved
+# ---------------------------------------------------------------------------
+
+
+def test_mark_reserved_from_available():
+    serial = _make_serial(status=SerialStatus.AVAILABLE)
+    reserved = serial.mark_reserved()
+    assert reserved.status == SerialStatus.RESERVED
+
+
+def test_mark_reserved_from_sold_raises():
+    serial = _make_serial(status=SerialStatus.SOLD)
+    with pytest.raises(DomainError, match="Only AVAILABLE serials can be reserved"):
+        serial.mark_reserved()
+
+
+def test_mark_reserved_from_reserved_raises():
+    serial = _make_serial(status=SerialStatus.RESERVED)
+    with pytest.raises(DomainError):
+        serial.mark_reserved()
+
+
+# ---------------------------------------------------------------------------
+# mark_returned
+# ---------------------------------------------------------------------------
+
+
+def test_mark_returned_from_sold():
+    serial = _make_serial(status=SerialStatus.SOLD)
+    returned = serial.mark_returned()
+    assert returned.status == SerialStatus.RETURNED
+
+
+def test_mark_returned_from_available_raises():
+    serial = _make_serial(status=SerialStatus.AVAILABLE)
+    with pytest.raises(DomainError, match="Only SOLD serials can be returned"):
+        serial.mark_returned()
+
+
+def test_mark_returned_from_reserved_raises():
+    serial = _make_serial(status=SerialStatus.RESERVED)
+    with pytest.raises(DomainError):
+        serial.mark_returned()
+
+
+# ---------------------------------------------------------------------------
+# mark_scrapped
+# ---------------------------------------------------------------------------
+
+
+def test_mark_scrapped_from_available():
+    serial = _make_serial(status=SerialStatus.AVAILABLE)
+    scrapped = serial.mark_scrapped()
+    assert scrapped.status == SerialStatus.SCRAPPED
+
+
+def test_mark_scrapped_from_sold():
+    serial = _make_serial(status=SerialStatus.SOLD)
+    scrapped = serial.mark_scrapped()
+    assert scrapped.status == SerialStatus.SCRAPPED
+
+
+def test_mark_scrapped_from_returned():
+    serial = _make_serial(status=SerialStatus.RETURNED)
+    scrapped = serial.mark_scrapped()
+    assert scrapped.status == SerialStatus.SCRAPPED
+
+
+def test_mark_scrapped_from_reserved():
+    serial = _make_serial(status=SerialStatus.RESERVED)
+    scrapped = serial.mark_scrapped()
+    assert scrapped.status == SerialStatus.SCRAPPED
+
+
+def test_serial_is_immutable():
+    serial = _make_serial(status=SerialStatus.AVAILABLE)
+    sold = serial.mark_sold()
+    assert serial.status == SerialStatus.AVAILABLE
+    assert sold.status == SerialStatus.SOLD

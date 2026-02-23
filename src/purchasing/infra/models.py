@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.shared.infra.database import Base
@@ -91,6 +91,8 @@ class PurchaseReceiptItemModel(Base):
     location_id: Mapped[int | None] = mapped_column(
         ForeignKey("locations.id", ondelete="SET NULL")
     )
+    lot_number: Mapped[str | None] = mapped_column(String(64))
+    serial_numbers: Mapped[list[str] | None] = mapped_column(JSON)
 
     purchase_receipt: Mapped["PurchaseReceiptModel"] = relationship(
         back_populates="items"

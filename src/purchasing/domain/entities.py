@@ -87,3 +87,5 @@ class PurchaseReceiptItem(Entity):
     quantity_received: int
     id: int | None = None
     location_id: int | None = None
+    lot_number: str | None = None
+    serial_numbers: list[str] | None = None

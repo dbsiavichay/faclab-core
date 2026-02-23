@@ -153,6 +153,19 @@ class ReceiveItemRequest(BaseModel):
         validation_alias=AliasChoices("locationId", "location_id"),
         serialization_alias="locationId",
     )
+    lot_number: str | None = Field(
+        None,
+        max_length=64,
+        description="Lot number for traceability",
+        validation_alias=AliasChoices("lotNumber", "lot_number"),
+        serialization_alias="lotNumber",
+    )
+    serial_numbers: list[str] | None = Field(
+        None,
+        description="Serial numbers for individual unit tracking",
+        validation_alias=AliasChoices("serialNumbers", "serial_numbers"),
+        serialization_alias="serialNumbers",
+    )
 
 
 class CreatePurchaseReceiptRequest(BaseModel):
