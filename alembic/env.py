@@ -18,6 +18,10 @@ from src.inventory.lot.infra.models import LotModel, MovementLotItemModel  # noq
 from src.inventory.movement.infra.models import MovementModel  # noqa: F401
 from src.inventory.serial.infra.models import SerialNumberModel  # noqa: F401
 from src.inventory.stock.infra.models import StockModel  # noqa: F401
+from src.inventory.transfer.infra.models import (  # noqa: F401
+    StockTransferItemModel,
+    StockTransferModel,
+)
 from src.inventory.warehouse.infra.models import WarehouseModel  # noqa: F401
 from src.purchasing.infra.models import (  # noqa: F401
     PurchaseOrderItemModel,

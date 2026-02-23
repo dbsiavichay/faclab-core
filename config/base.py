@@ -172,6 +172,15 @@ Faclab Core is a sales and inventory management API.
             "name": "admin - adjustment-items",
             "description": "Manage individual line items within an inventory adjustment.",
         },
+        # Admin — Transfers
+        {
+            "name": "admin - transfers",
+            "description": "Manage stock transfers between warehouse locations.",
+        },
+        {
+            "name": "admin - transfer-items",
+            "description": "Manage individual line items within a stock transfer.",
+        },
         # Admin — Sales
         {
             "name": "admin - sales",
@@ -236,6 +245,10 @@ Faclab Core is a sales and inventory management API.
         {
             "name": "Admin — Adjustments",
             "tags": ["admin - adjustments", "admin - adjustment-items"],
+        },
+        {
+            "name": "Admin — Transfers",
+            "tags": ["admin - transfers", "admin - transfer-items"],
         },
         {
             "name": "Admin — Sales",

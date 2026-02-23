@@ -17,6 +17,7 @@ def create_wireup_container():
     )
     from src.inventory.serial.infra.container import SERIAL_INJECTABLES
     from src.inventory.stock.infra.container import INJECTABLES as STOCK_INJECTABLES
+    from src.inventory.transfer.infra.container import TRANSFER_INJECTABLES
     from src.inventory.warehouse.infra.container import (
         INJECTABLES as WAREHOUSE_INJECTABLES,
     )
@@ -46,6 +47,7 @@ def create_wireup_container():
             *LOT_INJECTABLES,
             *SERIAL_INJECTABLES,
             *ADJUSTMENT_INJECTABLES,
+            *TRANSFER_INJECTABLES,
             *CUSTOMER_INJECTABLES,
             *SUPPLIER_INJECTABLES,
             *PURCHASING_INJECTABLES,
