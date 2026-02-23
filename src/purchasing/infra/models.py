@@ -1,0 +1,97 @@
+from datetime import datetime
+from decimal import Decimal
+
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.shared.infra.database import Base
+
+
+class PurchaseOrderModel(Base):
+    __tablename__ = "purchase_orders"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    supplier_id: Mapped[int] = mapped_column(
+        ForeignKey("suppliers.id", ondelete="RESTRICT"), nullable=False
+    )
+    order_number: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="draft")
+    subtotal: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    tax: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    total: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    notes: Mapped[str | None] = mapped_column(Text)
+    expected_date: Mapped[datetime | None] = mapped_column(DateTime)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.now, onupdate=datetime.now
+    )
+
+    items: Mapped[list["PurchaseOrderItemModel"]] = relationship(
+        back_populates="purchase_order", cascade="all, delete-orphan"
+    )
+    receipts: Mapped[list["PurchaseReceiptModel"]] = relationship(
+        back_populates="purchase_order", cascade="all, delete-orphan"
+    )
+
+
+class PurchaseOrderItemModel(Base):
+    __tablename__ = "purchase_order_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    purchase_order_id: Mapped[int] = mapped_column(
+        ForeignKey("purchase_orders.id", ondelete="CASCADE"), nullable=False
+    )
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id", ondelete="RESTRICT"), nullable=False
+    )
+    quantity_ordered: Mapped[int] = mapped_column(Integer, nullable=False)
+    quantity_received: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    unit_cost: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+
+    purchase_order: Mapped["PurchaseOrderModel"] = relationship(back_populates="items")
+
+
+class PurchaseReceiptModel(Base):
+    __tablename__ = "purchase_receipts"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    purchase_order_id: Mapped[int] = mapped_column(
+        ForeignKey("purchase_orders.id", ondelete="CASCADE"), nullable=False
+    )
+    notes: Mapped[str | None] = mapped_column(Text)
+    received_at: Mapped[datetime | None] = mapped_column(DateTime)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.now
+    )
+
+    purchase_order: Mapped["PurchaseOrderModel"] = relationship(
+        back_populates="receipts"
+    )
+    items: Mapped[list["PurchaseReceiptItemModel"]] = relationship(
+        back_populates="purchase_receipt", cascade="all, delete-orphan"
+    )
+
+
+class PurchaseReceiptItemModel(Base):
+    __tablename__ = "purchase_receipt_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    purchase_receipt_id: Mapped[int] = mapped_column(
+        ForeignKey("purchase_receipts.id", ondelete="CASCADE"), nullable=False
+    )
+    purchase_order_item_id: Mapped[int] = mapped_column(
+        ForeignKey("purchase_order_items.id", ondelete="RESTRICT"), nullable=False
+    )
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id", ondelete="RESTRICT"), nullable=False
+    )
+    quantity_received: Mapped[int] = mapped_column(Integer, nullable=False)
+    location_id: Mapped[int | None] = mapped_column(
+        ForeignKey("locations.id", ondelete="SET NULL")
+    )
+
+    purchase_receipt: Mapped["PurchaseReceiptModel"] = relationship(
+        back_populates="items"
+    )

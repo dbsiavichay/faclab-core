@@ -289,7 +289,7 @@ class Movement(Entity):
 
 ---
 
-## FASE 3: Gestión de Proveedores
+## FASE 3: Gestión de Proveedores ✅ COMPLETADA (2026-02-22)
 
 **Objetivo:** Registrar proveedores con sus contactos y catálogo de productos que suministran.
 **Nuevo módulo:** `src/suppliers/`
@@ -379,7 +379,7 @@ class SupplierDeactivated(DomainEvent):
 - [x] Queries: GetAll/GetById Supplier, GetContacts, GetSupplierProducts, GetProductSuppliers
 - [x] Rutas: `/api/admin/suppliers`, `/api/admin/suppliers/{id}/contacts`, `/api/admin/suppliers/{id}/products`
 - [x] Eventos: SupplierCreated, SupplierActivated, SupplierDeactivated
-- [ ] Migración y aplicar
+- [x] Migración y aplicar (`94b429f1acba_create_suppliers_tables.py`)
 - [x] Tests: CRUD supplier, contactos, catálogo de compra (32 tests, 100% pass)
 
 **Completada:** 2026-02-22
@@ -391,11 +391,11 @@ class SupplierDeactivated(DomainEvent):
 - Rutas anidadas en `SupplierRouter`: `/{supplier_id}/contacts` y `/{supplier_id}/products`
 - Routers independientes: `SupplierContactRouter` y `SupplierProductRouter` para PUT/DELETE/GET por ID
 - `SupplierProductRouter` incluye ruta `GET /by-product/{product_id}` para consultar todos los proveedores de un producto
-- Migración pendiente: `make migrations m="create suppliers tables" && make upgrade`
+- Migración aplicada: `94b429f1acba_create_suppliers_tables.py`
 
 ---
 
-## FASE 4: Órdenes de Compra
+## FASE 4: Órdenes de Compra ✅ COMPLETADA (2026-02-22)
 
 **Objetivo:** Gestionar el ciclo completo de compra desde la orden hasta la recepción.
 **Nuevo módulo:** `src/purchasing/`
@@ -546,18 +546,28 @@ POST /api/admin/purchase-orders/{id}/receive
 
 ### 4.7 Checklist Fase 4
 
-- [ ] Crear `src/purchasing/` con estructura completa
-- [ ] Entities: `PurchaseOrder`, `PurchaseOrderItem`, `PurchaseReceipt`, `PurchaseReceiptItem`
-- [ ] Models + Mappers + Repositories
-- [ ] Commands: CreatePO, UpdatePO, DeletePO (solo DRAFT), SendPO, CancelPO
-- [ ] Commands: AddPOItem, UpdatePOItem, RemovePOItem
-- [ ] Commands: CreatePurchaseReceipt (recepción con items, puede ser parcial)
-- [ ] Queries: GetAllPOs, GetPOById, GetPOItems, GetPOReceipts
-- [ ] Eventos y event handlers (PurchaseOrderReceived → crea Movements)
-- [ ] Generación automática de order_number (PO-YYYY-NNNN)
-- [ ] Rutas: `/api/admin/purchase-orders`, `/api/admin/purchase-orders/{id}/items`, `/api/admin/purchase-orders/{id}/receive`
-- [ ] Migración y aplicar
-- [ ] Tests: ciclo completo PO, recepción parcial, integración con stock
+- [x] Crear `src/purchasing/` con estructura completa
+- [x] Entities: `PurchaseOrder`, `PurchaseOrderItem`, `PurchaseReceipt`, `PurchaseReceiptItem`
+- [x] Models + Mappers + Repositories
+- [x] Commands: CreatePO, UpdatePO, DeletePO (solo DRAFT), SendPO, CancelPO
+- [x] Commands: AddPOItem, UpdatePOItem, RemovePOItem
+- [x] Commands: CreatePurchaseReceipt (recepción con items, puede ser parcial)
+- [x] Queries: GetAllPOs (filtros: status, supplier_id), GetPOById, GetPOItems, GetPOReceipts
+- [x] Eventos y event handlers (PurchaseOrderReceived → crea Movements IN)
+- [x] Generación automática de order_number (PO-YYYY-NNNN via `count_by_year()`)
+- [x] Rutas: `/api/admin/purchase-orders`, `/api/admin/purchase-orders/{id}/items`, `/api/admin/purchase-orders/{id}/receive`
+- [x] Migración y aplicar (`f5c7ea00ee81_create_purchase_orders_tables.py`)
+- [x] Tests: 56 tests — entidades, eventos, comandos (incl. recepción parcial/completa), queries, event handler
+
+**Completada:** 2026-02-22
+
+### Notas de implementación Fase 4
+
+- `PurchaseOrderStatus` usa `StrEnum` (igual que `SaleStatus`) para que `entity.dict()` retorne el valor string directamente
+- `count_by_year(year)` en `PurchaseOrderRepository` usa `EXTRACT(year FROM created_at)` para generar el correlativo anual
+- El event handler `handle_purchase_order_received` hace patch de `src.wireup_container` (no del módulo) — igual que los otros event handlers
+- `PurchaseOrderItemResponse` no incluye `quantity_pending` ni `subtotal` (son properties calculadas, no almacenadas)
+- Recepción parcial: si algún ítem tiene `quantity_pending > 0` después de la recepción, la PO pasa a `PARTIAL`; si todos quedan en 0, pasa a `RECEIVED`
 
 ---
 
@@ -1112,4 +1122,4 @@ class MiEntidadResponse(BaseModel):
 ---
 
 *Última actualización: 2026-02-22*
-*Próxima fase a desarrollar: FASE 4 — Órdenes de Compra*
+*Próxima fase a desarrollar: FASE 5 — Lotes & Números de Serie*

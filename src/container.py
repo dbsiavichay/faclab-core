@@ -18,6 +18,7 @@ def create_wireup_container():
         INJECTABLES as WAREHOUSE_INJECTABLES,
     )
     from src.pos.sales.infra.container import INJECTABLES as POS_SALES_INJECTABLES
+    from src.purchasing.infra.container import INJECTABLES as PURCHASING_INJECTABLES
     from src.sales.infra.container import INJECTABLES as SALES_INJECTABLES
     from src.shared.infra.database import create_session_factory
     from src.shared.infra.events.event_bus_publisher import EventBusPublisher
@@ -41,6 +42,7 @@ def create_wireup_container():
             *STOCK_INJECTABLES,
             *CUSTOMER_INJECTABLES,
             *SUPPLIER_INJECTABLES,
+            *PURCHASING_INJECTABLES,
             *SALES_INJECTABLES,
             *POS_SALES_INJECTABLES,
         ]
@@ -48,5 +50,6 @@ def create_wireup_container():
 
     import src.inventory.infra.event_handlers  # noqa: F401
     import src.inventory.stock.infra.event_handlers  # noqa: F401
+    import src.purchasing.infra.event_handlers  # noqa: F401
 
     return container
