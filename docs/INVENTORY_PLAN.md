@@ -685,10 +685,11 @@ Tabla: `movement_lot_items` (id, movement_id FK, lot_id FK, quantity)
 
 ---
 
-## FASE 6: Ajustes e Inventarios Físicos
+## FASE 6: Ajustes e Inventarios Físicos ✅ COMPLETADA (2026-02-23)
 
 **Objetivo:** Permitir ajustes manuales de stock y conteos físicos (inventario cíclico).
 **Módulo:** `src/inventory/adjustment/`
+**Migración aplicada:** `c1ef129d19ad_create_inventory_adjustments_tables.py`
 
 ### 6.1 Ajuste de Inventario
 
@@ -752,15 +753,32 @@ POST /api/admin/adjustments/{id}/confirm
 
 ### 6.3 Checklist Fase 6
 
-- [ ] Crear `src/inventory/adjustment/` completo
-- [ ] Entities: `InventoryAdjustment`, `AdjustmentItem`
-- [ ] Commands: Create/Update/Delete/Confirm/Cancel Adjustment
-- [ ] Commands: AddAdjustmentItem, UpdateAdjustmentItem, RemoveAdjustmentItem
-- [ ] Queries: GetAllAdjustments, GetAdjustmentById, GetAdjustmentItems
-- [ ] Integración: al confirmar → crear Movements automáticamente
-- [ ] Especificación: `AdjustmentsByStatus`, `AdjustmentsByWarehouse`
-- [ ] Rutas: `/api/admin/adjustments`
-- [ ] Tests: ciclo completo, diferencias positivas/negativas
+- [x] Crear `src/inventory/adjustment/` completo
+- [x] Entities: `InventoryAdjustment`, `AdjustmentItem`, `AdjustmentStatus`, `AdjustmentReason`
+- [x] Commands: Create/Update/Delete/Confirm/Cancel Adjustment
+- [x] Commands: AddAdjustmentItem, UpdateAdjustmentItem, RemoveAdjustmentItem
+- [x] Queries: GetAllAdjustments, GetAdjustmentById, GetAdjustmentItems
+- [x] Integración: al confirmar → crear Movements IN/OUT automáticamente, ítems con diff=0 se omiten
+- [x] Especificación: `AdjustmentsByStatus`, `AdjustmentsByWarehouse`
+- [x] Evento: `AdjustmentConfirmed` publicado al confirmar
+- [x] AddAdjustmentItem auto-popula `expected_quantity` desde Stock actual
+- [x] Rutas: `GET/POST /api/admin/adjustments`, `GET/PUT/DELETE /{id}`, `POST /{id}/confirm`, `POST /{id}/cancel`, `POST/GET /{id}/items`
+- [x] Rutas: `PUT/DELETE /api/admin/adjustment-items/{id}`
+- [x] Registrar en `src/container.py` y `main.py`
+- [x] Actualizar `config/base.py` con tags y tag group "Admin — Adjustments"
+- [x] Actualizar `alembic/env.py` con `InventoryAdjustmentModel`, `AdjustmentItemModel`
+- [x] Migración aplicada (`c1ef129d19ad`) con `server_default` en `status` y `created_at`
+- [x] Tests: 38 tests — entidades (8), commands (18), queries (6), especificaciones (6) — 480 total, 100% pass
+
+**Completada:** 2026-02-23
+
+### Notas de implementación Fase 6
+
+- `ConfirmAdjustmentCommandHandler` inyecta `CreateMovementCommandHandler` directamente (no via event) — los movimientos se crean síncronamente en la misma transacción. El evento `MovementCreated` se propaga normalmente para actualizar Stock.
+- `AddAdjustmentItemCommandHandler` usa `stock_repo.first(product_id=..., location_id=...)` para auto-poblar `expected_quantity`; si no hay stock registrado, usa 0.
+- `AdjustmentItem.difference` es una `@property` calculada (actual - expected), no almacenada en BD. Se agrega al dict en queries y commands que lo devuelven.
+- `cancel()` solo bloquea si status == CONFIRMED (no si es CANCELLED — idempotente en ese sentido).
+- `server_default='draft'` en la migración para `status` y `server_default=sa.func.now()` para `created_at` — Alembic autogenerate no los agrega automáticamente.
 
 ---
 
@@ -1144,5 +1162,5 @@ class MiEntidadResponse(BaseModel):
 
 ---
 
-*Última actualización: 2026-02-22*
-*Próxima fase a desarrollar: FASE 6 — Ajustes e Inventarios Físicos*
+*Última actualización: 2026-02-23*
+*Próxima fase a desarrollar: FASE 7 — Transferencias entre Ubicaciones*
