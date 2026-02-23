@@ -20,6 +20,7 @@ from src.inventory.stock.infra.routes import StockRouter
 from src.inventory.warehouse.infra.routes import WarehouseRouter
 from src.pos.infra.routes import POSCustomerRouter, POSProductRouter
 from src.pos.sales.infra.routes import POSSaleRouter
+from src.purchasing.infra.routes import POItemRouter, PurchaseOrderRouter
 from src.sales.infra.admin_routes import AdminSaleRouter
 from src.shared.infra.adapters import OpenTelemetry
 from src.shared.infra.logging import configure_logging
@@ -82,6 +83,7 @@ _SCALAR_TEMPLATE = """<!DOCTYPE html>
   <title>{title}</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏷️</text></svg>" />
   <style>body {{ margin: 0; }}</style>
 </head>
 <body>
@@ -188,6 +190,16 @@ admin_router.include_router(
     SupplierProductRouter().router,
     prefix="/supplier-products",
     tags=["admin - supplier-products"],
+)
+admin_router.include_router(
+    PurchaseOrderRouter().router,
+    prefix="/purchase-orders",
+    tags=["admin - purchase-orders"],
+)
+admin_router.include_router(
+    POItemRouter().router,
+    prefix="/purchase-order-items",
+    tags=["admin - purchase-order-items"],
 )
 admin_router.include_router(
     AdminSaleRouter().router, prefix="/sales", tags=["admin - sales"]

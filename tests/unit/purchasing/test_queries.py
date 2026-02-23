@@ -1,0 +1,202 @@
+from decimal import Decimal
+from unittest.mock import MagicMock
+
+import pytest
+
+from src.purchasing.app.queries.purchase_order import (
+    GetAllPurchaseOrdersQuery,
+    GetAllPurchaseOrdersQueryHandler,
+    GetPurchaseOrderByIdQuery,
+    GetPurchaseOrderByIdQueryHandler,
+)
+from src.purchasing.app.queries.purchase_order_item import (
+    GetPurchaseOrderItemsByPOQuery,
+    GetPurchaseOrderItemsByPOQueryHandler,
+)
+from src.purchasing.app.queries.purchase_receipt import (
+    GetReceiptsByPurchaseOrderQuery,
+    GetReceiptsByPurchaseOrderQueryHandler,
+)
+from src.purchasing.domain.entities import (
+    PurchaseOrder,
+    PurchaseOrderItem,
+    PurchaseOrderStatus,
+    PurchaseReceipt,
+)
+from src.shared.domain.exceptions import NotFoundError
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _make_po(**overrides) -> PurchaseOrder:
+    defaults = {
+        "id": 1,
+        "supplier_id": 10,
+        "order_number": "PO-2026-0001",
+        "status": PurchaseOrderStatus.DRAFT,
+        "subtotal": Decimal("0.00"),
+        "tax": Decimal("0.00"),
+        "total": Decimal("0.00"),
+    }
+    defaults.update(overrides)
+    return PurchaseOrder(**defaults)
+
+
+def _make_item(**overrides) -> PurchaseOrderItem:
+    defaults = {
+        "id": 1,
+        "purchase_order_id": 1,
+        "product_id": 5,
+        "quantity_ordered": 10,
+        "unit_cost": Decimal("25.00"),
+        "quantity_received": 0,
+    }
+    defaults.update(overrides)
+    return PurchaseOrderItem(**defaults)
+
+
+def _make_receipt(**overrides) -> PurchaseReceipt:
+    defaults = {
+        "id": 1,
+        "purchase_order_id": 1,
+    }
+    defaults.update(overrides)
+    return PurchaseReceipt(**defaults)
+
+
+# ---------------------------------------------------------------------------
+# GetAllPurchaseOrdersQueryHandler
+# ---------------------------------------------------------------------------
+
+
+def test_get_all_purchase_orders():
+    po1 = _make_po(id=1)
+    po2 = _make_po(id=2, order_number="PO-2026-0002")
+    repo = MagicMock()
+    repo.get_all.return_value = [po1, po2]
+    handler = GetAllPurchaseOrdersQueryHandler(repo)
+
+    result = handler.handle(GetAllPurchaseOrdersQuery())
+
+    repo.get_all.assert_called_once()
+    assert len(result) == 2
+
+
+def test_get_all_purchase_orders_filter_by_status():
+    po = _make_po(status=PurchaseOrderStatus.SENT)
+    repo = MagicMock()
+    repo.filter_by.return_value = [po]
+    handler = GetAllPurchaseOrdersQueryHandler(repo)
+
+    result = handler.handle(GetAllPurchaseOrdersQuery(status="sent"))
+
+    repo.filter_by.assert_called_once_with(status="sent")
+    assert len(result) == 1
+    assert result[0]["status"] == "sent"
+
+
+def test_get_all_purchase_orders_filter_by_supplier():
+    po = _make_po(supplier_id=5)
+    repo = MagicMock()
+    repo.filter_by.return_value = [po]
+    handler = GetAllPurchaseOrdersQueryHandler(repo)
+
+    result = handler.handle(GetAllPurchaseOrdersQuery(supplier_id=5))
+
+    repo.filter_by.assert_called_once_with(supplier_id=5)
+    assert len(result) == 1
+
+
+def test_get_all_purchase_orders_filter_by_status_and_supplier():
+    po = _make_po(supplier_id=5, status=PurchaseOrderStatus.SENT)
+    repo = MagicMock()
+    repo.filter_by.return_value = [po]
+    handler = GetAllPurchaseOrdersQueryHandler(repo)
+
+    result = handler.handle(GetAllPurchaseOrdersQuery(status="sent", supplier_id=5))
+
+    repo.filter_by.assert_called_once_with(status="sent", supplier_id=5)
+    assert len(result) == 1
+
+
+# ---------------------------------------------------------------------------
+# GetPurchaseOrderByIdQueryHandler
+# ---------------------------------------------------------------------------
+
+
+def test_get_purchase_order_by_id():
+    po = _make_po()
+    repo = MagicMock()
+    repo.get_by_id.return_value = po
+    handler = GetPurchaseOrderByIdQueryHandler(repo)
+
+    result = handler.handle(GetPurchaseOrderByIdQuery(id=1))
+
+    assert result["id"] == 1
+    assert result["order_number"] == "PO-2026-0001"
+
+
+def test_get_purchase_order_by_id_not_found_raises():
+    repo = MagicMock()
+    repo.get_by_id.return_value = None
+    handler = GetPurchaseOrderByIdQueryHandler(repo)
+
+    with pytest.raises(NotFoundError, match="Purchase order with id 99 not found"):
+        handler.handle(GetPurchaseOrderByIdQuery(id=99))
+
+
+# ---------------------------------------------------------------------------
+# GetPurchaseOrderItemsByPOQueryHandler
+# ---------------------------------------------------------------------------
+
+
+def test_get_items_by_po():
+    item1 = _make_item(id=1)
+    item2 = _make_item(id=2, product_id=6)
+    repo = MagicMock()
+    repo.filter_by.return_value = [item1, item2]
+    handler = GetPurchaseOrderItemsByPOQueryHandler(repo)
+
+    result = handler.handle(GetPurchaseOrderItemsByPOQuery(purchase_order_id=1))
+
+    repo.filter_by.assert_called_once_with(purchase_order_id=1)
+    assert len(result) == 2
+
+
+def test_get_items_by_po_empty():
+    repo = MagicMock()
+    repo.filter_by.return_value = []
+    handler = GetPurchaseOrderItemsByPOQueryHandler(repo)
+
+    result = handler.handle(GetPurchaseOrderItemsByPOQuery(purchase_order_id=99))
+
+    assert result == []
+
+
+# ---------------------------------------------------------------------------
+# GetReceiptsByPurchaseOrderQueryHandler
+# ---------------------------------------------------------------------------
+
+
+def test_get_receipts_by_po():
+    receipt = _make_receipt()
+    repo = MagicMock()
+    repo.filter_by.return_value = [receipt]
+    handler = GetReceiptsByPurchaseOrderQueryHandler(repo)
+
+    result = handler.handle(GetReceiptsByPurchaseOrderQuery(purchase_order_id=1))
+
+    repo.filter_by.assert_called_once_with(purchase_order_id=1)
+    assert len(result) == 1
+
+
+def test_get_receipts_by_po_empty():
+    repo = MagicMock()
+    repo.filter_by.return_value = []
+    handler = GetReceiptsByPurchaseOrderQueryHandler(repo)
+
+    result = handler.handle(GetReceiptsByPurchaseOrderQuery(purchase_order_id=99))
+
+    assert result == []

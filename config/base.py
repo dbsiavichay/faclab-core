@@ -145,6 +145,15 @@ Faclab Core is a sales and inventory management API.
                 "purchase price, supplier SKU, and minimum order quantity."
             ),
         },
+        # Admin — Purchasing
+        {
+            "name": "admin - purchase-orders",
+            "description": "Manage purchase orders: create, send to supplier, receive goods, and cancel.",
+        },
+        {
+            "name": "admin - purchase-order-items",
+            "description": "Manage line items within a purchase order.",
+        },
         # Admin — Sales
         {
             "name": "admin - sales",
@@ -197,6 +206,10 @@ Faclab Core is a sales and inventory management API.
                 "admin - supplier-contacts",
                 "admin - supplier-products",
             ],
+        },
+        {
+            "name": "Admin — Purchasing",
+            "tags": ["admin - purchase-orders", "admin - purchase-order-items"],
         },
         {
             "name": "Admin — Sales",
