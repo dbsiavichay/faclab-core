@@ -6,10 +6,6 @@ import pytest
 from src.sales.app.commands import (
     AddSaleItemCommand,
     AddSaleItemCommandHandler,
-    CancelSaleCommand,
-    CancelSaleCommandHandler,
-    ConfirmSaleCommand,
-    ConfirmSaleCommandHandler,
     CreateSaleCommand,
     CreateSaleCommandHandler,
     RegisterPaymentCommand,
@@ -18,7 +14,7 @@ from src.sales.app.commands import (
     RemoveSaleItemCommandHandler,
 )
 from src.sales.domain.entities import Payment, PaymentMethod, Sale, SaleItem, SaleStatus
-from src.sales.domain.exceptions import InvalidSaleStatusError, SaleHasNoItemsError
+from src.sales.domain.exceptions import InvalidSaleStatusError
 from src.shared.domain.exceptions import NotFoundError, ValidationError
 
 
@@ -173,76 +169,6 @@ def test_remove_sale_item_command_handler():
     item_repo.delete.assert_called_once()
     sale_repo.update.assert_called_once()
     assert result["success"] is True
-
-
-def test_confirm_sale_command_handler():
-    """Test confirmar una venta"""
-    sale = _make_sale()
-    items = [_make_sale_item()]
-    sale_repo = _mock_repo(entity=sale)
-    item_repo = _mock_repo(entities=items)
-    handler = ConfirmSaleCommandHandler(sale_repo, item_repo, MagicMock())
-
-    command = ConfirmSaleCommand(sale_id=1)
-    result = handler.handle(command)
-
-    sale_repo.update.assert_called_once()
-    assert result["status"] == "CONFIRMED"
-
-
-def test_confirm_sale_without_items_fails():
-    """Test que no se puede confirmar una venta sin items"""
-    sale = _make_sale()
-    sale_repo = _mock_repo(entity=sale)
-    item_repo = _mock_repo(entities=[])
-    handler = ConfirmSaleCommandHandler(sale_repo, item_repo, MagicMock())
-
-    command = ConfirmSaleCommand(sale_id=1)
-
-    with pytest.raises(SaleHasNoItemsError):
-        handler.handle(command)
-
-
-def test_confirm_sale_not_found():
-    """Test que falla si la venta no existe"""
-    sale_repo = _mock_repo()
-    sale_repo.get_by_id.return_value = None
-    item_repo = _mock_repo()
-    handler = ConfirmSaleCommandHandler(sale_repo, item_repo, MagicMock())
-
-    command = ConfirmSaleCommand(sale_id=999)
-
-    with pytest.raises(NotFoundError):
-        handler.handle(command)
-
-
-def test_cancel_sale_command_handler():
-    """Test cancelar una venta"""
-    sale = _make_sale(status=SaleStatus.CONFIRMED)
-    items = [_make_sale_item()]
-    sale_repo = _mock_repo(entity=sale)
-    item_repo = _mock_repo(entities=items)
-    handler = CancelSaleCommandHandler(sale_repo, item_repo, MagicMock())
-
-    command = CancelSaleCommand(sale_id=1, reason="Customer request")
-    result = handler.handle(command)
-
-    sale_repo.update.assert_called_once()
-    assert result["status"] == "CANCELLED"
-
-
-def test_cancel_sale_draft_no_reversal():
-    """Test que cancelar una venta DRAFT no genera reversión"""
-    sale = _make_sale(status=SaleStatus.DRAFT)
-    sale_repo = _mock_repo(entity=sale)
-    item_repo = _mock_repo(entities=[])
-    handler = CancelSaleCommandHandler(sale_repo, item_repo, MagicMock())
-
-    command = CancelSaleCommand(sale_id=1)
-    handler.handle(command)
-
-    # No debe consultar items porque no estaba confirmada
-    item_repo.filter_by.assert_not_called()
 
 
 def test_register_payment_command_handler():

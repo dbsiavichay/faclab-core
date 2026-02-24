@@ -4,14 +4,6 @@ from src.sales.app.commands.add_sale_item import (
     AddSaleItemCommand,
     AddSaleItemCommandHandler,
 )
-from src.sales.app.commands.cancel_sale import (
-    CancelSaleCommand,
-    CancelSaleCommandHandler,
-)
-from src.sales.app.commands.confirm_sale import (
-    ConfirmSaleCommand,
-    ConfirmSaleCommandHandler,
-)
 from src.sales.app.commands.create_sale import (
     CreateSaleCommand,
     CreateSaleCommandHandler,
@@ -32,10 +24,6 @@ __all__ = [
     "AddSaleItemCommandHandler",
     "RemoveSaleItemCommand",
     "RemoveSaleItemCommandHandler",
-    "ConfirmSaleCommand",
-    "ConfirmSaleCommandHandler",
-    "CancelSaleCommand",
-    "CancelSaleCommandHandler",
     "RegisterPaymentCommand",
     "RegisterPaymentCommandHandler",
 ]
