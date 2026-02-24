@@ -15,6 +15,7 @@ from src.catalog.uom.infra.routes import UnitOfMeasureRouter
 from src.container import create_wireup_container
 from src.customers.infra.routes import CustomerContactRouter, CustomerRouter
 from src.inventory.adjustment.infra.routes import AdjustmentItemRouter, AdjustmentRouter
+from src.inventory.alert.infra.routes import AlertRouter
 from src.inventory.location.infra.routes import LocationRouter
 from src.inventory.lot.infra.routes import LotRouter
 from src.inventory.movement.infra.routes import MovementRouter
@@ -231,6 +232,9 @@ admin_router.include_router(
     TransferItemRouter().router,
     prefix="/transfer-items",
     tags=["admin - transfer-items"],
+)
+admin_router.include_router(
+    AlertRouter().router, prefix="/alerts", tags=["admin - alerts"]
 )
 
 # POS API

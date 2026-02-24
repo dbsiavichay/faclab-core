@@ -8,6 +8,7 @@ def create_wireup_container():
     from src.catalog.uom.infra.container import INJECTABLES as UOM_INJECTABLES
     from src.customers.infra.container import INJECTABLES as CUSTOMER_INJECTABLES
     from src.inventory.adjustment.infra.container import ADJUSTMENT_INJECTABLES
+    from src.inventory.alert.infra.container import ALERT_INJECTABLES
     from src.inventory.location.infra.container import (
         INJECTABLES as LOCATION_INJECTABLES,
     )
@@ -48,6 +49,7 @@ def create_wireup_container():
             *SERIAL_INJECTABLES,
             *ADJUSTMENT_INJECTABLES,
             *TRANSFER_INJECTABLES,
+            *ALERT_INJECTABLES,
             *CUSTOMER_INJECTABLES,
             *SUPPLIER_INJECTABLES,
             *PURCHASING_INJECTABLES,
