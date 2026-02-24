@@ -27,7 +27,7 @@ from src.pos.infra.routes import POSCustomerRouter, POSProductRouter
 from src.pos.sales.infra.routes import POSSaleRouter
 from src.purchasing.infra.routes import POItemRouter, PurchaseOrderRouter
 from src.reports.inventory.infra.routes import ReportRouter
-from src.sales.infra.admin_routes import AdminSaleRouter
+from src.sales.infra.routes import SaleRouter
 from src.shared.infra.adapters import OpenTelemetry
 from src.shared.infra.logging import configure_logging
 from src.shared.infra.middlewares import ErrorHandlingMiddleware
@@ -212,7 +212,7 @@ admin_router.include_router(
     tags=["admin - purchase-order-items"],
 )
 admin_router.include_router(
-    AdminSaleRouter().router, prefix="/sales", tags=["admin - sales"]
+    SaleRouter().router, prefix="/sales", tags=["admin - sales"]
 )
 admin_router.include_router(
     AdjustmentRouter().router,
