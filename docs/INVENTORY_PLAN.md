@@ -935,10 +935,25 @@ class ExpiringLots(Specification[Lot]):
 
 ### 8.4 Checklist Fase 8
 
-- [ ] Especificaciones: `LowStockProducts`, `ExpiringLots`, `OutOfStockProducts`
-- [ ] Query handlers para alertas
-- [ ] Rutas: `GET /api/admin/alerts/low-stock`, `/api/admin/alerts/expiring-lots`
-- [ ] Tests: especificaciones de alertas
+- [x] Especificaciones: `LowStockProducts`, `ExpiringLots`, `OutOfStockProducts`
+- [x] Query handlers para alertas
+- [x] Rutas: `GET /api/admin/alerts/low-stock`, `/api/admin/alerts/expiring-lots`
+- [x] Tests: especificaciones de alertas
+
+**Completada:** 2026-02-23
+
+### Notas de implementación Fase 8
+
+- Módulo nuevo `src/inventory/alert/` — puramente read-only, sin modelos ni migraciones
+- `src/inventory/stock/domain/specifications.py` creado con `LowStockProducts`, `OutOfStockProducts`, `ReorderPointProducts`
+- Specs de stock usan correlated subqueries contra `ProductModel` para `min_stock` y `reorder_point`
+- Filtro por `warehouse_id` usa subquery sobre `LocationModel.id`
+- `LowStockProducts` y `ReorderPointProducts` incluyen `quantity > 0` para excluir registros sin stock (alerta separada)
+- Handlers inyectan `Repository[Stock]` (o `Repository[Lot]`) + `Repository[Product]` para enriquecer alertas
+- `ExpiringLots` spec reutilizada directamente desde `src/inventory/lot/domain/specifications.py`
+- Productos con `is_service=True` excluidos en todos los handlers
+- `StockAlertQueryParams` usa `AliasChoices` para aceptar tanto `warehouseId` como `warehouse_id`
+- `AlertType` usa `StrEnum` (Python 3.11+) para serialización automática como string
 
 ---
 
@@ -1210,4 +1225,4 @@ class MiEntidadResponse(BaseModel):
 ---
 
 *Última actualización: 2026-02-23*
-*Próxima fase a desarrollar: FASE 8 — Alertas y Monitoreo de Stock*
+*Próxima fase a desarrollar: FASE 9 — Reportes y Valoración de Inventario*
