@@ -957,7 +957,7 @@ class ExpiringLots(Specification[Lot]):
 
 ---
 
-## FASE 9: Reportes y Valoración de Inventario
+## FASE 9: Reportes y Valoración de Inventario ✅ COMPLETADA (2026-02-23)
 
 **Objetivo:** Reportes de valoración, rotación y movimientos para toma de decisiones.
 **Módulo:** `src/reports/inventory/`
@@ -1023,12 +1023,26 @@ Response: total productos, total SKUs, valor total, alertas activas
 
 ### 9.3 Checklist Fase 9
 
-- [ ] Crear `src/reports/inventory/` con query handlers para cada reporte
-- [ ] Queries: ValuationReport, RotationReport, MovementHistoryReport, WarehouseSummaryReport
-- [ ] Paginación en MovementHistoryReport
-- [ ] Filtros: by product, by warehouse, by date range, by type
-- [ ] Rutas: `/api/admin/reports/inventory/...`
-- [ ] Tests: correctness de cálculos de valoración
+- [x] Crear `src/reports/inventory/` con query handlers para cada reporte
+- [x] Queries: ValuationReport, RotationReport, MovementHistoryReport, WarehouseSummaryReport
+- [x] Paginación en MovementHistoryReport
+- [x] Filtros: by product, by warehouse, by date range, by type
+- [x] Rutas: `/api/admin/reports/inventory/...`
+- [x] Tests: 33 tests — valoración (9), rotación (7), historial (9), resumen (8) — 589 total, 100% pass
+
+**Completada:** 2026-02-23
+
+### Notas de implementación Fase 9
+
+- Módulo nuevo `src/reports/inventory/` — puramente read-only, sin domain layer, sin modelos ni migraciones
+- Handlers inyectan `Session` directamente (no `Repository[E]`) para queries con agregados SQL (SUM, AVG, GROUP BY, JOIN)
+- `GetInventoryValuationQueryHandler`: dos rutas — stock actual (JOIN stocks+products) o histórica (SUM movements hasta as_of_date)
+- `GetProductRotationQueryHandler`: expone `_fetch_movement_aggregates()` y `_fetch_current_stocks()` como métodos separados para facilitar el mock en tests
+- `GetMovementHistoryReportQueryHandler`: usa `q.count()` antes de aplicar `.offset().limit()` para retornar `total` correcto junto con los items paginados
+- `GetWarehouseSummaryQueryHandler`: usa `func.coalesce(..., 0)` para manejar warehouses sin stock (evita NULL en sumas)
+- Tests con `MagicMock` para Session: se crea un mock fluido donde cada método del query chain (`join`, `filter`, `group_by`, etc.) retorna el mismo mock, configurando solo el `.all()` / `.count()` finales
+- Tag: `admin - reports`, grupo: "Admin — Reports" en `config/base.py`
+- Ruta registrada en `main.py`: `/api/admin/reports/inventory` con prefix dentro del `admin_router`
 
 ---
 
@@ -1225,4 +1239,4 @@ class MiEntidadResponse(BaseModel):
 ---
 
 *Última actualización: 2026-02-23*
-*Próxima fase a desarrollar: FASE 9 — Reportes y Valoración de Inventario*
+*Próxima fase a desarrollar: FASE 10 — Integración con POS/Ventas (Futura)*
