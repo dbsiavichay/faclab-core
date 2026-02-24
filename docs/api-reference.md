@@ -1,0 +1,294 @@
+# Referencia de API
+
+La API esta dividida en dos superficies:
+
+- **Admin API** — prefijo `/api/admin` — gestion completa del back-office
+- **POS API** — prefijo `/api/pos` — operaciones del punto de venta
+
+La documentacion interactiva (Scalar) esta disponible cuando `DOCS_ENABLED=true`:
+
+| URL | Descripcion |
+|---|---|
+| `http://localhost:3000/docs` | Todos los endpoints |
+| `http://localhost:3000/docs/admin` | Solo Admin |
+| `http://localhost:3000/docs/pos` | Solo POS |
+
+---
+
+## Admin API
+
+### Categorias — `/api/admin/categories`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/categories` | Crear categoria |
+| `GET` | `/api/admin/categories` | Listar categorias |
+| `GET` | `/api/admin/categories/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/categories/{id}` | Actualizar |
+| `DELETE` | `/api/admin/categories/{id}` | Eliminar |
+
+### Unidades de Medida — `/api/admin/units-of-measure`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/units-of-measure` | Crear unidad |
+| `GET` | `/api/admin/units-of-measure` | Listar unidades |
+| `GET` | `/api/admin/units-of-measure/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/units-of-measure/{id}` | Actualizar |
+| `DELETE` | `/api/admin/units-of-measure/{id}` | Eliminar |
+
+### Productos — `/api/admin/products`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/products` | Crear producto |
+| `GET` | `/api/admin/products` | Listar con paginacion |
+| `GET` | `/api/admin/products/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/products/{id}` | Actualizar |
+| `DELETE` | `/api/admin/products/{id}` | Eliminar |
+
+### Almacenes — `/api/admin/warehouses`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/warehouses` | Crear almacen |
+| `GET` | `/api/admin/warehouses` | Listar almacenes |
+| `GET` | `/api/admin/warehouses/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/warehouses/{id}` | Actualizar |
+| `DELETE` | `/api/admin/warehouses/{id}` | Eliminar |
+
+### Ubicaciones — `/api/admin/locations`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/locations` | Crear ubicacion |
+| `GET` | `/api/admin/locations` | Listar ubicaciones |
+| `GET` | `/api/admin/locations/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/locations/{id}` | Actualizar |
+| `DELETE` | `/api/admin/locations/{id}` | Eliminar |
+
+### Stock — `/api/admin/stock`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `GET` | `/api/admin/stock` | Listar niveles de stock |
+| `GET` | `/api/admin/stock/{id}` | Obtener por ID |
+| `GET` | `/api/admin/stock/product/{product_id}` | Stock por producto |
+
+> El stock se actualiza automaticamente mediante eventos de dominio — no existe endpoint de escritura directa.
+
+### Movimientos — `/api/admin/movements`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/movements` | Crear movimiento (IN/OUT) |
+| `GET` | `/api/admin/movements` | Listar movimientos |
+| `GET` | `/api/admin/movements/{id}` | Obtener por ID |
+
+### Lotes — `/api/admin/lots`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/lots` | Crear lote |
+| `GET` | `/api/admin/lots` | Listar lotes |
+| `GET` | `/api/admin/lots/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/lots/{id}` | Actualizar lote |
+
+### Numeros de Serie — `/api/admin/serials`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/serials` | Registrar serial |
+| `GET` | `/api/admin/serials` | Listar seriales |
+| `GET` | `/api/admin/serials/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/serials/{id}` | Actualizar estado |
+
+### Clientes — `/api/admin/customers`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/customers` | Crear cliente |
+| `GET` | `/api/admin/customers` | Listar clientes |
+| `GET` | `/api/admin/customers/{id}` | Obtener por ID |
+| `GET` | `/api/admin/customers/tax-id/{tax_id}` | Buscar por RUC |
+| `PUT` | `/api/admin/customers/{id}` | Actualizar |
+| `DELETE` | `/api/admin/customers/{id}` | Eliminar |
+| `POST` | `/api/admin/customers/{id}/activate` | Activar |
+| `POST` | `/api/admin/customers/{id}/deactivate` | Desactivar |
+
+### Contactos de Clientes — `/api/admin/customer-contacts`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/customer-contacts` | Crear contacto |
+| `GET` | `/api/admin/customer-contacts/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/customer-contacts/{id}` | Actualizar |
+| `DELETE` | `/api/admin/customer-contacts/{id}` | Eliminar |
+| `GET` | `/api/admin/customer-contacts/customer/{id}` | Contactos por cliente |
+
+### Proveedores — `/api/admin/suppliers`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/suppliers` | Crear proveedor |
+| `GET` | `/api/admin/suppliers` | Listar proveedores |
+| `GET` | `/api/admin/suppliers/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/suppliers/{id}` | Actualizar |
+| `DELETE` | `/api/admin/suppliers/{id}` | Eliminar |
+
+### Contactos de Proveedores — `/api/admin/supplier-contacts`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/supplier-contacts` | Crear contacto |
+| `GET` | `/api/admin/supplier-contacts/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/supplier-contacts/{id}` | Actualizar |
+| `DELETE` | `/api/admin/supplier-contacts/{id}` | Eliminar |
+| `GET` | `/api/admin/supplier-contacts/supplier/{id}` | Contactos por proveedor |
+
+### Productos de Proveedor — `/api/admin/supplier-products`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/supplier-products` | Vincular producto a proveedor |
+| `GET` | `/api/admin/supplier-products/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/supplier-products/{id}` | Actualizar precio/referencia |
+| `DELETE` | `/api/admin/supplier-products/{id}` | Desvincular |
+| `GET` | `/api/admin/supplier-products/supplier/{id}` | Productos por proveedor |
+
+### Ordenes de Compra — `/api/admin/purchase-orders`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/purchase-orders` | Crear orden de compra |
+| `GET` | `/api/admin/purchase-orders` | Listar ordenes |
+| `GET` | `/api/admin/purchase-orders/{id}` | Obtener por ID |
+| `POST` | `/api/admin/purchase-orders/{id}/receive` | Recepcionar mercaderia |
+
+### Items de Orden de Compra — `/api/admin/purchase-order-items`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/purchase-order-items` | Agregar item |
+| `GET` | `/api/admin/purchase-order-items/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/purchase-order-items/{id}` | Actualizar cantidad/precio |
+| `DELETE` | `/api/admin/purchase-order-items/{id}` | Eliminar item |
+
+### Ventas (vista admin) — `/api/admin/sales`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/sales` | Crear venta (DRAFT) |
+| `GET` | `/api/admin/sales` | Listar ventas |
+| `GET` | `/api/admin/sales/{id}` | Obtener por ID |
+| `POST` | `/api/admin/sales/{id}/items` | Agregar item |
+| `DELETE` | `/api/admin/sales/{id}/items/{item_id}` | Remover item |
+| `POST` | `/api/admin/sales/{id}/payments` | Registrar pago |
+| `GET` | `/api/admin/sales/{id}/payments` | Listar pagos |
+| `GET` | `/api/admin/sales/{id}/items` | Listar items |
+
+> La confirmacion y anulacion se realizan desde el POS (`/api/pos/sales`).
+
+### Ajustes de Inventario — `/api/admin/adjustments`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/adjustments` | Crear ajuste |
+| `GET` | `/api/admin/adjustments` | Listar ajustes |
+| `GET` | `/api/admin/adjustments/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/adjustments/{id}` | Actualizar |
+
+### Items de Ajuste — `/api/admin/adjustment-items`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/adjustment-items` | Agregar item de ajuste |
+| `GET` | `/api/admin/adjustment-items/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/adjustment-items/{id}` | Actualizar |
+| `DELETE` | `/api/admin/adjustment-items/{id}` | Eliminar |
+
+### Transferencias — `/api/admin/transfers`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/transfers` | Crear transferencia |
+| `GET` | `/api/admin/transfers` | Listar transferencias |
+| `GET` | `/api/admin/transfers/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/transfers/{id}` | Actualizar estado |
+
+### Items de Transferencia — `/api/admin/transfer-items`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/admin/transfer-items` | Agregar item |
+| `GET` | `/api/admin/transfer-items/{id}` | Obtener por ID |
+| `PUT` | `/api/admin/transfer-items/{id}` | Actualizar |
+| `DELETE` | `/api/admin/transfer-items/{id}` | Eliminar |
+
+### Alertas de Stock — `/api/admin/alerts`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `GET` | `/api/admin/alerts` | Listar alertas activas |
+| `GET` | `/api/admin/alerts/{id}` | Obtener por ID |
+| `GET` | `/api/admin/alerts/stock/{stock_id}` | Alertas por stock |
+
+### Reportes de Inventario — `/api/admin/reports/inventory`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `GET` | `/api/admin/reports/inventory/valuation` | Valuacion de inventario |
+| `GET` | `/api/admin/reports/inventory/rotation` | Reporte de rotacion |
+| `GET` | `/api/admin/reports/inventory/movements` | Reporte de movimientos |
+| `GET` | `/api/admin/reports/inventory/summary` | Resumen general |
+
+---
+
+## POS API
+
+### Ventas POS — `/api/pos/sales`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/api/pos/sales/{id}/confirm` | Confirmar venta (atomico con inventario) |
+| `POST` | `/api/pos/sales/{id}/cancel` | Anular venta (atomico con inventario) |
+
+> La creacion y gestion de items se realiza desde Admin (`/api/admin/sales`).
+
+### Productos POS — `/api/pos/products`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `GET` | `/api/pos/products` | Catalogo de productos para POS |
+| `GET` | `/api/pos/products/{id}` | Obtener producto por ID |
+
+### Clientes POS — `/api/pos/customers`
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `GET` | `/api/pos/customers` | Buscar clientes |
+| `GET` | `/api/pos/customers/{id}` | Obtener cliente por ID |
+| `GET` | `/api/pos/customers/tax-id/{tax_id}` | Buscar por RUC |
+
+---
+
+## Formato de Errores
+
+Todos los errores siguen el mismo formato:
+
+```json
+{
+  "error_code": "NOT_FOUND",
+  "message": "Entity with id 42 not found",
+  "timestamp": "2026-02-13T10:00:00Z",
+  "request_id": "550e8400-e29b-41d4-a716-446655440000",
+  "detail": "Customer"
+}
+```
+
+| `error_code` | HTTP | Origen |
+|---|---|---|
+| `DOMAIN_ERROR` | 400 | `DomainError` — regla de negocio |
+| `APPLICATION_ERROR` | 400 | `ApplicationError` — logica de aplicacion |
+| `NOT_FOUND` | 404 | `NotFoundError` — recurso inexistente |
+| `VALIDATION_ERROR` | 422 | `ValidationError` — datos invalidos |
