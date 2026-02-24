@@ -191,6 +191,14 @@ Faclab Core is a sales and inventory management API.
             "name": "admin - sales",
             "description": "Read-only access to all sales data for back-office reporting and auditing.",
         },
+        # Admin — Reports
+        {
+            "name": "admin - reports",
+            "description": (
+                "Inventory analytics: valuation, product rotation, "
+                "movement history, and warehouse stock summaries."
+            ),
+        },
         # POS
         {
             "name": "pos - products",
@@ -262,6 +270,10 @@ Faclab Core is a sales and inventory management API.
         {
             "name": "Admin — Sales",
             "tags": ["admin - sales"],
+        },
+        {
+            "name": "Admin — Reports",
+            "tags": ["admin - reports"],
         },
         {
             "name": "POS",

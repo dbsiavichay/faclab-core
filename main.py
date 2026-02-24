@@ -26,6 +26,7 @@ from src.inventory.warehouse.infra.routes import WarehouseRouter
 from src.pos.infra.routes import POSCustomerRouter, POSProductRouter
 from src.pos.sales.infra.routes import POSSaleRouter
 from src.purchasing.infra.routes import POItemRouter, PurchaseOrderRouter
+from src.reports.inventory.infra.routes import ReportRouter
 from src.sales.infra.admin_routes import AdminSaleRouter
 from src.shared.infra.adapters import OpenTelemetry
 from src.shared.infra.logging import configure_logging
@@ -235,6 +236,11 @@ admin_router.include_router(
 )
 admin_router.include_router(
     AlertRouter().router, prefix="/alerts", tags=["admin - alerts"]
+)
+admin_router.include_router(
+    ReportRouter().router,
+    prefix="/reports/inventory",
+    tags=["admin - reports"],
 )
 
 # POS API
