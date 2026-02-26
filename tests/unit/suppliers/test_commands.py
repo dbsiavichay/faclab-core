@@ -44,7 +44,7 @@ def _make_supplier(**overrides) -> Supplier:
     defaults = {
         "id": 1,
         "name": "ACME Corp",
-        "tax_id": "1234567890123",
+        "tax_id": "1710034065001",
         "tax_type": TaxType.RUC,
         "is_active": True,
     }
@@ -86,14 +86,14 @@ def test_create_supplier_command_handler():
 
     command = CreateSupplierCommand(
         name="ACME Corp",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
         tax_type=1,
     )
     result = handler.handle(command)
 
     repo.create.assert_called_once()
     assert result["name"] == "ACME Corp"
-    assert result["tax_id"] == "1234567890123"
+    assert result["tax_id"] == "1710034065001"
 
 
 def test_create_supplier_publishes_event():
@@ -111,13 +111,38 @@ def test_create_supplier_publishes_event():
 
     handler = CreateSupplierCommandHandler(repo, EventBusPublisher())
     handler.handle(
-        CreateSupplierCommand(name="ACME Corp", tax_id="1234567890123", tax_type=1)
+        CreateSupplierCommand(name="ACME Corp", tax_id="1710034065001", tax_type=1)
     )
 
     assert len(events_received) == 1
     assert events_received[0].supplier_id == 1
     assert events_received[0].name == "ACME Corp"
     EventBus.clear()
+
+
+def test_create_supplier_invalid_email_raises():
+    repo = MagicMock()
+    handler = CreateSupplierCommandHandler(repo, MagicMock())
+
+    command = CreateSupplierCommand(
+        name="ACME Corp",
+        tax_id="1710034065001",
+        email="not-an-email",
+    )
+    with pytest.raises(ValueError, match="Invalid email"):
+        handler.handle(command)
+
+
+def test_create_supplier_invalid_tax_id_raises():
+    repo = MagicMock()
+    handler = CreateSupplierCommandHandler(repo, MagicMock())
+
+    command = CreateSupplierCommand(
+        name="ACME Corp",
+        tax_id="123",  # Too short for EC RUC
+    )
+    with pytest.raises(ValueError, match="Invalid tax ID"):
+        handler.handle(command)
 
 
 def test_update_supplier_command_handler():
@@ -129,13 +154,40 @@ def test_update_supplier_command_handler():
     command = UpdateSupplierCommand(
         id=1,
         name="Updated Corp",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
         tax_type=1,
     )
     result = handler.handle(command)
 
     repo.update.assert_called_once()
     assert result["name"] == "Updated Corp"
+
+
+def test_update_supplier_invalid_email_raises():
+    repo = MagicMock()
+    handler = UpdateSupplierCommandHandler(repo)
+
+    command = UpdateSupplierCommand(
+        id=1,
+        name="ACME Corp",
+        tax_id="1710034065001",
+        email="not-an-email",
+    )
+    with pytest.raises(ValueError, match="Invalid email"):
+        handler.handle(command)
+
+
+def test_update_supplier_invalid_tax_id_raises():
+    repo = MagicMock()
+    handler = UpdateSupplierCommandHandler(repo)
+
+    command = UpdateSupplierCommand(
+        id=1,
+        name="ACME Corp",
+        tax_id="123",  # Too short for EC RUC
+    )
+    with pytest.raises(ValueError, match="Invalid tax ID"):
+        handler.handle(command)
 
 
 def test_delete_supplier_command_handler():

@@ -20,7 +20,7 @@ def test_supplier_created_event_to_dict():
         aggregate_id=1,
         supplier_id=1,
         name="ACME Corp",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
     )
     d = event.to_dict()
 
@@ -28,7 +28,7 @@ def test_supplier_created_event_to_dict():
     assert d["aggregate_id"] == 1
     assert d["payload"]["supplier_id"] == 1
     assert d["payload"]["name"] == "ACME Corp"
-    assert d["payload"]["tax_id"] == "1234567890123"
+    assert d["payload"]["tax_id"] == "1710034065001"
     assert "event_id" in d
     assert "occurred_at" in d
 
@@ -74,7 +74,7 @@ def test_supplier_created_event_is_published():
     supplier = Supplier(
         id=1,
         name="ACME Corp",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
         tax_type=TaxType.RUC,
         is_active=True,
     )
@@ -86,7 +86,7 @@ def test_supplier_created_event_is_published():
 
     handler = CreateSupplierCommandHandler(repo, EventBusPublisher())
     handler.handle(
-        CreateSupplierCommand(name="ACME Corp", tax_id="1234567890123", tax_type=1)
+        CreateSupplierCommand(name="ACME Corp", tax_id="1710034065001", tax_type=1)
     )
 
     assert len(events_received) == 1
@@ -107,14 +107,14 @@ def test_supplier_activated_event_is_published():
     supplier = Supplier(
         id=1,
         name="ACME Corp",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
         tax_type=TaxType.RUC,
         is_active=False,
     )
     activated = Supplier(
         id=1,
         name="ACME Corp",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
         tax_type=TaxType.RUC,
         is_active=True,
     )

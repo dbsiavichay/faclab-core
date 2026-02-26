@@ -6,7 +6,7 @@ def _make_customer(**overrides) -> Customer:
     defaults = {
         "id": 1,
         "name": "Test Customer",
-        "tax_id": "1234567890123",
+        "tax_id": "1710034065001",
         "tax_type": TaxType.RUC,
         "is_active": True,
     }

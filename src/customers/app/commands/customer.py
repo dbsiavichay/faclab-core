@@ -42,7 +42,8 @@ class CreateCustomerCommandHandler(CommandHandler[CreateCustomerCommand, dict]):
     def _handle(self, command: CreateCustomerCommand) -> dict:
         if command.email:
             Email(command.email)
-        TaxId(command.tax_id)
+        if command.tax_type in (TaxType.RUC, TaxType.NATIONAL_ID):
+            TaxId(command.tax_id)
 
         customer = Customer(
             name=command.name,
@@ -97,7 +98,8 @@ class UpdateCustomerCommandHandler(CommandHandler[UpdateCustomerCommand, dict]):
     def _handle(self, command: UpdateCustomerCommand) -> dict:
         if command.email:
             Email(command.email)
-        TaxId(command.tax_id)
+        if command.tax_type in (TaxType.RUC, TaxType.NATIONAL_ID):
+            TaxId(command.tax_id)
 
         customer = Customer(
             id=command.id,

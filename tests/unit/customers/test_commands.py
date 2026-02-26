@@ -22,7 +22,7 @@ def _make_customer(**overrides) -> Customer:
     defaults = {
         "id": 1,
         "name": "Test Customer",
-        "tax_id": "1234567890123",
+        "tax_id": "1710034065001",
         "tax_type": TaxType.RUC,
         "is_active": True,
     }
@@ -48,14 +48,14 @@ def test_create_customer_command_handler():
 
     command = CreateCustomerCommand(
         name="Test Customer",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
         tax_type=1,
     )
     result = handler.handle(command)
 
     repo.create.assert_called_once()
     assert result["name"] == "Test Customer"
-    assert result["tax_id"] == "1234567890123"
+    assert result["tax_id"] == "1710034065001"
 
 
 def test_create_customer_invalid_email_raises():
@@ -64,7 +64,7 @@ def test_create_customer_invalid_email_raises():
 
     command = CreateCustomerCommand(
         name="Test",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
         email="not-an-email",
     )
     with pytest.raises(ValueError, match="Invalid email"):
@@ -79,7 +79,7 @@ def test_create_customer_invalid_tax_id_raises():
         name="Test",
         tax_id="123",  # Too short for EC RUC
     )
-    with pytest.raises(ValueError, match="Invalid Ecuadorian RUC"):
+    with pytest.raises(ValueError, match="Invalid tax ID"):
         handler.handle(command)
 
 
@@ -91,7 +91,7 @@ def test_update_customer_command_handler():
     command = UpdateCustomerCommand(
         id=1,
         name="Updated Name",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
         tax_type=1,
     )
     result = handler.handle(command)

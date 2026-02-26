@@ -18,7 +18,7 @@ def _make_customer(**overrides) -> Customer:
     defaults = {
         "id": 1,
         "name": "Test Customer",
-        "tax_id": "1234567890123",
+        "tax_id": "1710034065001",
         "tax_type": TaxType.RUC,
         "is_active": True,
     }
@@ -67,7 +67,7 @@ def test_get_customer_by_tax_id_handler():
     repo.first.return_value = customer
     handler = GetCustomerByTaxIdQueryHandler(repo)
 
-    result = handler.handle(GetCustomerByTaxIdQuery(tax_id="1234567890123"))
+    result = handler.handle(GetCustomerByTaxIdQuery(tax_id="1710034065001"))
 
     assert result is not None
-    assert result["tax_id"] == "1234567890123"
+    assert result["tax_id"] == "1710034065001"

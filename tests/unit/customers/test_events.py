@@ -28,7 +28,7 @@ def test_customer_created_event_to_dict():
         aggregate_id=1,
         customer_id=1,
         name="Test",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
     )
     d = event.to_dict()
 
@@ -36,7 +36,7 @@ def test_customer_created_event_to_dict():
     assert d["aggregate_id"] == 1
     assert d["payload"]["customer_id"] == 1
     assert d["payload"]["name"] == "Test"
-    assert d["payload"]["tax_id"] == "1234567890123"
+    assert d["payload"]["tax_id"] == "1710034065001"
     assert "event_id" in d
     assert "occurred_at" in d
 
@@ -69,7 +69,7 @@ def test_create_handler_publishes_event():
     customer = Customer(
         id=1,
         name="Test",
-        tax_id="1234567890123",
+        tax_id="1710034065001",
         tax_type=TaxType.RUC,
         is_active=True,
     )
@@ -83,7 +83,7 @@ def test_create_handler_publishes_event():
 
     handler = CreateCustomerCommandHandler(repo, EventBusPublisher())
     handler.handle(
-        CreateCustomerCommand(name="Test", tax_id="1234567890123", tax_type=1)
+        CreateCustomerCommand(name="Test", tax_id="1710034065001", tax_type=1)
     )
 
     assert len(events_received) == 1
