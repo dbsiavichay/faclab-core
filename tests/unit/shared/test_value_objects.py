@@ -56,17 +56,31 @@ class TestEmail:
 
 
 class TestTaxId:
-    def test_valid_13_digits(self):
-        tax_id = TaxId(value="1234567890001")
-        assert tax_id.value == "1234567890001"
+    _error_match = "Invalid tax ID"
 
-    def test_invalid_raises(self):
-        with pytest.raises(ValueError, match="Invalid Ecuadorian RUC"):
-            TaxId(value="123")
+    def test_valid_ruc(self):
+        tax_id = TaxId(value="1710034065001")
+        assert tax_id.value == "1710034065001"
 
-    def test_formatted(self):
-        tax_id = TaxId(value="1234567890001")
-        assert tax_id.formatted() == "1234-567890-001"
+    def test_valid_cedula(self):
+        tax_id = TaxId(value="1710034065")
+        assert tax_id.value == "1710034065"
+
+    def test_invalid_length_raises(self):
+        with pytest.raises(ValueError, match=self._error_match):
+            TaxId(value="12345")
+
+    def test_non_digit_raises(self):
+        with pytest.raises(ValueError, match=self._error_match):
+            TaxId(value="17ABC34065")
+
+    def test_invalid_province_raises(self):
+        with pytest.raises(ValueError, match="Invalid ID or RUC"):
+            TaxId(value="9910034065")
+
+    def test_invalid_check_digit_raises(self):
+        with pytest.raises(ValueError, match="Invalid ID or RUC"):
+            TaxId(value="1710034060")
 
 
 class TestPercentage:

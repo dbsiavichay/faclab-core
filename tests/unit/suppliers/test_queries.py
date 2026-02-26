@@ -36,7 +36,7 @@ def _make_supplier(**overrides) -> Supplier:
     defaults = {
         "id": 1,
         "name": "ACME Corp",
-        "tax_id": "1234567890123",
+        "tax_id": "1710034065001",
         "tax_type": TaxType.RUC,
         "is_active": True,
     }

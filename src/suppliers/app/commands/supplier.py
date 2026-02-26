@@ -7,6 +7,7 @@ from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
+from src.shared.domain.value_objects import Email, TaxId
 from src.suppliers.domain.entities import Supplier
 from src.suppliers.domain.events import (
     SupplierActivated,
@@ -38,6 +39,11 @@ class CreateSupplierCommandHandler(CommandHandler[CreateSupplierCommand, dict]):
         self.event_publisher = event_publisher
 
     def _handle(self, command: CreateSupplierCommand) -> dict:
+        if command.email:
+            Email(command.email)
+        if command.tax_type in (TaxType.RUC, TaxType.NATIONAL_ID):
+            TaxId(command.tax_id)
+
         supplier = Supplier(
             name=command.name,
             tax_id=command.tax_id,
@@ -88,6 +94,11 @@ class UpdateSupplierCommandHandler(CommandHandler[UpdateSupplierCommand, dict]):
         self.repo = repo
 
     def _handle(self, command: UpdateSupplierCommand) -> dict:
+        if command.email:
+            Email(command.email)
+        if command.tax_type in (TaxType.RUC, TaxType.NATIONAL_ID):
+            TaxId(command.tax_id)
+
         supplier = Supplier(
             id=command.id,
             name=command.name,
