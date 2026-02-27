@@ -11,7 +11,7 @@ class TransfersByStatus(Specification):
     def is_satisfied_by(self, candidate: StockTransfer) -> bool:
         return candidate.status == self.status
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from src.inventory.transfer.infra.models import StockTransferModel
 
         return [StockTransferModel.status == self.status.value]
@@ -24,7 +24,7 @@ class TransfersBySourceLocation(Specification):
     def is_satisfied_by(self, candidate: StockTransfer) -> bool:
         return candidate.source_location_id == self.location_id
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from src.inventory.transfer.infra.models import StockTransferModel
 
         return [StockTransferModel.source_location_id == self.location_id]

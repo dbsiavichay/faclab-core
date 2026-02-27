@@ -14,7 +14,7 @@ class AdjustmentsByStatus(Specification):
     def is_satisfied_by(self, candidate: InventoryAdjustment) -> bool:
         return candidate.status == self.status
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from src.inventory.adjustment.infra.models import InventoryAdjustmentModel
 
         return [InventoryAdjustmentModel.status == self.status.value]
@@ -27,7 +27,7 @@ class AdjustmentsByWarehouse(Specification):
     def is_satisfied_by(self, candidate: InventoryAdjustment) -> bool:
         return candidate.warehouse_id == self.warehouse_id
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from src.inventory.adjustment.infra.models import InventoryAdjustmentModel
 
         return [InventoryAdjustmentModel.warehouse_id == self.warehouse_id]

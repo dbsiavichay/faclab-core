@@ -27,15 +27,15 @@ def test_low_stock_is_satisfied_by_returns_false_without_product_data():
     assert spec.is_satisfied_by(stock) is False
 
 
-def test_low_stock_to_sql_criteria_returns_two_without_warehouse_id():
+def test_low_stock_to_query_criteria_returns_two_without_warehouse_id():
     spec = LowStockProducts()
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 2
 
 
-def test_low_stock_to_sql_criteria_returns_three_with_warehouse_id():
+def test_low_stock_to_query_criteria_returns_three_with_warehouse_id():
     spec = LowStockProducts(warehouse_id=1)
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 3
 
 
@@ -56,15 +56,15 @@ def test_out_of_stock_not_satisfied_by_positive_quantity():
     assert spec.is_satisfied_by(stock) is False
 
 
-def test_out_of_stock_to_sql_criteria_returns_one_without_warehouse_id():
+def test_out_of_stock_to_query_criteria_returns_one_without_warehouse_id():
     spec = OutOfStockProducts()
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 1
 
 
-def test_out_of_stock_to_sql_criteria_returns_two_with_warehouse_id():
+def test_out_of_stock_to_query_criteria_returns_two_with_warehouse_id():
     spec = OutOfStockProducts(warehouse_id=1)
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 2
 
 
@@ -79,13 +79,13 @@ def test_reorder_point_is_satisfied_by_returns_false_without_product_data():
     assert spec.is_satisfied_by(stock) is False
 
 
-def test_reorder_point_to_sql_criteria_returns_two_without_warehouse_id():
+def test_reorder_point_to_query_criteria_returns_two_without_warehouse_id():
     spec = ReorderPointProducts()
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 2
 
 
-def test_reorder_point_to_sql_criteria_returns_three_with_warehouse_id():
+def test_reorder_point_to_query_criteria_returns_three_with_warehouse_id():
     spec = ReorderPointProducts(warehouse_id=2)
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 3

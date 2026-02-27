@@ -35,9 +35,9 @@ def test_transfers_by_status_not_matches():
     assert spec.is_satisfied_by(transfer) is False
 
 
-def test_transfers_by_status_to_sql_criteria():
+def test_transfers_by_status_to_query_criteria():
     spec = TransfersByStatus(TransferStatus.CONFIRMED)
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 1
 
 
@@ -64,9 +64,9 @@ def test_transfers_by_source_location_not_matches():
     assert spec.is_satisfied_by(transfer) is False
 
 
-def test_transfers_by_source_location_to_sql_criteria():
+def test_transfers_by_source_location_to_query_criteria():
     spec = TransfersBySourceLocation(location_id=10)
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 1
 
 

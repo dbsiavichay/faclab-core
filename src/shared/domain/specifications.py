@@ -8,7 +8,7 @@ class Specification(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         raise NotImplementedError
 
     def __and__(self, other: "Specification") -> "AndSpecification":
@@ -31,8 +31,8 @@ class AndSpecification(Specification):
             candidate
         )
 
-    def to_sql_criteria(self) -> list[Any]:
-        return self.left.to_sql_criteria() + self.right.to_sql_criteria()
+    def to_query_criteria(self) -> list[Any]:
+        return self.left.to_query_criteria() + self.right.to_query_criteria()
 
 
 class OrSpecification(Specification):
@@ -45,11 +45,11 @@ class OrSpecification(Specification):
             candidate
         )
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from sqlalchemy import or_
 
-        left_criteria = self.left.to_sql_criteria()
-        right_criteria = self.right.to_sql_criteria()
+        left_criteria = self.left.to_query_criteria()
+        right_criteria = self.right.to_query_criteria()
         return [or_(*left_criteria, *right_criteria)]
 
 
@@ -60,8 +60,8 @@ class NotSpecification(Specification):
     def is_satisfied_by(self, candidate: Any) -> bool:
         return not self.spec.is_satisfied_by(candidate)
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from sqlalchemy import and_, not_
 
-        criteria = self.spec.to_sql_criteria()
+        criteria = self.spec.to_query_criteria()
         return [not_(and_(*criteria))]

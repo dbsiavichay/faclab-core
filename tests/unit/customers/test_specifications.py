@@ -26,7 +26,7 @@ def test_active_customers_spec():
 
 def test_active_customers_sql_criteria():
     spec = ActiveCustomers()
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
 
     assert len(criteria) == 1
 
@@ -43,7 +43,7 @@ def test_customers_by_type_spec():
 
 def test_customers_by_type_sql_criteria():
     spec = CustomersByType(tax_type=2)
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
 
     assert len(criteria) == 1
 
