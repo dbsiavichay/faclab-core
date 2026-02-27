@@ -39,9 +39,9 @@ def test_adjustments_by_status_not_matches():
     assert spec.is_satisfied_by(adj) is False
 
 
-def test_adjustments_by_status_to_sql_criteria():
+def test_adjustments_by_status_to_query_criteria():
     spec = AdjustmentsByStatus(AdjustmentStatus.DRAFT)
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 1
 
 
@@ -62,7 +62,7 @@ def test_adjustments_by_warehouse_not_matches():
     assert spec.is_satisfied_by(adj) is False
 
 
-def test_adjustments_by_warehouse_to_sql_criteria():
+def test_adjustments_by_warehouse_to_query_criteria():
     spec = AdjustmentsByWarehouse(warehouse_id=10)
-    criteria = spec.to_sql_criteria()
+    criteria = spec.to_query_criteria()
     assert len(criteria) == 1

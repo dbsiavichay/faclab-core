@@ -1,4 +1,3 @@
-from src.catalog.product.infra.models import ProductModel
 from src.shared.domain.specifications import Specification
 
 
@@ -9,7 +8,9 @@ class ProductInCategory(Specification):
     def is_satisfied_by(self, product) -> bool:
         return product.category_id == self.category_id
 
-    def to_sql_criteria(self):
+    def to_query_criteria(self):
+        from src.catalog.product.infra.models import ProductModel
+
         return [ProductModel.category_id == self.category_id]
 
 
@@ -20,7 +21,9 @@ class ProductByName(Specification):
     def is_satisfied_by(self, product) -> bool:
         return self.name_pattern.lower() in product.name.lower()
 
-    def to_sql_criteria(self):
+    def to_query_criteria(self):
+        from src.catalog.product.infra.models import ProductModel
+
         return [ProductModel.name.ilike(f"%{self.name_pattern}%")]
 
 
@@ -31,5 +34,7 @@ class ProductBySku(Specification):
     def is_satisfied_by(self, product) -> bool:
         return product.sku == self.sku
 
-    def to_sql_criteria(self):
+    def to_query_criteria(self):
+        from src.catalog.product.infra.models import ProductModel
+
         return [ProductModel.sku == self.sku]

@@ -174,7 +174,7 @@ class SqlAlchemyRepository(Repository[E], Generic[E]):
         limit: int | None = None,
         offset: int | None = None,
     ) -> list[E]:
-        criteria = spec.to_sql_criteria()
+        criteria = spec.to_query_criteria()
         return self.filter(
             criteria=criteria,
             order_by=order_by,
@@ -184,7 +184,7 @@ class SqlAlchemyRepository(Repository[E], Generic[E]):
         )
 
     def count_by_spec(self, spec: Specification) -> int:
-        criteria = spec.to_sql_criteria()
+        criteria = spec.to_query_criteria()
         return (
             self.session.query(func.count(self.__model__.id)).filter(*criteria).scalar()
         )

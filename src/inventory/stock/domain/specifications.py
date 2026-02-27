@@ -12,7 +12,7 @@ class LowStockProducts(Specification):
         # Cannot evaluate without product min_stock data
         return False
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from sqlalchemy import select
 
         from src.catalog.product.infra.models import ProductModel
@@ -43,7 +43,7 @@ class OutOfStockProducts(Specification):
     def is_satisfied_by(self, candidate: Stock) -> bool:
         return candidate.quantity == 0
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from sqlalchemy import select
 
         from src.inventory.location.infra.models import LocationModel
@@ -66,7 +66,7 @@ class ReorderPointProducts(Specification):
         # Cannot evaluate without product reorder_point data
         return False
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from sqlalchemy import select
 
         from src.catalog.product.infra.models import ProductModel

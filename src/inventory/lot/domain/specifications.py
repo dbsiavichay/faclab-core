@@ -12,7 +12,7 @@ class LotsByProduct(Specification):
     def is_satisfied_by(self, candidate: Lot) -> bool:
         return candidate.product_id == self.product_id
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from src.inventory.lot.infra.models import LotModel
 
         return [LotModel.product_id == self.product_id]
@@ -28,7 +28,7 @@ class ExpiringLots(Specification):
         cutoff = date.today() + timedelta(days=self.days)
         return candidate.expiration_date <= cutoff and candidate.current_quantity > 0
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from src.inventory.lot.infra.models import LotModel
 
         cutoff = date.today() + timedelta(days=self.days)
@@ -45,7 +45,7 @@ class ExpiredLots(Specification):
             return False
         return candidate.expiration_date < date.today()
 
-    def to_sql_criteria(self) -> list[Any]:
+    def to_query_criteria(self) -> list[Any]:
         from src.inventory.lot.infra.models import LotModel
 
         return [

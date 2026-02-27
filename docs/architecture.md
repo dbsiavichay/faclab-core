@@ -145,7 +145,7 @@ spec = LowStockItems() | CriticalStockItems()
 
 Cada Specification implementa:
 - `is_satisfied_by(entity)` — evaluacion en memoria
-- `to_sql_criteria()` — traduccion a clausula SQLAlchemy WHERE
+- `to_query_criteria()` — traduccion a clausula SQLAlchemy WHERE
 
 ### Value Objects
 
