@@ -6,6 +6,7 @@ from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from opentelemetry import trace
+from sqlalchemy.exc import IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -103,6 +104,14 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
                 detail=exc.detail,
             )
             return JSONResponse(status_code=status, content=body)
+        except IntegrityError as exc:
+            logger.warning("integrity_error", message=str(exc.orig))
+            body = _build_error_response(
+                error_code="INTEGRITY_ERROR",
+                message="Cannot complete operation because this record is referenced by other records",
+                request_id=request_id,
+            )
+            return JSONResponse(status_code=409, content=body)
         except ValueError as exc:
             logger.warning("value_error", message=str(exc))
             body = _build_error_response(
