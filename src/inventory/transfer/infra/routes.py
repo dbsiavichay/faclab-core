@@ -38,7 +38,13 @@ from src.inventory.transfer.infra.validators import (
     UpdateTransferItemRequest,
     UpdateTransferRequest,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import (
+    DataResponse,
+    ListResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class TransferRouter:
@@ -49,44 +55,50 @@ class TransferRouter:
     def _setup_routes(self):
         self.router.get(
             "",
-            response_model=PaginatedResponse[TransferResponse],
+            response_model=PaginatedDataResponse[TransferResponse],
             summary="Get all transfers",
         )(self.get_all)
         self.router.post(
-            "", response_model=TransferResponse, summary="Create transfer"
+            "",
+            response_model=DataResponse[TransferResponse],
+            summary="Create transfer",
         )(self.create)
         self.router.get(
-            "/{id}", response_model=TransferResponse, summary="Get transfer by ID"
+            "/{id}",
+            response_model=DataResponse[TransferResponse],
+            summary="Get transfer by ID",
         )(self.get_by_id)
         self.router.put(
-            "/{id}", response_model=TransferResponse, summary="Update transfer"
+            "/{id}",
+            response_model=DataResponse[TransferResponse],
+            summary="Update transfer",
         )(self.update)
         self.router.delete("/{id}", status_code=204, summary="Delete transfer")(
             self.delete
         )
         self.router.post(
             "/{id}/confirm",
-            response_model=TransferResponse,
+            response_model=DataResponse[TransferResponse],
             summary="Confirm transfer",
         )(self.confirm)
         self.router.post(
             "/{id}/receive",
-            response_model=TransferResponse,
+            response_model=DataResponse[TransferResponse],
             summary="Receive transfer",
         )(self.receive)
         self.router.post(
             "/{id}/cancel",
-            response_model=TransferResponse,
+            response_model=DataResponse[TransferResponse],
             summary="Cancel transfer",
         )(self.cancel)
         self.router.post(
             "/{id}/items",
-            response_model=TransferItemResponse,
+            response_model=DataResponse[TransferItemResponse],
             summary="Add item to transfer",
         )(self.add_item)
         self.router.get(
             "/{id}/items",
-            response_model=list[TransferItemResponse],
+            response_model=ListResponse[TransferItemResponse],
             summary="Get transfer items",
         )(self.get_items)
 
@@ -94,53 +106,59 @@ class TransferRouter:
         self,
         handler: Injected[GetAllTransfersQueryHandler],
         query_params: TransferQueryParams = Depends(),
-    ) -> PaginatedResponse[TransferResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[TransferResponse]:
         """Get all stock transfers."""
         result = handler.handle(
             GetAllTransfersQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[TransferResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[TransferResponse.model_validate(t) for t in result["items"]],
+        return PaginatedDataResponse(
+            data=[TransferResponse.model_validate(t) for t in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def create(
         self,
         body: CreateTransferRequest,
         handler: Injected[CreateStockTransferCommandHandler],
-    ) -> TransferResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TransferResponse]:
         """Create a new stock transfer in DRAFT status."""
         result = handler.handle(
             CreateStockTransferCommand(
                 **body.model_dump(exclude_none=True, by_alias=False)
             )
         )
-        return TransferResponse.model_validate(result)
+        return DataResponse(data=TransferResponse.model_validate(result), meta=meta)
 
     def get_by_id(
         self,
         id: int,
         handler: Injected[GetTransferByIdQueryHandler],
-    ) -> TransferResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TransferResponse]:
         """Get a stock transfer by ID."""
         result = handler.handle(GetTransferByIdQuery(id=id))
-        return TransferResponse.model_validate(result)
+        return DataResponse(data=TransferResponse.model_validate(result), meta=meta)
 
     def update(
         self,
         id: int,
         body: UpdateTransferRequest,
         handler: Injected[UpdateStockTransferCommandHandler],
-    ) -> TransferResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TransferResponse]:
         """Update a stock transfer (only DRAFT)."""
         result = handler.handle(
             UpdateStockTransferCommand(
                 id=id, **body.model_dump(exclude_none=True, by_alias=False)
             )
         )
-        return TransferResponse.model_validate(result)
+        return DataResponse(data=TransferResponse.model_validate(result), meta=meta)
 
     def delete(
         self,
@@ -154,35 +172,39 @@ class TransferRouter:
         self,
         id: int,
         handler: Injected[ConfirmStockTransferCommandHandler],
-    ) -> TransferResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TransferResponse]:
         """Confirm a stock transfer — reserves stock at source location."""
         result = handler.handle(ConfirmStockTransferCommand(id=id))
-        return TransferResponse.model_validate(result)
+        return DataResponse(data=TransferResponse.model_validate(result), meta=meta)
 
     def receive(
         self,
         id: int,
         handler: Injected[ReceiveStockTransferCommandHandler],
-    ) -> TransferResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TransferResponse]:
         """Receive a stock transfer — creates OUT/IN movements and moves stock."""
         result = handler.handle(ReceiveStockTransferCommand(id=id))
-        return TransferResponse.model_validate(result)
+        return DataResponse(data=TransferResponse.model_validate(result), meta=meta)
 
     def cancel(
         self,
         id: int,
         handler: Injected[CancelStockTransferCommandHandler],
-    ) -> TransferResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TransferResponse]:
         """Cancel a stock transfer — releases reservations if CONFIRMED."""
         result = handler.handle(CancelStockTransferCommand(id=id))
-        return TransferResponse.model_validate(result)
+        return DataResponse(data=TransferResponse.model_validate(result), meta=meta)
 
     def add_item(
         self,
         id: int,
         body: AddTransferItemRequest,
         handler: Injected[AddTransferItemCommandHandler],
-    ) -> TransferItemResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TransferItemResponse]:
         """Add an item to a stock transfer."""
         result = handler.handle(
             AddTransferItemCommand(
@@ -190,16 +212,20 @@ class TransferRouter:
                 **body.model_dump(exclude_none=True, by_alias=False),
             )
         )
-        return TransferItemResponse.model_validate(result)
+        return DataResponse(data=TransferItemResponse.model_validate(result), meta=meta)
 
     def get_items(
         self,
         id: int,
         handler: Injected[GetTransferItemsQueryHandler],
-    ) -> list[TransferItemResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[TransferItemResponse]:
         """Get all items for a stock transfer."""
         result = handler.handle(GetTransferItemsQuery(transfer_id=id))
-        return [TransferItemResponse.model_validate(item) for item in result]
+        return ListResponse(
+            data=[TransferItemResponse.model_validate(item) for item in result],
+            meta=meta,
+        )
 
 
 class TransferItemRouter:
@@ -210,7 +236,7 @@ class TransferItemRouter:
     def _setup_routes(self):
         self.router.put(
             "/{id}",
-            response_model=TransferItemResponse,
+            response_model=DataResponse[TransferItemResponse],
             summary="Update transfer item",
         )(self.update)
         self.router.delete("/{id}", status_code=204, summary="Remove transfer item")(
@@ -222,14 +248,15 @@ class TransferItemRouter:
         id: int,
         body: UpdateTransferItemRequest,
         handler: Injected[UpdateTransferItemCommandHandler],
-    ) -> TransferItemResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TransferItemResponse]:
         """Update a transfer item."""
         result = handler.handle(
             UpdateTransferItemCommand(
                 id=id, **body.model_dump(exclude_none=True, by_alias=False)
             )
         )
-        return TransferItemResponse.model_validate(result)
+        return DataResponse(data=TransferItemResponse.model_validate(result), meta=meta)
 
     def remove(
         self,

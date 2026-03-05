@@ -23,7 +23,13 @@ from src.sales.infra.validators import (
     SaleQueryParams,
     SaleResponse,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import (
+    DataResponse,
+    ListResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class SaleRouter:
@@ -34,20 +40,22 @@ class SaleRouter:
     def _setup_routes(self):
         self.router.get(
             "",
-            response_model=PaginatedResponse[SaleResponse],
+            response_model=PaginatedDataResponse[SaleResponse],
             summary="List all sales",
         )(self.get_all_sales)
-        self.router.get("/{sale_id}", response_model=SaleResponse, summary="Get sale")(
-            self.get_sale
-        )
+        self.router.get(
+            "/{sale_id}",
+            response_model=DataResponse[SaleResponse],
+            summary="Get sale",
+        )(self.get_sale)
         self.router.get(
             "/{sale_id}/items",
-            response_model=list[SaleItemResponse],
+            response_model=ListResponse[SaleItemResponse],
             summary="List sale items",
         )(self.get_sale_items)
         self.router.get(
             "/{sale_id}/payments",
-            response_model=list[PaymentResponse],
+            response_model=ListResponse[PaymentResponse],
             summary="List sale payments",
         )(self.get_sale_payments)
 
@@ -55,37 +63,47 @@ class SaleRouter:
         self,
         handler: Injected[GetAllSalesQueryHandler],
         query_params: SaleQueryParams = Depends(),
-    ) -> PaginatedResponse[SaleResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[SaleResponse]:
         result = handler.handle(
             GetAllSalesQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[SaleResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[SaleResponse.model_validate(r) for r in result["items"]],
+        return PaginatedDataResponse(
+            data=[SaleResponse.model_validate(r) for r in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def get_sale(
         self,
         handler: Injected[GetSaleByIdQueryHandler],
         sale_id: int,
-    ) -> SaleResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SaleResponse]:
         result = handler.handle(GetSaleByIdQuery(sale_id=sale_id))
-        return SaleResponse.model_validate(result)
+        return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
 
     def get_sale_items(
         self,
         handler: Injected[GetSaleItemsQueryHandler],
         sale_id: int,
-    ) -> list[SaleItemResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[SaleItemResponse]:
         result = handler.handle(GetSaleItemsQuery(sale_id=sale_id))
-        return [SaleItemResponse.model_validate(r) for r in result]
+        return ListResponse(
+            data=[SaleItemResponse.model_validate(r) for r in result], meta=meta
+        )
 
     def get_sale_payments(
         self,
         handler: Injected[GetSalePaymentsQueryHandler],
         sale_id: int,
-    ) -> list[PaymentResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[PaymentResponse]:
         result = handler.handle(GetSalePaymentsQuery(sale_id=sale_id))
-        return [PaymentResponse.model_validate(r) for r in result]
+        return ListResponse(
+            data=[PaymentResponse.model_validate(r) for r in result], meta=meta
+        )

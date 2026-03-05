@@ -15,6 +15,7 @@ def _make_middleware():
 def _make_request():
     req = MagicMock()
     req.headers = {}
+    req.state = MagicMock()
     return req
 
 
@@ -38,7 +39,7 @@ def test_integrity_error_returns_409():
 
     assert response.status_code == 409
     body = json.loads(response.body)
-    assert body["error_code"] == "INTEGRITY_ERROR"
-    assert "referenced by other records" in body["message"]
-    assert "request_id" in body
-    assert "timestamp" in body
+    assert body["errors"][0]["code"] == "INTEGRITY_ERROR"
+    assert "referenced by other records" in body["errors"][0]["message"]
+    assert "requestId" in body["meta"]
+    assert "timestamp" in body["meta"]

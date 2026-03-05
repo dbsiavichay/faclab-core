@@ -27,7 +27,13 @@ from src.reports.inventory.infra.validators import (
     ValuationQueryParams,
     WarehouseSummaryResponse,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import (
+    DataResponse,
+    ListResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class ReportRouter:
@@ -38,22 +44,22 @@ class ReportRouter:
     def _setup_routes(self):
         self.router.get(
             "/valuation",
-            response_model=InventoryValuationResponse,
+            response_model=DataResponse[InventoryValuationResponse],
             summary="Inventory valuation report",
         )(self.valuation)
         self.router.get(
             "/rotation",
-            response_model=list[ProductRotationResponse],
+            response_model=ListResponse[ProductRotationResponse],
             summary="Product rotation report",
         )(self.rotation)
         self.router.get(
             "/movements",
-            response_model=PaginatedResponse[MovementHistoryItemResponse],
+            response_model=PaginatedDataResponse[MovementHistoryItemResponse],
             summary="Movement history report",
         )(self.movement_history)
         self.router.get(
             "/summary",
-            response_model=list[WarehouseSummaryResponse],
+            response_model=ListResponse[WarehouseSummaryResponse],
             summary="Warehouse summary report",
         )(self.warehouse_summary)
 
@@ -61,9 +67,10 @@ class ReportRouter:
         self,
         handler: Injected[GetInventoryValuationQueryHandler],
         query_params: ValuationQueryParams = Depends(),
-    ) -> InventoryValuationResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[InventoryValuationResponse]:
         """
-        Returns current inventory valuation (quantity × purchase price per product).
+        Returns current inventory valuation (quantity x purchase price per product).
         Optionally filtered by warehouse and as-of date.
         If `asOfDate` is provided, stock is reconstructed from movement history up to that date.
         """
@@ -73,13 +80,16 @@ class ReportRouter:
                 as_of_date=query_params.as_of_date,
             )
         )
-        return InventoryValuationResponse.model_validate(result)
+        return DataResponse(
+            data=InventoryValuationResponse.model_validate(result), meta=meta
+        )
 
     def rotation(
         self,
         handler: Injected[GetProductRotationQueryHandler],
         query_params: RotationQueryParams = Depends(),
-    ) -> list[ProductRotationResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[ProductRotationResponse]:
         """
         Returns product rotation metrics for a given date range:
         total IN/OUT movements, current stock, turnover rate, and days of stock.
@@ -91,13 +101,17 @@ class ReportRouter:
                 warehouse_id=query_params.warehouse_id,
             )
         )
-        return [ProductRotationResponse.model_validate(r) for r in result]
+        return ListResponse(
+            data=[ProductRotationResponse.model_validate(r) for r in result],
+            meta=meta,
+        )
 
     def movement_history(
         self,
         handler: Injected[GetMovementHistoryReportQueryHandler],
         query_params: MovementHistoryQueryParams = Depends(),
-    ) -> PaginatedResponse[MovementHistoryItemResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[MovementHistoryItemResponse]:
         """
         Returns a paginated list of inventory movements enriched with product details.
         Supports filtering by product, type, date range, and warehouse.
@@ -105,21 +119,24 @@ class ReportRouter:
         result = handler.handle(
             GetMovementHistoryReportQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[MovementHistoryItemResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[
+        return PaginatedDataResponse(
+            data=[
                 MovementHistoryItemResponse.model_validate(item)
                 for item in result["items"]
             ],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def warehouse_summary(
         self,
         handler: Injected[GetWarehouseSummaryQueryHandler],
         query_params: SummaryQueryParams = Depends(),
-    ) -> list[WarehouseSummaryResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[WarehouseSummaryResponse]:
         """
         Returns aggregated stock summary per warehouse:
         total products, quantities, reserved stock, and total value.
@@ -127,4 +144,7 @@ class ReportRouter:
         result = handler.handle(
             GetWarehouseSummaryQuery(warehouse_id=query_params.warehouse_id)
         )
-        return [WarehouseSummaryResponse.model_validate(r) for r in result]
+        return ListResponse(
+            data=[WarehouseSummaryResponse.model_validate(r) for r in result],
+            meta=meta,
+        )

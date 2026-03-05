@@ -19,7 +19,8 @@ from src.inventory.lot.infra.validators import (
     LotResponse,
     LotUpdateRequest,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
 
 
 class LotRouter:
@@ -30,22 +31,22 @@ class LotRouter:
     def _setup_routes(self):
         self.router.post(
             "",
-            response_model=LotResponse,
+            response_model=DataResponse[LotResponse],
             summary="Create lot",
         )(self.create)
         self.router.put(
             "/{id}",
-            response_model=LotResponse,
+            response_model=DataResponse[LotResponse],
             summary="Update lot",
         )(self.update)
         self.router.get(
             "",
-            response_model=PaginatedResponse[LotResponse],
+            response_model=PaginatedDataResponse[LotResponse],
             summary="Get lots",
         )(self.get_all)
         self.router.get(
             "/{id}",
-            response_model=LotResponse,
+            response_model=DataResponse[LotResponse],
             summary="Get lot by ID",
         )(self.get_by_id)
 
@@ -53,44 +54,50 @@ class LotRouter:
         self,
         handler: Injected[CreateLotCommandHandler],
         body: LotRequest,
-    ) -> LotResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[LotResponse]:
         """Creates a new lot."""
         result = handler.handle(CreateLotCommand(**body.model_dump(exclude_none=True)))
-        return LotResponse.model_validate(result)
+        return DataResponse(data=LotResponse.model_validate(result), meta=meta)
 
     def update(
         self,
         handler: Injected[UpdateLotCommandHandler],
         id: int,
         body: LotUpdateRequest,
-    ) -> LotResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[LotResponse]:
         """Updates a lot."""
         result = handler.handle(
             UpdateLotCommand(id=id, **body.model_dump(exclude_none=True))
         )
-        return LotResponse.model_validate(result)
+        return DataResponse(data=LotResponse.model_validate(result), meta=meta)
 
     def get_all(
         self,
         handler: Injected[GetAllLotsQueryHandler],
         query_params: LotQueryParams = Depends(),
-    ) -> PaginatedResponse[LotResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[LotResponse]:
         """Retrieves lots with optional filtering."""
         result = handler.handle(
             GetAllLotsQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[LotResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[LotResponse.model_validate(lot) for lot in result["items"]],
+        return PaginatedDataResponse(
+            data=[LotResponse.model_validate(lot) for lot in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def get_by_id(
         self,
         handler: Injected[GetLotByIdQueryHandler],
         id: int,
-    ) -> LotResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[LotResponse]:
         """Retrieves a lot by ID."""
         result = handler.handle(GetLotByIdQuery(id=id))
-        return LotResponse.model_validate(result)
+        return DataResponse(data=LotResponse.model_validate(result), meta=meta)

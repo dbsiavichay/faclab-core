@@ -45,7 +45,8 @@ from src.catalog.product.infra.validators import (
     ProductRequest,
     ProductResponse,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
 
 
 class CategoryRouter:
@@ -55,46 +56,52 @@ class CategoryRouter:
 
     def _setup_routes(self):
         """Sets up all the routes for the router."""
-        self.router.post("", response_model=CategoryResponse, summary="Save category")(
-            self.create
-        )
+        self.router.post(
+            "", response_model=DataResponse[CategoryResponse], summary="Save category"
+        )(self.create)
         self.router.put(
-            "/{id}", response_model=CategoryResponse, summary="Update category"
+            "/{id}",
+            response_model=DataResponse[CategoryResponse],
+            summary="Update category",
         )(self.update)
         self.router.delete("/{id}", summary="Delete category")(self.delete)
         self.router.get(
             "",
-            response_model=PaginatedResponse[CategoryResponse],
+            response_model=PaginatedDataResponse[CategoryResponse],
             summary="Get all categories",
         )(self.get_all)
         self.router.get(
-            "/{id}", response_model=CategoryResponse, summary="Get category by ID"
+            "/{id}",
+            response_model=DataResponse[CategoryResponse],
+            summary="Get category by ID",
         )(self.get_by_id)
 
     def create(
         self,
         new_category: CategoryRequest,
         handler: Injected[CreateCategoryCommandHandler],
-    ) -> CategoryResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CategoryResponse]:
         """Saves a category."""
         result = handler.handle(
             CreateCategoryCommand(**new_category.model_dump(exclude_none=True))
         )
-        return CategoryResponse.model_validate(result)
+        return DataResponse(data=CategoryResponse.model_validate(result), meta=meta)
 
     def update(
         self,
         id: int,
         category: CategoryRequest,
         handler: Injected[UpdateCategoryCommandHandler],
-    ) -> CategoryResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CategoryResponse]:
         """Updates a category."""
         result = handler.handle(
             UpdateCategoryCommand(
                 category_id=id, **category.model_dump(exclude_none=True)
             )
         )
-        return CategoryResponse.model_validate(result)
+        return DataResponse(data=CategoryResponse.model_validate(result), meta=meta)
 
     def delete(self, id: int, handler: Injected[DeleteCategoryCommandHandler]) -> None:
         """Deletes a category."""
@@ -104,24 +111,30 @@ class CategoryRouter:
         self,
         handler: Injected[GetAllCategoriesQueryHandler],
         query_params: CategoryQueryParams = Depends(),
-    ) -> PaginatedResponse[CategoryResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[CategoryResponse]:
         """Retrieves all categories."""
         result = handler.handle(
             GetAllCategoriesQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[CategoryResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[CategoryResponse.model_validate(c) for c in result["items"]],
+        return PaginatedDataResponse(
+            data=[CategoryResponse.model_validate(c) for c in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def get_by_id(
-        self, id: int, handler: Injected[GetCategoryByIdQueryHandler]
-    ) -> CategoryResponse:
+        self,
+        id: int,
+        handler: Injected[GetCategoryByIdQueryHandler],
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CategoryResponse]:
         """Retrieves a specific category by its ID."""
         result = handler.handle(GetCategoryByIdQuery(category_id=id))
-        return CategoryResponse.model_validate(result)
+        return DataResponse(data=CategoryResponse.model_validate(result), meta=meta)
 
 
 class ProductRouter:
@@ -131,44 +144,50 @@ class ProductRouter:
 
     def _setup_routes(self):
         """Sets up all the routes for the router."""
-        self.router.post("", response_model=ProductResponse, summary="Save product")(
-            self.create
-        )
+        self.router.post(
+            "", response_model=DataResponse[ProductResponse], summary="Save product"
+        )(self.create)
         self.router.put(
-            "/{id}", response_model=ProductResponse, summary="Update product"
+            "/{id}",
+            response_model=DataResponse[ProductResponse],
+            summary="Update product",
         )(self.update)
         self.router.delete("/{id}", summary="Delete product")(self.delete)
         self.router.get(
             "",
-            response_model=PaginatedResponse[ProductResponse],
+            response_model=PaginatedDataResponse[ProductResponse],
             summary="Get all products",
         )(self.get_all)
         self.router.get(
-            "/{id}", response_model=ProductResponse, summary="Get product by ID"
+            "/{id}",
+            response_model=DataResponse[ProductResponse],
+            summary="Get product by ID",
         )(self.get_by_id)
 
     def create(
         self,
         new_product: ProductRequest,
         handler: Injected[CreateProductCommandHandler],
-    ) -> ProductResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[ProductResponse]:
         """Saves a product."""
         result = handler.handle(
             CreateProductCommand(**new_product.model_dump(exclude_none=True))
         )
-        return ProductResponse.model_validate(result)
+        return DataResponse(data=ProductResponse.model_validate(result), meta=meta)
 
     def update(
         self,
         id: int,
         product: ProductRequest,
         handler: Injected[UpdateProductCommandHandler],
-    ) -> ProductResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[ProductResponse]:
         """Updates a product."""
         result = handler.handle(
             UpdateProductCommand(product_id=id, **product.model_dump(exclude_none=True))
         )
-        return ProductResponse.model_validate(result)
+        return DataResponse(data=ProductResponse.model_validate(result), meta=meta)
 
     def delete(self, id: int, handler: Injected[DeleteProductCommandHandler]) -> None:
         """Deletes a product."""
@@ -178,21 +197,27 @@ class ProductRouter:
         self,
         handler: Injected[GetAllProductsQueryHandler],
         query_params: ProductQueryParams = Depends(),
-    ) -> PaginatedResponse[ProductResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[ProductResponse]:
         """Retrieves all products."""
         result = handler.handle(
             GetAllProductsQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[ProductResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[ProductResponse.model_validate(p) for p in result["items"]],
+        return PaginatedDataResponse(
+            data=[ProductResponse.model_validate(p) for p in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def get_by_id(
-        self, id: int, handler: Injected[GetProductByIdQueryHandler]
-    ) -> ProductResponse:
+        self,
+        id: int,
+        handler: Injected[GetProductByIdQueryHandler],
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[ProductResponse]:
         """Retrieves a specific product by its ID."""
         result = handler.handle(GetProductByIdQuery(product_id=id))
-        return ProductResponse.model_validate(result)
+        return DataResponse(data=ProductResponse.model_validate(result), meta=meta)
