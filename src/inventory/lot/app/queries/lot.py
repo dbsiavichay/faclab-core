@@ -10,6 +10,11 @@ from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
+class GetAllLotsQuery(Query):
+    pass
+
+
+@dataclass
 class GetLotsByProductQuery(Query):
     product_id: int = 0
 
@@ -22,6 +27,16 @@ class GetExpiringLotsQuery(Query):
 @dataclass
 class GetLotByIdQuery(Query):
     id: int = 0
+
+
+@injectable(lifetime="scoped")
+class GetAllLotsQueryHandler(QueryHandler[GetAllLotsQuery, list[dict]]):
+    def __init__(self, repo: Repository[Lot]):
+        self.repo = repo
+
+    def _handle(self, query: GetAllLotsQuery) -> list[dict]:
+        lots = self.repo.get_all()
+        return [lot.dict() for lot in lots]
 
 
 @injectable(lifetime="scoped")

@@ -3,6 +3,7 @@ from src.inventory.lot.app.commands.lot import (
     UpdateLotCommandHandler,
 )
 from src.inventory.lot.app.queries.lot import (
+    GetAllLotsQueryHandler,
     GetExpiringLotsQueryHandler,
     GetLotByIdQueryHandler,
     GetLotsByProductQueryHandler,
@@ -20,6 +21,7 @@ LOT_INJECTABLES = [
     MovementLotItemRepository,
     CreateLotCommandHandler,
     UpdateLotCommandHandler,
+    GetAllLotsQueryHandler,
     GetLotsByProductQueryHandler,
     GetExpiringLotsQueryHandler,
     GetLotByIdQueryHandler,

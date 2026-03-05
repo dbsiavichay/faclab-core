@@ -10,8 +10,8 @@ from src.inventory.serial.app.commands.serial import (
 from src.inventory.serial.app.queries.serial import (
     GetSerialByIdQuery,
     GetSerialByIdQueryHandler,
-    GetSerialsByProductQuery,
-    GetSerialsByProductQueryHandler,
+    GetSerialsQuery,
+    GetSerialsQueryHandler,
 )
 from src.inventory.serial.infra.validators import (
     SerialNumberRequest,
@@ -60,17 +60,12 @@ class SerialRouter:
 
     def get_all(
         self,
-        handler: Injected[GetSerialsByProductQueryHandler],
+        handler: Injected[GetSerialsQueryHandler],
         product_id: int | None = Query(None, description="Filter by product ID"),
         status: str | None = Query(None, description="Filter by status"),
     ) -> list[SerialNumberResponse]:
         """Retrieves serial numbers with optional filtering."""
-        if product_id is not None:
-            result = handler.handle(
-                GetSerialsByProductQuery(product_id=product_id, status=status)
-            )
-        else:
-            result = []
+        result = handler.handle(GetSerialsQuery(product_id=product_id, status=status))
         return [SerialNumberResponse.model_validate(s) for s in result]
 
     def get_by_id(

@@ -4,6 +4,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from src.inventory.lot.app.queries.lot import (
+    GetAllLotsQuery,
+    GetAllLotsQueryHandler,
     GetExpiringLotsQuery,
     GetExpiringLotsQueryHandler,
     GetLotByIdQuery,
@@ -25,6 +27,35 @@ def _make_lot(**overrides) -> Lot:
     }
     defaults.update(overrides)
     return Lot(**defaults)
+
+
+# ---------------------------------------------------------------------------
+# GetAllLotsQueryHandler
+# ---------------------------------------------------------------------------
+
+
+def test_get_all_lots():
+    lot1 = _make_lot(id=1, lot_number="LOT-001")
+    lot2 = _make_lot(id=2, lot_number="LOT-002")
+    repo = MagicMock()
+    repo.get_all.return_value = [lot1, lot2]
+    handler = GetAllLotsQueryHandler(repo)
+
+    result = handler.handle(GetAllLotsQuery())
+
+    repo.get_all.assert_called_once()
+    assert len(result) == 2
+    assert result[0]["lot_number"] == "LOT-001"
+    assert result[1]["lot_number"] == "LOT-002"
+
+
+def test_get_all_lots_empty():
+    repo = MagicMock()
+    repo.get_all.return_value = []
+    handler = GetAllLotsQueryHandler(repo)
+
+    result = handler.handle(GetAllLotsQuery())
+    assert result == []
 
 
 # ---------------------------------------------------------------------------

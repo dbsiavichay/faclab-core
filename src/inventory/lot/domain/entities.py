@@ -28,6 +28,13 @@ class Lot(Entity):
             return None
         return (self.expiration_date - date.today()).days
 
+    def dict(self):
+        return {
+            **super().dict(),
+            "is_expired": self.is_expired,
+            "days_to_expiry": self.days_to_expiry,
+        }
+
 
 @dataclass
 class MovementLotItem(Entity):

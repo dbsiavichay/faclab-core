@@ -71,6 +71,34 @@ def test_lot_days_to_expiry_today():
 
 
 # ---------------------------------------------------------------------------
+# Lot.dict (includes computed properties)
+# ---------------------------------------------------------------------------
+
+
+def test_lot_dict_includes_is_expired():
+    past_date = date.today() - timedelta(days=1)
+    lot = _make_lot(expiration_date=past_date)
+    d = lot.dict()
+    assert "is_expired" in d
+    assert d["is_expired"] is True
+
+
+def test_lot_dict_includes_days_to_expiry():
+    future_date = date.today() + timedelta(days=10)
+    lot = _make_lot(expiration_date=future_date)
+    d = lot.dict()
+    assert "days_to_expiry" in d
+    assert d["days_to_expiry"] == 10
+
+
+def test_lot_dict_no_expiration_date():
+    lot = _make_lot(expiration_date=None)
+    d = lot.dict()
+    assert d["is_expired"] is False
+    assert d["days_to_expiry"] is None
+
+
+# ---------------------------------------------------------------------------
 # MovementLotItem construction
 # ---------------------------------------------------------------------------
 

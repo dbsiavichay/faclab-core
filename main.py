@@ -257,6 +257,7 @@ pos_router.include_router(
 # Middleware
 # ---------------------------------------------------------------------------
 
+app.add_middleware(ErrorHandlingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -264,7 +265,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(ErrorHandlingMiddleware)
 
 app.include_router(admin_router)
 app.include_router(pos_router)
