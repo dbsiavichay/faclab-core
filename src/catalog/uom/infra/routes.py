@@ -24,7 +24,8 @@ from src.catalog.uom.infra.validators import (
     UnitOfMeasureRequest,
     UnitOfMeasureResponse,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
 
 
 class UnitOfMeasureRouter:
@@ -34,22 +35,24 @@ class UnitOfMeasureRouter:
 
     def _setup_routes(self):
         self.router.post(
-            "", response_model=UnitOfMeasureResponse, summary="Create unit of measure"
+            "",
+            response_model=DataResponse[UnitOfMeasureResponse],
+            summary="Create unit of measure",
         )(self.create)
         self.router.put(
             "/{id}",
-            response_model=UnitOfMeasureResponse,
+            response_model=DataResponse[UnitOfMeasureResponse],
             summary="Update unit of measure",
         )(self.update)
         self.router.delete("/{id}", summary="Delete unit of measure")(self.delete)
         self.router.get(
             "",
-            response_model=PaginatedResponse[UnitOfMeasureResponse],
+            response_model=PaginatedDataResponse[UnitOfMeasureResponse],
             summary="Get all units of measure",
         )(self.get_all)
         self.router.get(
             "/{id}",
-            response_model=UnitOfMeasureResponse,
+            response_model=DataResponse[UnitOfMeasureResponse],
             summary="Get unit of measure by ID",
         )(self.get_by_id)
 
@@ -57,22 +60,28 @@ class UnitOfMeasureRouter:
         self,
         body: UnitOfMeasureRequest,
         handler: Injected[CreateUnitOfMeasureCommandHandler],
-    ) -> UnitOfMeasureResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[UnitOfMeasureResponse]:
         result = handler.handle(
             CreateUnitOfMeasureCommand(**body.model_dump(by_alias=False))
         )
-        return UnitOfMeasureResponse.model_validate(result)
+        return DataResponse(
+            data=UnitOfMeasureResponse.model_validate(result), meta=meta
+        )
 
     def update(
         self,
         id: int,
         body: UnitOfMeasureRequest,
         handler: Injected[UpdateUnitOfMeasureCommandHandler],
-    ) -> UnitOfMeasureResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[UnitOfMeasureResponse]:
         result = handler.handle(
             UpdateUnitOfMeasureCommand(uom_id=id, **body.model_dump(by_alias=False))
         )
-        return UnitOfMeasureResponse.model_validate(result)
+        return DataResponse(
+            data=UnitOfMeasureResponse.model_validate(result), meta=meta
+        )
 
     def delete(
         self, id: int, handler: Injected[DeleteUnitOfMeasureCommandHandler]
@@ -83,19 +92,27 @@ class UnitOfMeasureRouter:
         self,
         handler: Injected[GetAllUnitsOfMeasureQueryHandler],
         query_params: UnitOfMeasureQueryParams = Depends(),
-    ) -> PaginatedResponse[UnitOfMeasureResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[UnitOfMeasureResponse]:
         result = handler.handle(
             GetAllUnitsOfMeasureQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[UnitOfMeasureResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[UnitOfMeasureResponse.model_validate(u) for u in result["items"]],
+        return PaginatedDataResponse(
+            data=[UnitOfMeasureResponse.model_validate(u) for u in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def get_by_id(
-        self, id: int, handler: Injected[GetUnitOfMeasureByIdQueryHandler]
-    ) -> UnitOfMeasureResponse:
+        self,
+        id: int,
+        handler: Injected[GetUnitOfMeasureByIdQueryHandler],
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[UnitOfMeasureResponse]:
         result = handler.handle(GetUnitOfMeasureByIdQuery(uom_id=id))
-        return UnitOfMeasureResponse.model_validate(result)
+        return DataResponse(
+            data=UnitOfMeasureResponse.model_validate(result), meta=meta
+        )

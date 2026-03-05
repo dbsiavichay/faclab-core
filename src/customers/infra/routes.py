@@ -42,7 +42,13 @@ from src.customers.infra.validators import (
     CustomerRequest,
     CustomerResponse,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import (
+    DataResponse,
+    ListResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class CustomerRouter:
@@ -53,43 +59,49 @@ class CustomerRouter:
     def _setup_routes(self):
         """Sets up all the routes for the router."""
         self.router.post(
-            "", response_model=CustomerResponse, summary="Create customer"
+            "",
+            response_model=DataResponse[CustomerResponse],
+            summary="Create customer",
         )(self.create)
         self.router.put(
-            "/{id}", response_model=CustomerResponse, summary="Update customer"
+            "/{id}",
+            response_model=DataResponse[CustomerResponse],
+            summary="Update customer",
         )(self.update)
         self.router.delete("/{id}", summary="Delete customer")(self.delete)
         self.router.get(
             "",
-            response_model=PaginatedResponse[CustomerResponse],
+            response_model=PaginatedDataResponse[CustomerResponse],
             summary="Get all customers",
         )(self.get_all)
         self.router.get(
-            "/{id}", response_model=CustomerResponse, summary="Get customer by ID"
+            "/{id}",
+            response_model=DataResponse[CustomerResponse],
+            summary="Get customer by ID",
         )(self.get_by_id)
         self.router.get(
             "/search/by-tax-id",
-            response_model=CustomerResponse,
+            response_model=DataResponse[CustomerResponse],
             summary="Get customer by tax ID",
         )(self.get_by_tax_id)
         self.router.post(
             "/{id}/activate",
-            response_model=CustomerResponse,
+            response_model=DataResponse[CustomerResponse],
             summary="Activate customer",
         )(self.activate)
         self.router.post(
             "/{id}/deactivate",
-            response_model=CustomerResponse,
+            response_model=DataResponse[CustomerResponse],
             summary="Deactivate customer",
         )(self.deactivate)
         self.router.post(
             "/{customer_id}/contacts",
-            response_model=CustomerContactResponse,
+            response_model=DataResponse[CustomerContactResponse],
             summary="Create customer contact",
         )(self.create_contact)
         self.router.get(
             "/{customer_id}/contacts",
-            response_model=list[CustomerContactResponse],
+            response_model=ListResponse[CustomerContactResponse],
             summary="Get customer contacts",
         )(self.get_customer_contacts)
 
@@ -97,24 +109,26 @@ class CustomerRouter:
         self,
         handler: Injected[CreateCustomerCommandHandler],
         new_customer: CustomerRequest,
-    ) -> CustomerResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CustomerResponse]:
         """Creates a new customer."""
         result = handler.handle(
             CreateCustomerCommand(**new_customer.model_dump(exclude_none=True))
         )
-        return CustomerResponse.model_validate(result)
+        return DataResponse(data=CustomerResponse.model_validate(result), meta=meta)
 
     def update(
         self,
         handler: Injected[UpdateCustomerCommandHandler],
         id: int,
         customer: CustomerRequest,
-    ) -> CustomerResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CustomerResponse]:
         """Updates a customer."""
         result = handler.handle(
             UpdateCustomerCommand(id=id, **customer.model_dump(exclude_none=True))
         )
-        return CustomerResponse.model_validate(result)
+        return DataResponse(data=CustomerResponse.model_validate(result), meta=meta)
 
     def delete(
         self,
@@ -128,70 +142,90 @@ class CustomerRouter:
         self,
         handler: Injected[GetAllCustomersQueryHandler],
         query_params: CustomerQueryParams = Depends(),
-    ) -> PaginatedResponse[CustomerResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[CustomerResponse]:
         """Retrieves all customers."""
         result = handler.handle(
             GetAllCustomersQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[CustomerResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[CustomerResponse.model_validate(c) for c in result["items"]],
+        return PaginatedDataResponse(
+            data=[CustomerResponse.model_validate(c) for c in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def get_by_id(
-        self, handler: Injected[GetCustomerByIdQueryHandler], id: int
-    ) -> CustomerResponse:
+        self,
+        handler: Injected[GetCustomerByIdQueryHandler],
+        id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CustomerResponse]:
         """Retrieves a specific customer by its ID."""
         result = handler.handle(GetCustomerByIdQuery(id=id))
-        return CustomerResponse.model_validate(result)
+        return DataResponse(data=CustomerResponse.model_validate(result), meta=meta)
 
     def get_by_tax_id(
         self,
         handler: Injected[GetCustomerByTaxIdQueryHandler],
         tax_id: str = Query(..., description="Tax ID to search for"),
-    ) -> CustomerResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CustomerResponse]:
         """Retrieves a customer by tax ID."""
         result = handler.handle(GetCustomerByTaxIdQuery(tax_id=tax_id))
-        return CustomerResponse.model_validate(result)
+        return DataResponse(data=CustomerResponse.model_validate(result), meta=meta)
 
     def activate(
-        self, handler: Injected[ActivateCustomerCommandHandler], id: int
-    ) -> CustomerResponse:
+        self,
+        handler: Injected[ActivateCustomerCommandHandler],
+        id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CustomerResponse]:
         """Activates a customer."""
         result = handler.handle(ActivateCustomerCommand(id=id))
-        return CustomerResponse.model_validate(result)
+        return DataResponse(data=CustomerResponse.model_validate(result), meta=meta)
 
     def deactivate(
-        self, handler: Injected[DeactivateCustomerCommandHandler], id: int
-    ) -> CustomerResponse:
+        self,
+        handler: Injected[DeactivateCustomerCommandHandler],
+        id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CustomerResponse]:
         """Deactivates a customer."""
         result = handler.handle(DeactivateCustomerCommand(id=id))
-        return CustomerResponse.model_validate(result)
+        return DataResponse(data=CustomerResponse.model_validate(result), meta=meta)
 
     def create_contact(
         self,
         handler: Injected[CreateCustomerContactCommandHandler],
         customer_id: int,
         new_contact: CustomerContactRequest,
-    ) -> CustomerContactResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CustomerContactResponse]:
         """Creates a new contact for a customer."""
         result = handler.handle(
             CreateCustomerContactCommand(
                 customer_id=customer_id, **new_contact.model_dump(exclude_none=True)
             )
         )
-        return CustomerContactResponse.model_validate(result)
+        return DataResponse(
+            data=CustomerContactResponse.model_validate(result), meta=meta
+        )
 
     def get_customer_contacts(
         self,
         handler: Injected[GetContactsByCustomerIdQueryHandler],
         customer_id: int,
-    ) -> list[CustomerContactResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[CustomerContactResponse]:
         """Retrieves all contacts for a customer."""
         result = handler.handle(GetContactsByCustomerIdQuery(customer_id=customer_id))
-        return [CustomerContactResponse.model_validate(c) for c in result]
+        return ListResponse(
+            data=[CustomerContactResponse.model_validate(c) for c in result],
+            meta=meta,
+        )
 
 
 class CustomerContactRouter:
@@ -203,13 +237,13 @@ class CustomerContactRouter:
         """Sets up all the routes for the router."""
         self.router.put(
             "/{id}",
-            response_model=CustomerContactResponse,
+            response_model=DataResponse[CustomerContactResponse],
             summary="Update customer contact",
         )(self.update)
         self.router.delete("/{id}", summary="Delete customer contact")(self.delete)
         self.router.get(
             "/{id}",
-            response_model=CustomerContactResponse,
+            response_model=DataResponse[CustomerContactResponse],
             summary="Get customer contact by ID",
         )(self.get_by_id)
 
@@ -218,12 +252,15 @@ class CustomerContactRouter:
         handler: Injected[UpdateCustomerContactCommandHandler],
         id: int,
         contact: CustomerContactRequest,
-    ) -> CustomerContactResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CustomerContactResponse]:
         """Updates a customer contact."""
         result = handler.handle(
             UpdateCustomerContactCommand(id=id, **contact.model_dump(exclude_none=True))
         )
-        return CustomerContactResponse.model_validate(result)
+        return DataResponse(
+            data=CustomerContactResponse.model_validate(result), meta=meta
+        )
 
     def delete(
         self,
@@ -237,7 +274,10 @@ class CustomerContactRouter:
         self,
         handler: Injected[GetCustomerContactByIdQueryHandler],
         id: int,
-    ) -> CustomerContactResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[CustomerContactResponse]:
         """Retrieves a specific customer contact by its ID."""
         result = handler.handle(GetCustomerContactByIdQuery(id=id))
-        return CustomerContactResponse.model_validate(result)
+        return DataResponse(
+            data=CustomerContactResponse.model_validate(result), meta=meta
+        )

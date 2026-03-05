@@ -14,7 +14,8 @@ from src.inventory.movement.infra.validators import (
     MovementRequest,
     MovementResponse,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
 
 
 class MovementRouter:
@@ -24,12 +25,14 @@ class MovementRouter:
 
     def _setup_routes(self):
         """Sets up all the routes for the router."""
-        self.router.post("", response_model=MovementResponse, summary="Save movement")(
-            self.create
-        )
+        self.router.post(
+            "",
+            response_model=DataResponse[MovementResponse],
+            summary="Save movement",
+        )(self.create)
         self.router.get(
             "",
-            response_model=PaginatedResponse[MovementResponse],
+            response_model=PaginatedDataResponse[MovementResponse],
             summary="Get all movements",
         )(self.get_all)
 
@@ -37,25 +40,29 @@ class MovementRouter:
         self,
         new_movement: MovementRequest,
         handler: Injected[CreateMovementCommandHandler],
-    ) -> MovementResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[MovementResponse]:
         """Save a new movement."""
         result = handler.handle(
             CreateMovementCommand(**new_movement.model_dump(exclude_none=True))
         )
-        return MovementResponse.model_validate(result)
+        return DataResponse(data=MovementResponse.model_validate(result), meta=meta)
 
     def get_all(
         self,
         handler: Injected[GetAllMovementsQueryHandler],
         query_params: MovementQueryParams = Depends(),
-    ) -> PaginatedResponse[MovementResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[MovementResponse]:
         """Get all movements."""
         result = handler.handle(
             GetAllMovementsQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[MovementResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[MovementResponse.model_validate(m) for m in result["items"]],
+        return PaginatedDataResponse(
+            data=[MovementResponse.model_validate(m) for m in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )

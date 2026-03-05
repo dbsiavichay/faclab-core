@@ -36,7 +36,13 @@ from src.inventory.adjustment.infra.validators import (
     UpdateAdjustmentItemRequest,
     UpdateAdjustmentRequest,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import (
+    DataResponse,
+    ListResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class AdjustmentRouter:
@@ -47,39 +53,45 @@ class AdjustmentRouter:
     def _setup_routes(self):
         self.router.get(
             "",
-            response_model=PaginatedResponse[AdjustmentResponse],
+            response_model=PaginatedDataResponse[AdjustmentResponse],
             summary="Get all adjustments",
         )(self.get_all)
         self.router.post(
-            "", response_model=AdjustmentResponse, summary="Create adjustment"
+            "",
+            response_model=DataResponse[AdjustmentResponse],
+            summary="Create adjustment",
         )(self.create)
         self.router.get(
-            "/{id}", response_model=AdjustmentResponse, summary="Get adjustment by ID"
+            "/{id}",
+            response_model=DataResponse[AdjustmentResponse],
+            summary="Get adjustment by ID",
         )(self.get_by_id)
         self.router.put(
-            "/{id}", response_model=AdjustmentResponse, summary="Update adjustment"
+            "/{id}",
+            response_model=DataResponse[AdjustmentResponse],
+            summary="Update adjustment",
         )(self.update)
         self.router.delete("/{id}", status_code=204, summary="Delete adjustment")(
             self.delete
         )
         self.router.post(
             "/{id}/confirm",
-            response_model=AdjustmentResponse,
+            response_model=DataResponse[AdjustmentResponse],
             summary="Confirm adjustment",
         )(self.confirm)
         self.router.post(
             "/{id}/cancel",
-            response_model=AdjustmentResponse,
+            response_model=DataResponse[AdjustmentResponse],
             summary="Cancel adjustment",
         )(self.cancel)
         self.router.post(
             "/{id}/items",
-            response_model=AdjustmentItemResponse,
+            response_model=DataResponse[AdjustmentItemResponse],
             summary="Add item to adjustment",
         )(self.add_item)
         self.router.get(
             "/{id}/items",
-            response_model=list[AdjustmentItemResponse],
+            response_model=ListResponse[AdjustmentItemResponse],
             summary="Get adjustment items",
         )(self.get_items)
 
@@ -87,53 +99,59 @@ class AdjustmentRouter:
         self,
         handler: Injected[GetAllAdjustmentsQueryHandler],
         query_params: AdjustmentQueryParams = Depends(),
-    ) -> PaginatedResponse[AdjustmentResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[AdjustmentResponse]:
         """Get all inventory adjustments."""
         result = handler.handle(
             GetAllAdjustmentsQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[AdjustmentResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[AdjustmentResponse.model_validate(a) for a in result["items"]],
+        return PaginatedDataResponse(
+            data=[AdjustmentResponse.model_validate(a) for a in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def create(
         self,
         body: CreateAdjustmentRequest,
         handler: Injected[CreateAdjustmentCommandHandler],
-    ) -> AdjustmentResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[AdjustmentResponse]:
         """Create a new inventory adjustment in DRAFT status."""
         result = handler.handle(
             CreateAdjustmentCommand(
                 **body.model_dump(exclude_none=True, by_alias=False)
             )
         )
-        return AdjustmentResponse.model_validate(result)
+        return DataResponse(data=AdjustmentResponse.model_validate(result), meta=meta)
 
     def get_by_id(
         self,
         id: int,
         handler: Injected[GetAdjustmentByIdQueryHandler],
-    ) -> AdjustmentResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[AdjustmentResponse]:
         """Get an inventory adjustment by ID."""
         result = handler.handle(GetAdjustmentByIdQuery(id=id))
-        return AdjustmentResponse.model_validate(result)
+        return DataResponse(data=AdjustmentResponse.model_validate(result), meta=meta)
 
     def update(
         self,
         id: int,
         body: UpdateAdjustmentRequest,
         handler: Injected[UpdateAdjustmentCommandHandler],
-    ) -> AdjustmentResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[AdjustmentResponse]:
         """Update an inventory adjustment (only DRAFT)."""
         result = handler.handle(
             UpdateAdjustmentCommand(
                 id=id, **body.model_dump(exclude_none=True, by_alias=False)
             )
         )
-        return AdjustmentResponse.model_validate(result)
+        return DataResponse(data=AdjustmentResponse.model_validate(result), meta=meta)
 
     def delete(
         self,
@@ -147,26 +165,29 @@ class AdjustmentRouter:
         self,
         id: int,
         handler: Injected[ConfirmAdjustmentCommandHandler],
-    ) -> AdjustmentResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[AdjustmentResponse]:
         """Confirm an inventory adjustment and generate stock movements."""
         result = handler.handle(ConfirmAdjustmentCommand(id=id))
-        return AdjustmentResponse.model_validate(result)
+        return DataResponse(data=AdjustmentResponse.model_validate(result), meta=meta)
 
     def cancel(
         self,
         id: int,
         handler: Injected[CancelAdjustmentCommandHandler],
-    ) -> AdjustmentResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[AdjustmentResponse]:
         """Cancel an inventory adjustment (only DRAFT)."""
         result = handler.handle(CancelAdjustmentCommand(id=id))
-        return AdjustmentResponse.model_validate(result)
+        return DataResponse(data=AdjustmentResponse.model_validate(result), meta=meta)
 
     def add_item(
         self,
         id: int,
         body: AddAdjustmentItemRequest,
         handler: Injected[AddAdjustmentItemCommandHandler],
-    ) -> AdjustmentItemResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[AdjustmentItemResponse]:
         """Add an item to an inventory adjustment."""
         result = handler.handle(
             AddAdjustmentItemCommand(
@@ -174,16 +195,22 @@ class AdjustmentRouter:
                 **body.model_dump(exclude_none=True, by_alias=False),
             )
         )
-        return AdjustmentItemResponse.model_validate(result)
+        return DataResponse(
+            data=AdjustmentItemResponse.model_validate(result), meta=meta
+        )
 
     def get_items(
         self,
         id: int,
         handler: Injected[GetAdjustmentItemsQueryHandler],
-    ) -> list[AdjustmentItemResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[AdjustmentItemResponse]:
         """Get all items for an inventory adjustment."""
         result = handler.handle(GetAdjustmentItemsQuery(adjustment_id=id))
-        return [AdjustmentItemResponse.model_validate(item) for item in result]
+        return ListResponse(
+            data=[AdjustmentItemResponse.model_validate(item) for item in result],
+            meta=meta,
+        )
 
 
 class AdjustmentItemRouter:
@@ -194,7 +221,7 @@ class AdjustmentItemRouter:
     def _setup_routes(self):
         self.router.put(
             "/{id}",
-            response_model=AdjustmentItemResponse,
+            response_model=DataResponse[AdjustmentItemResponse],
             summary="Update adjustment item",
         )(self.update)
         self.router.delete("/{id}", status_code=204, summary="Remove adjustment item")(
@@ -206,14 +233,17 @@ class AdjustmentItemRouter:
         id: int,
         body: UpdateAdjustmentItemRequest,
         handler: Injected[UpdateAdjustmentItemCommandHandler],
-    ) -> AdjustmentItemResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[AdjustmentItemResponse]:
         """Update an adjustment item."""
         result = handler.handle(
             UpdateAdjustmentItemCommand(
                 id=id, **body.model_dump(exclude_none=True, by_alias=False)
             )
         )
-        return AdjustmentItemResponse.model_validate(result)
+        return DataResponse(
+            data=AdjustmentItemResponse.model_validate(result), meta=meta
+        )
 
     def remove(
         self,

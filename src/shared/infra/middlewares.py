@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 import structlog
 from fastapi import Request
@@ -36,26 +36,53 @@ def _resolve_status(exc: BaseError) -> int:
     return 500
 
 
+def _build_meta(request_id: str) -> dict:
+    return {
+        "requestId": request_id,
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+
+
 def _build_error_response(
     error_code: str,
     message: str,
     request_id: str,
-    detail: str | None = None,
+    field: str | None = None,
 ) -> dict:
-    body = {
-        "error_code": error_code,
-        "message": message,
-        "timestamp": datetime.now().isoformat(),
-        "request_id": request_id,
+    error = {"code": error_code, "message": message}
+    if field is not None:
+        error["field"] = field
+    return {
+        "errors": [error],
+        "meta": _build_meta(request_id),
     }
-    if detail is not None:
-        body["detail"] = detail
-    return body
+
+
+def _build_validation_error_response(
+    exc: RequestValidationError,
+    request_id: str,
+) -> dict:
+    errors = []
+    for err in exc.errors():
+        loc_parts = [str(p) for p in err.get("loc", [])]
+        field = ".".join(loc_parts) if loc_parts else None
+        errors.append(
+            {
+                "code": "VALIDATION_ERROR",
+                "message": err.get("msg", "Validation error"),
+                "field": field,
+            }
+        )
+    return {
+        "errors": errors,
+        "meta": _build_meta(request_id),
+    }
 
 
 class ErrorHandlingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         request_id = request.headers.get("x-request-id", str(uuid.uuid4()))
+        request.state.request_id = request_id
         bind_vars = {"request_id": request_id}
 
         span = trace.get_current_span()
@@ -71,12 +98,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             return response
         except RequestValidationError as exc:
             logger.warning("request_validation_error", detail=str(exc))
-            body = _build_error_response(
-                error_code="REQUEST_VALIDATION_ERROR",
-                message="Request validation failed",
-                request_id=request_id,
-                detail=str(exc),
-            )
+            body = _build_validation_error_response(exc, request_id)
             return JSONResponse(status_code=422, content=body)
         except StarletteHTTPException as exc:
             logger.exception(
@@ -101,7 +123,6 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
                 error_code=exc.error_code,
                 message=exc.message,
                 request_id=request_id,
-                detail=exc.detail,
             )
             return JSONResponse(status_code=status, content=body)
         except IntegrityError as exc:

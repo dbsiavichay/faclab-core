@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import (
+    DataResponse,
+    ListResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 from src.suppliers.app.commands.supplier import (
     ActivateSupplierCommand,
     ActivateSupplierCommandHandler,
@@ -69,48 +75,54 @@ class SupplierRouter:
     def _setup_routes(self):
         """Sets up all the routes for the router."""
         self.router.post(
-            "", response_model=SupplierResponse, summary="Create supplier"
+            "",
+            response_model=DataResponse[SupplierResponse],
+            summary="Create supplier",
         )(self.create)
         self.router.put(
-            "/{id}", response_model=SupplierResponse, summary="Update supplier"
+            "/{id}",
+            response_model=DataResponse[SupplierResponse],
+            summary="Update supplier",
         )(self.update)
         self.router.delete("/{id}", summary="Delete supplier")(self.delete)
         self.router.get(
             "",
-            response_model=PaginatedResponse[SupplierResponse],
+            response_model=PaginatedDataResponse[SupplierResponse],
             summary="Get all suppliers",
         )(self.get_all)
         self.router.get(
-            "/{id}", response_model=SupplierResponse, summary="Get supplier by ID"
+            "/{id}",
+            response_model=DataResponse[SupplierResponse],
+            summary="Get supplier by ID",
         )(self.get_by_id)
         self.router.post(
             "/{id}/activate",
-            response_model=SupplierResponse,
+            response_model=DataResponse[SupplierResponse],
             summary="Activate supplier",
         )(self.activate)
         self.router.post(
             "/{id}/deactivate",
-            response_model=SupplierResponse,
+            response_model=DataResponse[SupplierResponse],
             summary="Deactivate supplier",
         )(self.deactivate)
         self.router.post(
             "/{supplier_id}/contacts",
-            response_model=SupplierContactResponse,
+            response_model=DataResponse[SupplierContactResponse],
             summary="Create supplier contact",
         )(self.create_contact)
         self.router.get(
             "/{supplier_id}/contacts",
-            response_model=list[SupplierContactResponse],
+            response_model=ListResponse[SupplierContactResponse],
             summary="Get supplier contacts",
         )(self.get_supplier_contacts)
         self.router.post(
             "/{supplier_id}/products",
-            response_model=SupplierProductResponse,
+            response_model=DataResponse[SupplierProductResponse],
             summary="Add product to supplier catalog",
         )(self.create_supplier_product)
         self.router.get(
             "/{supplier_id}/products",
-            response_model=list[SupplierProductResponse],
+            response_model=ListResponse[SupplierProductResponse],
             summary="Get supplier products",
         )(self.get_supplier_products)
 
@@ -118,24 +130,26 @@ class SupplierRouter:
         self,
         handler: Injected[CreateSupplierCommandHandler],
         new_supplier: SupplierRequest,
-    ) -> SupplierResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierResponse]:
         """Creates a new supplier."""
         result = handler.handle(
             CreateSupplierCommand(**new_supplier.model_dump(exclude_none=True))
         )
-        return SupplierResponse.model_validate(result)
+        return DataResponse(data=SupplierResponse.model_validate(result), meta=meta)
 
     def update(
         self,
         handler: Injected[UpdateSupplierCommandHandler],
         id: int,
         supplier: SupplierRequest,
-    ) -> SupplierResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierResponse]:
         """Updates a supplier."""
         result = handler.handle(
             UpdateSupplierCommand(id=id, **supplier.model_dump(exclude_none=True))
         )
-        return SupplierResponse.model_validate(result)
+        return DataResponse(data=SupplierResponse.model_validate(result), meta=meta)
 
     def delete(
         self,
@@ -149,68 +163,88 @@ class SupplierRouter:
         self,
         handler: Injected[GetAllSuppliersQueryHandler],
         query_params: SupplierQueryParams = Depends(),
-    ) -> PaginatedResponse[SupplierResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[SupplierResponse]:
         """Retrieves all suppliers."""
         result = handler.handle(
             GetAllSuppliersQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[SupplierResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[SupplierResponse.model_validate(s) for s in result["items"]],
+        return PaginatedDataResponse(
+            data=[SupplierResponse.model_validate(s) for s in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def get_by_id(
-        self, handler: Injected[GetSupplierByIdQueryHandler], id: int
-    ) -> SupplierResponse:
+        self,
+        handler: Injected[GetSupplierByIdQueryHandler],
+        id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierResponse]:
         """Retrieves a specific supplier by its ID."""
         result = handler.handle(GetSupplierByIdQuery(id=id))
-        return SupplierResponse.model_validate(result)
+        return DataResponse(data=SupplierResponse.model_validate(result), meta=meta)
 
     def activate(
-        self, handler: Injected[ActivateSupplierCommandHandler], id: int
-    ) -> SupplierResponse:
+        self,
+        handler: Injected[ActivateSupplierCommandHandler],
+        id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierResponse]:
         """Activates a supplier."""
         result = handler.handle(ActivateSupplierCommand(id=id))
-        return SupplierResponse.model_validate(result)
+        return DataResponse(data=SupplierResponse.model_validate(result), meta=meta)
 
     def deactivate(
-        self, handler: Injected[DeactivateSupplierCommandHandler], id: int
-    ) -> SupplierResponse:
+        self,
+        handler: Injected[DeactivateSupplierCommandHandler],
+        id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierResponse]:
         """Deactivates a supplier."""
         result = handler.handle(DeactivateSupplierCommand(id=id))
-        return SupplierResponse.model_validate(result)
+        return DataResponse(data=SupplierResponse.model_validate(result), meta=meta)
 
     def create_contact(
         self,
         handler: Injected[CreateSupplierContactCommandHandler],
         supplier_id: int,
         new_contact: SupplierContactRequest,
-    ) -> SupplierContactResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierContactResponse]:
         """Creates a new contact for a supplier."""
         result = handler.handle(
             CreateSupplierContactCommand(
                 supplier_id=supplier_id, **new_contact.model_dump(exclude_none=True)
             )
         )
-        return SupplierContactResponse.model_validate(result)
+        return DataResponse(
+            data=SupplierContactResponse.model_validate(result), meta=meta
+        )
 
     def get_supplier_contacts(
         self,
         handler: Injected[GetContactsBySupplierIdQueryHandler],
         supplier_id: int,
-    ) -> list[SupplierContactResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[SupplierContactResponse]:
         """Retrieves all contacts for a supplier."""
         result = handler.handle(GetContactsBySupplierIdQuery(supplier_id=supplier_id))
-        return [SupplierContactResponse.model_validate(c) for c in result]
+        return ListResponse(
+            data=[SupplierContactResponse.model_validate(c) for c in result],
+            meta=meta,
+        )
 
     def create_supplier_product(
         self,
         handler: Injected[CreateSupplierProductCommandHandler],
         supplier_id: int,
         new_product: SupplierProductRequest,
-    ) -> SupplierProductResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierProductResponse]:
         """Adds a product to the supplier catalog."""
         result = handler.handle(
             CreateSupplierProductCommand(
@@ -218,18 +252,24 @@ class SupplierRouter:
                 **new_product.model_dump(exclude_none=True, exclude={"supplier_id"}),
             )
         )
-        return SupplierProductResponse.model_validate(result)
+        return DataResponse(
+            data=SupplierProductResponse.model_validate(result), meta=meta
+        )
 
     def get_supplier_products(
         self,
         handler: Injected[GetSupplierProductsBySupplierIdQueryHandler],
         supplier_id: int,
-    ) -> list[SupplierProductResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[SupplierProductResponse]:
         """Retrieves all products for a supplier."""
         result = handler.handle(
             GetSupplierProductsBySupplierIdQuery(supplier_id=supplier_id)
         )
-        return [SupplierProductResponse.model_validate(p) for p in result]
+        return ListResponse(
+            data=[SupplierProductResponse.model_validate(p) for p in result],
+            meta=meta,
+        )
 
 
 class SupplierContactRouter:
@@ -241,13 +281,13 @@ class SupplierContactRouter:
         """Sets up all the routes for the router."""
         self.router.put(
             "/{id}",
-            response_model=SupplierContactResponse,
+            response_model=DataResponse[SupplierContactResponse],
             summary="Update supplier contact",
         )(self.update)
         self.router.delete("/{id}", summary="Delete supplier contact")(self.delete)
         self.router.get(
             "/{id}",
-            response_model=SupplierContactResponse,
+            response_model=DataResponse[SupplierContactResponse],
             summary="Get supplier contact by ID",
         )(self.get_by_id)
 
@@ -256,12 +296,15 @@ class SupplierContactRouter:
         handler: Injected[UpdateSupplierContactCommandHandler],
         id: int,
         contact: SupplierContactRequest,
-    ) -> SupplierContactResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierContactResponse]:
         """Updates a supplier contact."""
         result = handler.handle(
             UpdateSupplierContactCommand(id=id, **contact.model_dump(exclude_none=True))
         )
-        return SupplierContactResponse.model_validate(result)
+        return DataResponse(
+            data=SupplierContactResponse.model_validate(result), meta=meta
+        )
 
     def delete(
         self,
@@ -275,10 +318,13 @@ class SupplierContactRouter:
         self,
         handler: Injected[GetSupplierContactByIdQueryHandler],
         id: int,
-    ) -> SupplierContactResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierContactResponse]:
         """Retrieves a specific supplier contact by its ID."""
         result = handler.handle(GetSupplierContactByIdQuery(id=id))
-        return SupplierContactResponse.model_validate(result)
+        return DataResponse(
+            data=SupplierContactResponse.model_validate(result), meta=meta
+        )
 
 
 class SupplierProductRouter:
@@ -290,18 +336,18 @@ class SupplierProductRouter:
         """Sets up all the routes for the router."""
         self.router.put(
             "/{id}",
-            response_model=SupplierProductResponse,
+            response_model=DataResponse[SupplierProductResponse],
             summary="Update supplier product",
         )(self.update)
         self.router.delete("/{id}", summary="Delete supplier product")(self.delete)
         self.router.get(
             "/{id}",
-            response_model=SupplierProductResponse,
+            response_model=DataResponse[SupplierProductResponse],
             summary="Get supplier product by ID",
         )(self.get_by_id)
         self.router.get(
             "/by-product/{product_id}",
-            response_model=list[SupplierProductResponse],
+            response_model=ListResponse[SupplierProductResponse],
             summary="Get all suppliers for a product",
         )(self.get_by_product)
 
@@ -310,12 +356,15 @@ class SupplierProductRouter:
         handler: Injected[UpdateSupplierProductCommandHandler],
         id: int,
         product: SupplierProductRequest,
-    ) -> SupplierProductResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierProductResponse]:
         """Updates a supplier product."""
         result = handler.handle(
             UpdateSupplierProductCommand(id=id, **product.model_dump(exclude_none=True))
         )
-        return SupplierProductResponse.model_validate(result)
+        return DataResponse(
+            data=SupplierProductResponse.model_validate(result), meta=meta
+        )
 
     def delete(
         self,
@@ -329,18 +378,25 @@ class SupplierProductRouter:
         self,
         handler: Injected[GetSupplierProductByIdQueryHandler],
         id: int,
-    ) -> SupplierProductResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SupplierProductResponse]:
         """Retrieves a specific supplier product by its ID."""
         result = handler.handle(GetSupplierProductByIdQuery(id=id))
-        return SupplierProductResponse.model_validate(result)
+        return DataResponse(
+            data=SupplierProductResponse.model_validate(result), meta=meta
+        )
 
     def get_by_product(
         self,
         handler: Injected[GetProductSuppliersByProductIdQueryHandler],
         product_id: int,
-    ) -> list[SupplierProductResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[SupplierProductResponse]:
         """Retrieves all supplier entries for a given product."""
         result = handler.handle(
             GetProductSuppliersByProductIdQuery(product_id=product_id)
         )
-        return [SupplierProductResponse.model_validate(p) for p in result]
+        return ListResponse(
+            data=[SupplierProductResponse.model_validate(p) for p in result],
+            meta=meta,
+        )

@@ -50,7 +50,13 @@ from src.purchasing.infra.validators import (
     PurchaseOrderResponse,
     PurchaseReceiptResponse,
 )
-from src.shared.infra.validators import PaginatedResponse
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import (
+    DataResponse,
+    ListResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class PurchaseOrderRouter:
@@ -61,48 +67,48 @@ class PurchaseOrderRouter:
     def _setup_routes(self):
         self.router.post(
             "",
-            response_model=PurchaseOrderResponse,
+            response_model=DataResponse[PurchaseOrderResponse],
             summary="Create purchase order",
         )(self.create)
         self.router.put(
             "/{id}",
-            response_model=PurchaseOrderResponse,
+            response_model=DataResponse[PurchaseOrderResponse],
             summary="Update purchase order",
         )(self.update)
         self.router.delete("/{id}", summary="Delete purchase order")(self.delete)
         self.router.get(
             "",
-            response_model=PaginatedResponse[PurchaseOrderResponse],
+            response_model=PaginatedDataResponse[PurchaseOrderResponse],
             summary="Get all purchase orders",
         )(self.get_all)
         self.router.get(
             "/{id}",
-            response_model=PurchaseOrderResponse,
+            response_model=DataResponse[PurchaseOrderResponse],
             summary="Get purchase order by ID",
         )(self.get_by_id)
         self.router.post(
             "/{id}/send",
-            response_model=PurchaseOrderResponse,
+            response_model=DataResponse[PurchaseOrderResponse],
             summary="Send purchase order to supplier",
         )(self.send)
         self.router.post(
             "/{id}/cancel",
-            response_model=PurchaseOrderResponse,
+            response_model=DataResponse[PurchaseOrderResponse],
             summary="Cancel purchase order",
         )(self.cancel)
         self.router.post(
             "/{id}/receive",
-            response_model=PurchaseReceiptResponse,
+            response_model=DataResponse[PurchaseReceiptResponse],
             summary="Receive goods for purchase order",
         )(self.receive)
         self.router.get(
             "/{id}/items",
-            response_model=list[PurchaseOrderItemResponse],
+            response_model=ListResponse[PurchaseOrderItemResponse],
             summary="Get items for a purchase order",
         )(self.get_items)
         self.router.get(
             "/{id}/receipts",
-            response_model=list[PurchaseReceiptResponse],
+            response_model=ListResponse[PurchaseReceiptResponse],
             summary="Get receipts for a purchase order",
         )(self.get_receipts)
 
@@ -110,24 +116,30 @@ class PurchaseOrderRouter:
         self,
         handler: Injected[CreatePurchaseOrderCommandHandler],
         body: PurchaseOrderRequest,
-    ) -> PurchaseOrderResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[PurchaseOrderResponse]:
         """Creates a new purchase order."""
         result = handler.handle(
             CreatePurchaseOrderCommand(**body.model_dump(exclude_none=True))
         )
-        return PurchaseOrderResponse.model_validate(result)
+        return DataResponse(
+            data=PurchaseOrderResponse.model_validate(result), meta=meta
+        )
 
     def update(
         self,
         handler: Injected[UpdatePurchaseOrderCommandHandler],
         id: int,
         body: PurchaseOrderRequest,
-    ) -> PurchaseOrderResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[PurchaseOrderResponse]:
         """Updates a purchase order (only DRAFT status)."""
         result = handler.handle(
             UpdatePurchaseOrderCommand(id=id, **body.model_dump(exclude_none=True))
         )
-        return PurchaseOrderResponse.model_validate(result)
+        return DataResponse(
+            data=PurchaseOrderResponse.model_validate(result), meta=meta
+        )
 
     def delete(
         self,
@@ -141,51 +153,64 @@ class PurchaseOrderRouter:
         self,
         handler: Injected[GetAllPurchaseOrdersQueryHandler],
         query_params: PurchaseOrderQueryParams = Depends(),
-    ) -> PaginatedResponse[PurchaseOrderResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[PurchaseOrderResponse]:
         """Retrieves all purchase orders."""
         result = handler.handle(
             GetAllPurchaseOrdersQuery(**query_params.model_dump(exclude_none=True))
         )
-        return PaginatedResponse[PurchaseOrderResponse](
-            total=result["total"],
-            limit=result["limit"],
-            offset=result["offset"],
-            items=[PurchaseOrderResponse.model_validate(po) for po in result["items"]],
+        return PaginatedDataResponse(
+            data=[PurchaseOrderResponse.model_validate(po) for po in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
         )
 
     def get_by_id(
         self,
         handler: Injected[GetPurchaseOrderByIdQueryHandler],
         id: int,
-    ) -> PurchaseOrderResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[PurchaseOrderResponse]:
         """Retrieves a purchase order by ID."""
         result = handler.handle(GetPurchaseOrderByIdQuery(id=id))
-        return PurchaseOrderResponse.model_validate(result)
+        return DataResponse(
+            data=PurchaseOrderResponse.model_validate(result), meta=meta
+        )
 
     def send(
         self,
         handler: Injected[SendPurchaseOrderCommandHandler],
         id: int,
-    ) -> PurchaseOrderResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[PurchaseOrderResponse]:
         """Sends a purchase order to the supplier."""
         result = handler.handle(SendPurchaseOrderCommand(id=id))
-        return PurchaseOrderResponse.model_validate(result)
+        return DataResponse(
+            data=PurchaseOrderResponse.model_validate(result), meta=meta
+        )
 
     def cancel(
         self,
         handler: Injected[CancelPurchaseOrderCommandHandler],
         id: int,
-    ) -> PurchaseOrderResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[PurchaseOrderResponse]:
         """Cancels a purchase order."""
         result = handler.handle(CancelPurchaseOrderCommand(id=id))
-        return PurchaseOrderResponse.model_validate(result)
+        return DataResponse(
+            data=PurchaseOrderResponse.model_validate(result), meta=meta
+        )
 
     def receive(
         self,
         handler: Injected[CreatePurchaseReceiptCommandHandler],
         id: int,
         body: CreatePurchaseReceiptRequest,
-    ) -> PurchaseReceiptResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[PurchaseReceiptResponse]:
         """Registers a goods receipt for a purchase order."""
         items = [
             ReceiveItemInput(
@@ -205,25 +230,35 @@ class PurchaseOrderRouter:
                 received_at=body.received_at,
             )
         )
-        return PurchaseReceiptResponse.model_validate(result)
+        return DataResponse(
+            data=PurchaseReceiptResponse.model_validate(result), meta=meta
+        )
 
     def get_items(
         self,
         handler: Injected[GetPurchaseOrderItemsByPOQueryHandler],
         id: int,
-    ) -> list[PurchaseOrderItemResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[PurchaseOrderItemResponse]:
         """Retrieves all items for a purchase order."""
         result = handler.handle(GetPurchaseOrderItemsByPOQuery(purchase_order_id=id))
-        return [PurchaseOrderItemResponse.model_validate(item) for item in result]
+        return ListResponse(
+            data=[PurchaseOrderItemResponse.model_validate(item) for item in result],
+            meta=meta,
+        )
 
     def get_receipts(
         self,
         handler: Injected[GetReceiptsByPurchaseOrderQueryHandler],
         id: int,
-    ) -> list[PurchaseReceiptResponse]:
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[PurchaseReceiptResponse]:
         """Retrieves all receipts for a purchase order."""
         result = handler.handle(GetReceiptsByPurchaseOrderQuery(purchase_order_id=id))
-        return [PurchaseReceiptResponse.model_validate(r) for r in result]
+        return ListResponse(
+            data=[PurchaseReceiptResponse.model_validate(r) for r in result],
+            meta=meta,
+        )
 
 
 class POItemRouter:
@@ -234,12 +269,12 @@ class POItemRouter:
     def _setup_routes(self):
         self.router.post(
             "",
-            response_model=PurchaseOrderItemResponse,
+            response_model=DataResponse[PurchaseOrderItemResponse],
             summary="Add item to purchase order",
         )(self.add)
         self.router.put(
             "/{id}",
-            response_model=PurchaseOrderItemResponse,
+            response_model=DataResponse[PurchaseOrderItemResponse],
             summary="Update purchase order item",
         )(self.update)
         self.router.delete("/{id}", summary="Remove purchase order item")(self.remove)
@@ -248,24 +283,30 @@ class POItemRouter:
         self,
         handler: Injected[AddPurchaseOrderItemCommandHandler],
         body: PurchaseOrderItemRequest,
-    ) -> PurchaseOrderItemResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[PurchaseOrderItemResponse]:
         """Adds an item to a purchase order."""
         result = handler.handle(
             AddPurchaseOrderItemCommand(**body.model_dump(exclude_none=True))
         )
-        return PurchaseOrderItemResponse.model_validate(result)
+        return DataResponse(
+            data=PurchaseOrderItemResponse.model_validate(result), meta=meta
+        )
 
     def update(
         self,
         handler: Injected[UpdatePurchaseOrderItemCommandHandler],
         id: int,
         body: PurchaseOrderItemUpdateRequest,
-    ) -> PurchaseOrderItemResponse:
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[PurchaseOrderItemResponse]:
         """Updates a purchase order item."""
         result = handler.handle(
             UpdatePurchaseOrderItemCommand(id=id, **body.model_dump(exclude_none=True))
         )
-        return PurchaseOrderItemResponse.model_validate(result)
+        return DataResponse(
+            data=PurchaseOrderItemResponse.model_validate(result), meta=meta
+        )
 
     def remove(
         self,
