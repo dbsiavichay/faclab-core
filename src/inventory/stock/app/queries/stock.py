@@ -19,11 +19,11 @@ class GetAllStocksQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, list[dict]]):
+class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, dict]):
     def __init__(self, repo: Repository[Stock]):
         self.repo = repo
 
-    def _handle(self, query: GetAllStocksQuery) -> list[dict]:
+    def _handle(self, query: GetAllStocksQuery) -> dict:
         filter_kwargs = {}
         if query.product_id is not None:
             filter_kwargs["product_id"] = query.product_id
@@ -33,7 +33,13 @@ class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, list[dict]]):
         stocks = self.repo.filter_by(
             limit=query.limit, offset=query.offset, **filter_kwargs
         )
-        return [stock.dict() for stock in stocks]
+        total = self.repo.count_by(**filter_kwargs)
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [stock.dict() for stock in stocks],
+        }
 
 
 @dataclass

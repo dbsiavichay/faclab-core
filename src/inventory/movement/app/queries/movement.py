@@ -21,11 +21,11 @@ class GetAllMovementsQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllMovementsQueryHandler(QueryHandler[GetAllMovementsQuery, list[dict]]):
+class GetAllMovementsQueryHandler(QueryHandler[GetAllMovementsQuery, dict]):
     def __init__(self, repo: Repository[Movement]):
         self.repo = repo
 
-    def _handle(self, query: GetAllMovementsQuery) -> list[dict]:
+    def _handle(self, query: GetAllMovementsQuery) -> dict:
         filters = {}
         if query.product_id is not None:
             filters["product_id"] = query.product_id
@@ -36,7 +36,13 @@ class GetAllMovementsQueryHandler(QueryHandler[GetAllMovementsQuery, list[dict]]
         movements = self.repo.filter_by(
             limit=query.limit, offset=query.offset, **filters
         )
-        return [movement.dict() for movement in movements]
+        total = self.repo.count_by(**filters)
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [movement.dict() for movement in movements],
+        }
 
 
 @dataclass

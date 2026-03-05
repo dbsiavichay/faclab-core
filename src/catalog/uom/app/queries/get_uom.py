@@ -16,22 +16,25 @@ class GetAllUnitsOfMeasureQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllUnitsOfMeasureQueryHandler(
-    QueryHandler[GetAllUnitsOfMeasureQuery, list[dict]]
-):
+class GetAllUnitsOfMeasureQueryHandler(QueryHandler[GetAllUnitsOfMeasureQuery, dict]):
     def __init__(self, repo: Repository[UnitOfMeasure]):
         self.repo = repo
 
-    def _handle(self, query: GetAllUnitsOfMeasureQuery) -> list[dict]:
+    def _handle(self, query: GetAllUnitsOfMeasureQuery) -> dict:
+        filter_kwargs = {}
         if query.is_active is not None:
-            uoms = self.repo.filter_by(
-                is_active=query.is_active,
-                limit=query.limit,
-                offset=query.offset,
-            )
-        else:
-            uoms = self.repo.filter_by(limit=query.limit, offset=query.offset)
-        return [u.dict() for u in uoms]
+            filter_kwargs["is_active"] = query.is_active
+
+        uoms = self.repo.filter_by(
+            limit=query.limit, offset=query.offset, **filter_kwargs
+        )
+        total = self.repo.count_by(**filter_kwargs)
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [u.dict() for u in uoms],
+        }
 
 
 @dataclass

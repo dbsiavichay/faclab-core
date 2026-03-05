@@ -19,14 +19,15 @@ from src.reports.inventory.app.queries.warehouse_summary import (
 )
 from src.reports.inventory.infra.validators import (
     InventoryValuationResponse,
+    MovementHistoryItemResponse,
     MovementHistoryQueryParams,
-    MovementHistoryResponse,
     ProductRotationResponse,
     RotationQueryParams,
     SummaryQueryParams,
     ValuationQueryParams,
     WarehouseSummaryResponse,
 )
+from src.shared.infra.validators import PaginatedResponse
 
 
 class ReportRouter:
@@ -47,7 +48,7 @@ class ReportRouter:
         )(self.rotation)
         self.router.get(
             "/movements",
-            response_model=MovementHistoryResponse,
+            response_model=PaginatedResponse[MovementHistoryItemResponse],
             summary="Movement history report",
         )(self.movement_history)
         self.router.get(
@@ -96,23 +97,23 @@ class ReportRouter:
         self,
         handler: Injected[GetMovementHistoryReportQueryHandler],
         query_params: MovementHistoryQueryParams = Depends(),
-    ) -> MovementHistoryResponse:
+    ) -> PaginatedResponse[MovementHistoryItemResponse]:
         """
         Returns a paginated list of inventory movements enriched with product details.
         Supports filtering by product, type, date range, and warehouse.
         """
         result = handler.handle(
-            GetMovementHistoryReportQuery(
-                product_id=query_params.product_id,
-                type=query_params.type,
-                from_date=query_params.from_date,
-                to_date=query_params.to_date,
-                warehouse_id=query_params.warehouse_id,
-                limit=query_params.limit,
-                offset=query_params.offset,
-            )
+            GetMovementHistoryReportQuery(**query_params.model_dump(exclude_none=True))
         )
-        return MovementHistoryResponse.model_validate(result)
+        return PaginatedResponse[MovementHistoryItemResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[
+                MovementHistoryItemResponse.model_validate(item)
+                for item in result["items"]
+            ],
+        )
 
     def warehouse_summary(
         self,

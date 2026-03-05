@@ -15,13 +15,19 @@ class GetAllCategoriesQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllCategoriesQueryHandler(QueryHandler[GetAllCategoriesQuery, list[dict]]):
+class GetAllCategoriesQueryHandler(QueryHandler[GetAllCategoriesQuery, dict]):
     def __init__(self, repo: Repository[Category]):
         self.repo = repo
 
-    def _handle(self, query: GetAllCategoriesQuery) -> list[dict]:
+    def _handle(self, query: GetAllCategoriesQuery) -> dict:
         categories = self.repo.filter_by(limit=query.limit, offset=query.offset)
-        return [c.dict() for c in categories]
+        total = self.repo.count_by()
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [c.dict() for c in categories],
+        }
 
 
 @dataclass

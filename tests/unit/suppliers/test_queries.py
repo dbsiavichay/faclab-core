@@ -73,41 +73,47 @@ def _make_supplier_product(**overrides) -> SupplierProduct:
 def test_get_all_suppliers_no_filter():
     suppliers = [_make_supplier(id=1), _make_supplier(id=2, name="Beta Supplies")]
     repo = MagicMock()
-    repo.get_all.return_value = suppliers
+    repo.filter_by.return_value = suppliers
+    repo.count_by.return_value = 2
     handler = GetAllSuppliersQueryHandler(repo)
 
     result = handler.handle(GetAllSuppliersQuery())
 
-    repo.get_all.assert_called_once()
-    assert len(result) == 2
-    assert result[0]["name"] == "ACME Corp"
-    assert result[1]["name"] == "Beta Supplies"
+    repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    assert len(result["items"]) == 2
+    assert result["items"][0]["name"] == "ACME Corp"
+    assert result["items"][1]["name"] == "Beta Supplies"
+    assert result["total"] == 2
 
 
 def test_get_all_suppliers_with_active_filter():
     active_supplier = _make_supplier(is_active=True)
     repo = MagicMock()
     repo.filter_by.return_value = [active_supplier]
+    repo.count_by.return_value = 1
     handler = GetAllSuppliersQueryHandler(repo)
 
     result = handler.handle(GetAllSuppliersQuery(is_active=True))
 
-    repo.filter_by.assert_called_once_with(is_active=True)
-    assert len(result) == 1
-    assert result[0]["is_active"] is True
+    repo.filter_by.assert_called_once_with(limit=None, offset=None, is_active=True)
+    assert len(result["items"]) == 1
+    assert result["items"][0]["is_active"] is True
+    assert result["total"] == 1
 
 
 def test_get_all_suppliers_with_inactive_filter():
     inactive_supplier = _make_supplier(is_active=False)
     repo = MagicMock()
     repo.filter_by.return_value = [inactive_supplier]
+    repo.count_by.return_value = 1
     handler = GetAllSuppliersQueryHandler(repo)
 
     result = handler.handle(GetAllSuppliersQuery(is_active=False))
 
-    repo.filter_by.assert_called_once_with(is_active=False)
-    assert len(result) == 1
-    assert result[0]["is_active"] is False
+    repo.filter_by.assert_called_once_with(limit=None, offset=None, is_active=False)
+    assert len(result["items"]) == 1
+    assert result["items"][0]["is_active"] is False
+    assert result["total"] == 1
 
 
 def test_get_supplier_by_id_handler():

@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import AliasChoices, BaseModel, Field
 
+from src.shared.infra.validators import QueryParams
+
 
 class SerialNumberRequest(BaseModel):
     product_id: int = Field(
@@ -77,3 +79,14 @@ class SerialNumberResponse(BaseModel):
         validation_alias=AliasChoices("createdAt", "created_at"),
         serialization_alias="createdAt",
     )
+
+
+# Query Params
+class SerialQueryParams(QueryParams):
+    product_id: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("productId", "product_id"),
+        serialization_alias="productId",
+    )
+    status: str | None = None

@@ -53,12 +53,14 @@ def test_get_all_transfers_no_filters():
 
     repo = MagicMock()
     repo.filter_by.return_value = [t1, t2]
+    repo.count_by.return_value = 2
     handler = GetAllTransfersQueryHandler(repo)
 
     result = handler.handle(GetAllTransfersQuery())
 
     repo.filter_by.assert_called_once()
-    assert len(result) == 2
+    assert len(result["items"]) == 2
+    assert result["total"] == 2
 
 
 def test_get_all_transfers_filtered_by_status():
@@ -66,13 +68,16 @@ def test_get_all_transfers_filtered_by_status():
 
     repo = MagicMock()
     repo.filter_by_spec.return_value = [t]
+    repo.count_by_spec.return_value = 1
     handler = GetAllTransfersQueryHandler(repo)
 
     result = handler.handle(GetAllTransfersQuery(status="confirmed"))
 
     repo.filter_by_spec.assert_called_once()
-    assert len(result) == 1
-    assert result[0]["status"] == TransferStatus.CONFIRMED
+    repo.count_by_spec.assert_called_once()
+    assert len(result["items"]) == 1
+    assert result["items"][0]["status"] == TransferStatus.CONFIRMED
+    assert result["total"] == 1
 
 
 def test_get_all_transfers_filtered_by_source_location():
@@ -80,13 +85,16 @@ def test_get_all_transfers_filtered_by_source_location():
 
     repo = MagicMock()
     repo.filter_by_spec.return_value = [t]
+    repo.count_by_spec.return_value = 1
     handler = GetAllTransfersQueryHandler(repo)
 
     result = handler.handle(GetAllTransfersQuery(source_location_id=10))
 
     repo.filter_by_spec.assert_called_once()
-    assert len(result) == 1
-    assert result[0]["source_location_id"] == 10
+    repo.count_by_spec.assert_called_once()
+    assert len(result["items"]) == 1
+    assert result["items"][0]["source_location_id"] == 10
+    assert result["total"] == 1
 
 
 # ---------------------------------------------------------------------------

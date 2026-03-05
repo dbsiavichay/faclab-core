@@ -10,17 +10,24 @@ from src.shared.domain.exceptions import NotFoundError
 
 @dataclass
 class GetAllCustomersQuery(Query):
-    pass
+    limit: int | None = None
+    offset: int | None = None
 
 
 @injectable(lifetime="scoped")
-class GetAllCustomersQueryHandler(QueryHandler[GetAllCustomersQuery, list[dict]]):
+class GetAllCustomersQueryHandler(QueryHandler[GetAllCustomersQuery, dict]):
     def __init__(self, repo: Repository[Customer]):
         self.repo = repo
 
-    def _handle(self, query: GetAllCustomersQuery) -> list[dict]:
-        customers = self.repo.get_all()
-        return [customer.dict() for customer in customers]
+    def _handle(self, query: GetAllCustomersQuery) -> dict:
+        customers = self.repo.filter_by(limit=query.limit, offset=query.offset)
+        total = self.repo.count_by()
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [customer.dict() for customer in customers],
+        }
 
 
 @dataclass

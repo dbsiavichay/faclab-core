@@ -11,17 +11,10 @@ from src.shared.domain.exceptions import NotFoundError
 
 @dataclass
 class GetAllLotsQuery(Query):
-    pass
-
-
-@dataclass
-class GetLotsByProductQuery(Query):
-    product_id: int = 0
-
-
-@dataclass
-class GetExpiringLotsQuery(Query):
-    days: int = 30
+    product_id: int | None = None
+    expiring_in_days: int | None = None
+    limit: int | None = None
+    offset: int | None = None
 
 
 @dataclass
@@ -30,34 +23,38 @@ class GetLotByIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllLotsQueryHandler(QueryHandler[GetAllLotsQuery, list[dict]]):
+class GetAllLotsQueryHandler(QueryHandler[GetAllLotsQuery, dict]):
     def __init__(self, repo: Repository[Lot]):
         self.repo = repo
 
-    def _handle(self, query: GetAllLotsQuery) -> list[dict]:
-        lots = self.repo.get_all()
-        return [lot.dict() for lot in lots]
+    def _handle(self, query: GetAllLotsQuery) -> dict:
+        if query.expiring_in_days is not None:
+            spec = ExpiringLots(days=query.expiring_in_days)
+            if query.product_id is not None:
+                from src.inventory.lot.domain.specifications import LotsByProduct
 
+                spec = spec & LotsByProduct(query.product_id)
+            lots = self.repo.filter_by_spec(
+                spec, limit=query.limit, offset=query.offset
+            )
+            total = self.repo.count_by_spec(spec)
+        elif query.product_id is not None:
+            lots = self.repo.filter_by(
+                product_id=query.product_id,
+                limit=query.limit,
+                offset=query.offset,
+            )
+            total = self.repo.count_by(product_id=query.product_id)
+        else:
+            lots = self.repo.filter_by(limit=query.limit, offset=query.offset)
+            total = self.repo.count_by()
 
-@injectable(lifetime="scoped")
-class GetLotsByProductQueryHandler(QueryHandler[GetLotsByProductQuery, list[dict]]):
-    def __init__(self, repo: Repository[Lot]):
-        self.repo = repo
-
-    def _handle(self, query: GetLotsByProductQuery) -> list[dict]:
-        lots = self.repo.filter_by(product_id=query.product_id)
-        return [lot.dict() for lot in lots]
-
-
-@injectable(lifetime="scoped")
-class GetExpiringLotsQueryHandler(QueryHandler[GetExpiringLotsQuery, list[dict]]):
-    def __init__(self, repo: Repository[Lot]):
-        self.repo = repo
-
-    def _handle(self, query: GetExpiringLotsQuery) -> list[dict]:
-        spec = ExpiringLots(days=query.days)
-        lots = self.repo.filter_by_spec(spec)
-        return [lot.dict() for lot in lots]
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [lot.dict() for lot in lots],
+        }
 
 
 @injectable(lifetime="scoped")

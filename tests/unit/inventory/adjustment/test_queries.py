@@ -56,12 +56,14 @@ def test_get_all_adjustments_no_filters():
 
     repo = MagicMock()
     repo.filter_by.return_value = [adj1, adj2]
+    repo.count_by.return_value = 2
     handler = GetAllAdjustmentsQueryHandler(repo)
 
     result = handler.handle(GetAllAdjustmentsQuery())
 
     repo.filter_by.assert_called_once()
-    assert len(result) == 2
+    assert len(result["items"]) == 2
+    assert result["total"] == 2
 
 
 def test_get_all_adjustments_filtered_by_status():
@@ -69,13 +71,16 @@ def test_get_all_adjustments_filtered_by_status():
 
     repo = MagicMock()
     repo.filter_by_spec.return_value = [adj]
+    repo.count_by_spec.return_value = 1
     handler = GetAllAdjustmentsQueryHandler(repo)
 
     result = handler.handle(GetAllAdjustmentsQuery(status="draft"))
 
     repo.filter_by_spec.assert_called_once()
-    assert len(result) == 1
-    assert result[0]["status"] == AdjustmentStatus.DRAFT
+    repo.count_by_spec.assert_called_once()
+    assert len(result["items"]) == 1
+    assert result["items"][0]["status"] == AdjustmentStatus.DRAFT
+    assert result["total"] == 1
 
 
 def test_get_all_adjustments_filtered_by_warehouse():
@@ -83,13 +88,16 @@ def test_get_all_adjustments_filtered_by_warehouse():
 
     repo = MagicMock()
     repo.filter_by_spec.return_value = [adj]
+    repo.count_by_spec.return_value = 1
     handler = GetAllAdjustmentsQueryHandler(repo)
 
     result = handler.handle(GetAllAdjustmentsQuery(warehouse_id=10))
 
     repo.filter_by_spec.assert_called_once()
-    assert len(result) == 1
-    assert result[0]["warehouse_id"] == 10
+    repo.count_by_spec.assert_called_once()
+    assert len(result["items"]) == 1
+    assert result["items"][0]["warehouse_id"] == 10
+    assert result["total"] == 1
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 """Admin routes for Sales (read-only)"""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from wireup import Injected
 
 from src.sales.app.queries.get_payments import (
@@ -17,7 +17,13 @@ from src.sales.app.queries.get_sales import (
     GetSaleByIdQuery,
     GetSaleByIdQueryHandler,
 )
-from src.sales.infra.validators import PaymentResponse, SaleItemResponse, SaleResponse
+from src.sales.infra.validators import (
+    PaymentResponse,
+    SaleItemResponse,
+    SaleQueryParams,
+    SaleResponse,
+)
+from src.shared.infra.validators import PaginatedResponse
 
 
 class SaleRouter:
@@ -27,7 +33,9 @@ class SaleRouter:
 
     def _setup_routes(self):
         self.router.get(
-            "", response_model=list[SaleResponse], summary="List all sales"
+            "",
+            response_model=PaginatedResponse[SaleResponse],
+            summary="List all sales",
         )(self.get_all_sales)
         self.router.get("/{sale_id}", response_model=SaleResponse, summary="Get sale")(
             self.get_sale
@@ -46,20 +54,17 @@ class SaleRouter:
     def get_all_sales(
         self,
         handler: Injected[GetAllSalesQueryHandler],
-        customer_id: int | None = None,
-        status: str | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
-    ) -> list[SaleResponse]:
+        query_params: SaleQueryParams = Depends(),
+    ) -> PaginatedResponse[SaleResponse]:
         result = handler.handle(
-            GetAllSalesQuery(
-                customer_id=customer_id,
-                status=status,
-                limit=limit,
-                offset=offset,
-            )
+            GetAllSalesQuery(**query_params.model_dump(exclude_none=True))
         )
-        return [SaleResponse.model_validate(r) for r in result]
+        return PaginatedResponse[SaleResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[SaleResponse.model_validate(r) for r in result["items"]],
+        )
 
     def get_sale(
         self,

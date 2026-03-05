@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 from pydantic import AliasChoices, BaseModel, Field
 
+from src.shared.infra.validators import QueryParams
+
 
 class LotRequest(BaseModel):
     product_id: int = Field(
@@ -106,4 +108,20 @@ class LotResponse(BaseModel):
         None,
         validation_alias=AliasChoices("createdAt", "created_at"),
         serialization_alias="createdAt",
+    )
+
+
+# Query Params
+class LotQueryParams(QueryParams):
+    product_id: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("productId", "product_id"),
+        serialization_alias="productId",
+    )
+    expiring_in_days: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("expiringInDays", "expiring_in_days"),
+        serialization_alias="expiringInDays",
     )

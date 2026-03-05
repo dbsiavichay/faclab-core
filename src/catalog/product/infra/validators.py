@@ -1,7 +1,9 @@
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
+
+from src.shared.infra.validators import QueryParams
 
 
 # Requests
@@ -36,3 +38,17 @@ class CategoryResponse(CategoryRequest):
 
 class ProductResponse(ProductRequest):
     id: int = Field(ge=1)
+
+
+# Query Params
+class CategoryQueryParams(QueryParams):
+    pass
+
+
+class ProductQueryParams(QueryParams):
+    category_id: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("categoryId", "category_id"),
+        serialization_alias="categoryId",
+    )

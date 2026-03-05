@@ -21,11 +21,11 @@ class GetAllTransfersQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllTransfersQueryHandler(QueryHandler[GetAllTransfersQuery, list[dict]]):
+class GetAllTransfersQueryHandler(QueryHandler[GetAllTransfersQuery, dict]):
     def __init__(self, repo: Repository[StockTransfer]):
         self.repo = repo
 
-    def _handle(self, query: GetAllTransfersQuery) -> list[dict]:
+    def _handle(self, query: GetAllTransfersQuery) -> dict:
         from src.inventory.transfer.domain.entities import TransferStatus
 
         spec = None
@@ -42,10 +42,17 @@ class GetAllTransfersQueryHandler(QueryHandler[GetAllTransfersQuery, list[dict]]
             transfers = self.repo.filter_by_spec(
                 spec, limit=query.limit, offset=query.offset
             )
+            total = self.repo.count_by_spec(spec)
         else:
             transfers = self.repo.filter_by(limit=query.limit, offset=query.offset)
+            total = self.repo.count_by()
 
-        return [t.dict() for t in transfers]
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [t.dict() for t in transfers],
+        }
 
 
 @dataclass

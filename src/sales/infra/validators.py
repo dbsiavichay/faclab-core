@@ -5,6 +5,8 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
+from src.shared.infra.validators import QueryParams
+
 
 class SaleItemRequest(BaseModel):
     """Schema para input de un item de venta"""
@@ -179,3 +181,14 @@ class SaleDetailResponse(SaleResponse):
 
     items: list[SaleItemResponse] = []
     payments: list[PaymentResponse] = []
+
+
+# Query Params
+class SaleQueryParams(QueryParams):
+    customer_id: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("customerId", "customer_id"),
+        serialization_alias="customerId",
+    )
+    status: str | None = None

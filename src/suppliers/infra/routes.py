@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.shared.infra.validators import PaginatedResponse
 from src.suppliers.app.commands.supplier import (
     ActivateSupplierCommand,
     ActivateSupplierCommandHandler,
@@ -54,6 +55,7 @@ from src.suppliers.infra.validators import (
     SupplierContactResponse,
     SupplierProductRequest,
     SupplierProductResponse,
+    SupplierQueryParams,
     SupplierRequest,
     SupplierResponse,
 )
@@ -74,7 +76,9 @@ class SupplierRouter:
         )(self.update)
         self.router.delete("/{id}", summary="Delete supplier")(self.delete)
         self.router.get(
-            "", response_model=list[SupplierResponse], summary="Get all suppliers"
+            "",
+            response_model=PaginatedResponse[SupplierResponse],
+            summary="Get all suppliers",
         )(self.get_all)
         self.router.get(
             "/{id}", response_model=SupplierResponse, summary="Get supplier by ID"
@@ -144,11 +148,18 @@ class SupplierRouter:
     def get_all(
         self,
         handler: Injected[GetAllSuppliersQueryHandler],
-        is_active: bool | None = Query(None, description="Filter by active status"),
-    ) -> list[SupplierResponse]:
+        query_params: SupplierQueryParams = Depends(),
+    ) -> PaginatedResponse[SupplierResponse]:
         """Retrieves all suppliers."""
-        result = handler.handle(GetAllSuppliersQuery(is_active=is_active))
-        return [SupplierResponse.model_validate(s) for s in result]
+        result = handler.handle(
+            GetAllSuppliersQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return PaginatedResponse[SupplierResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[SupplierResponse.model_validate(s) for s in result["items"]],
+        )
 
     def get_by_id(
         self, handler: Injected[GetSupplierByIdQueryHandler], id: int

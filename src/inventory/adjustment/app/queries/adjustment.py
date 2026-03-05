@@ -21,11 +21,11 @@ class GetAllAdjustmentsQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllAdjustmentsQueryHandler(QueryHandler[GetAllAdjustmentsQuery, list[dict]]):
+class GetAllAdjustmentsQueryHandler(QueryHandler[GetAllAdjustmentsQuery, dict]):
     def __init__(self, repo: Repository[InventoryAdjustment]):
         self.repo = repo
 
-    def _handle(self, query: GetAllAdjustmentsQuery) -> list[dict]:
+    def _handle(self, query: GetAllAdjustmentsQuery) -> dict:
         from src.inventory.adjustment.domain.entities import AdjustmentStatus
 
         spec = None
@@ -42,10 +42,17 @@ class GetAllAdjustmentsQueryHandler(QueryHandler[GetAllAdjustmentsQuery, list[di
             adjustments = self.repo.filter_by_spec(
                 spec, limit=query.limit, offset=query.offset
             )
+            total = self.repo.count_by_spec(spec)
         else:
             adjustments = self.repo.filter_by(limit=query.limit, offset=query.offset)
+            total = self.repo.count_by()
 
-        return [adj.dict() for adj in adjustments]
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [adj.dict() for adj in adjustments],
+        }
 
 
 @dataclass

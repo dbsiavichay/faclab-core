@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, Field
 
+from src.shared.infra.validators import QueryParams
+
 
 # PurchaseOrder
 class PurchaseOrderRequest(BaseModel):
@@ -198,4 +200,15 @@ class PurchaseReceiptResponse(BaseModel):
         None,
         validation_alias=AliasChoices("createdAt", "created_at"),
         serialization_alias="createdAt",
+    )
+
+
+# Query Params
+class PurchaseOrderQueryParams(QueryParams):
+    status: str | None = None
+    supplier_id: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("supplierId", "supplier_id"),
+        serialization_alias="supplierId",
     )
