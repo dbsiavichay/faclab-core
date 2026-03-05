@@ -75,13 +75,17 @@ def test_get_all_purchase_orders():
     po1 = _make_po(id=1)
     po2 = _make_po(id=2, order_number="PO-2026-0002")
     repo = MagicMock()
-    repo.filter_by.return_value = [po1, po2]
-    repo.count_by.return_value = 2
+    repo.paginate.return_value = {
+        "total": 2,
+        "limit": None,
+        "offset": None,
+        "items": [po1.dict(), po2.dict()],
+    }
     handler = GetAllPurchaseOrdersQueryHandler(repo)
 
     result = handler.handle(GetAllPurchaseOrdersQuery())
 
-    repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    repo.paginate.assert_called_once_with(limit=None, offset=None)
     assert len(result["items"]) == 2
     assert result["total"] == 2
 
@@ -89,13 +93,17 @@ def test_get_all_purchase_orders():
 def test_get_all_purchase_orders_filter_by_status():
     po = _make_po(status=PurchaseOrderStatus.SENT)
     repo = MagicMock()
-    repo.filter_by.return_value = [po]
-    repo.count_by.return_value = 1
+    repo.paginate.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [po.dict()],
+    }
     handler = GetAllPurchaseOrdersQueryHandler(repo)
 
     result = handler.handle(GetAllPurchaseOrdersQuery(status="sent"))
 
-    repo.filter_by.assert_called_once_with(limit=None, offset=None, status="sent")
+    repo.paginate.assert_called_once_with(limit=None, offset=None, status="sent")
     assert len(result["items"]) == 1
     assert result["items"][0]["status"] == "sent"
     assert result["total"] == 1
@@ -104,13 +112,17 @@ def test_get_all_purchase_orders_filter_by_status():
 def test_get_all_purchase_orders_filter_by_supplier():
     po = _make_po(supplier_id=5)
     repo = MagicMock()
-    repo.filter_by.return_value = [po]
-    repo.count_by.return_value = 1
+    repo.paginate.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [po.dict()],
+    }
     handler = GetAllPurchaseOrdersQueryHandler(repo)
 
     result = handler.handle(GetAllPurchaseOrdersQuery(supplier_id=5))
 
-    repo.filter_by.assert_called_once_with(limit=None, offset=None, supplier_id=5)
+    repo.paginate.assert_called_once_with(limit=None, offset=None, supplier_id=5)
     assert len(result["items"]) == 1
     assert result["total"] == 1
 
@@ -118,13 +130,17 @@ def test_get_all_purchase_orders_filter_by_supplier():
 def test_get_all_purchase_orders_filter_by_status_and_supplier():
     po = _make_po(supplier_id=5, status=PurchaseOrderStatus.SENT)
     repo = MagicMock()
-    repo.filter_by.return_value = [po]
-    repo.count_by.return_value = 1
+    repo.paginate.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [po.dict()],
+    }
     handler = GetAllPurchaseOrdersQueryHandler(repo)
 
     result = handler.handle(GetAllPurchaseOrdersQuery(status="sent", supplier_id=5))
 
-    repo.filter_by.assert_called_once_with(
+    repo.paginate.assert_called_once_with(
         limit=None, offset=None, status="sent", supplier_id=5
     )
     assert len(result["items"]) == 1

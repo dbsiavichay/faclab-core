@@ -20,14 +20,7 @@ class GetAllCustomersQueryHandler(QueryHandler[GetAllCustomersQuery, dict]):
         self.repo = repo
 
     def _handle(self, query: GetAllCustomersQuery) -> dict:
-        customers = self.repo.filter_by(limit=query.limit, offset=query.offset)
-        total = self.repo.count_by()
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [customer.dict() for customer in customers],
-        }
+        return self.repo.paginate(limit=query.limit, offset=query.offset)
 
 
 @dataclass

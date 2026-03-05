@@ -52,13 +52,17 @@ def test_get_all_transfers_no_filters():
     t2 = _make_transfer(id=2, status=TransferStatus.CONFIRMED)
 
     repo = MagicMock()
-    repo.filter_by.return_value = [t1, t2]
-    repo.count_by.return_value = 2
+    repo.paginate.return_value = {
+        "total": 2,
+        "limit": None,
+        "offset": None,
+        "items": [t1.dict(), t2.dict()],
+    }
     handler = GetAllTransfersQueryHandler(repo)
 
     result = handler.handle(GetAllTransfersQuery())
 
-    repo.filter_by.assert_called_once()
+    repo.paginate.assert_called_once()
     assert len(result["items"]) == 2
     assert result["total"] == 2
 
@@ -67,14 +71,17 @@ def test_get_all_transfers_filtered_by_status():
     t = _make_transfer(id=1, status=TransferStatus.CONFIRMED)
 
     repo = MagicMock()
-    repo.filter_by_spec.return_value = [t]
-    repo.count_by_spec.return_value = 1
+    repo.paginate_by_spec.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [t.dict()],
+    }
     handler = GetAllTransfersQueryHandler(repo)
 
     result = handler.handle(GetAllTransfersQuery(status="confirmed"))
 
-    repo.filter_by_spec.assert_called_once()
-    repo.count_by_spec.assert_called_once()
+    repo.paginate_by_spec.assert_called_once()
     assert len(result["items"]) == 1
     assert result["items"][0]["status"] == TransferStatus.CONFIRMED
     assert result["total"] == 1
@@ -84,14 +91,17 @@ def test_get_all_transfers_filtered_by_source_location():
     t = _make_transfer(id=1, source_location_id=10)
 
     repo = MagicMock()
-    repo.filter_by_spec.return_value = [t]
-    repo.count_by_spec.return_value = 1
+    repo.paginate_by_spec.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [t.dict()],
+    }
     handler = GetAllTransfersQueryHandler(repo)
 
     result = handler.handle(GetAllTransfersQuery(source_location_id=10))
 
-    repo.filter_by_spec.assert_called_once()
-    repo.count_by_spec.assert_called_once()
+    repo.paginate_by_spec.assert_called_once()
     assert len(result["items"]) == 1
     assert result["items"][0]["source_location_id"] == 10
     assert result["total"] == 1

@@ -34,13 +34,17 @@ def test_get_all_lots():
     lot1 = _make_lot(id=1, lot_number="LOT-001")
     lot2 = _make_lot(id=2, lot_number="LOT-002")
     repo = MagicMock()
-    repo.filter_by.return_value = [lot1, lot2]
-    repo.count_by.return_value = 2
+    repo.paginate.return_value = {
+        "total": 2,
+        "limit": None,
+        "offset": None,
+        "items": [lot1.dict(), lot2.dict()],
+    }
     handler = GetAllLotsQueryHandler(repo)
 
     result = handler.handle(GetAllLotsQuery())
 
-    repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    repo.paginate.assert_called_once_with(limit=None, offset=None)
     assert result["total"] == 2
     assert len(result["items"]) == 2
     assert result["items"][0]["lot_number"] == "LOT-001"
@@ -49,8 +53,12 @@ def test_get_all_lots():
 
 def test_get_all_lots_empty():
     repo = MagicMock()
-    repo.filter_by.return_value = []
-    repo.count_by.return_value = 0
+    repo.paginate.return_value = {
+        "total": 0,
+        "limit": None,
+        "offset": None,
+        "items": [],
+    }
     handler = GetAllLotsQueryHandler(repo)
 
     result = handler.handle(GetAllLotsQuery())
@@ -62,21 +70,29 @@ def test_get_lots_by_product():
     lot1 = _make_lot(id=1, lot_number="LOT-001")
     lot2 = _make_lot(id=2, lot_number="LOT-002")
     repo = MagicMock()
-    repo.filter_by.return_value = [lot1, lot2]
-    repo.count_by.return_value = 2
+    repo.paginate.return_value = {
+        "total": 2,
+        "limit": None,
+        "offset": None,
+        "items": [lot1.dict(), lot2.dict()],
+    }
     handler = GetAllLotsQueryHandler(repo)
 
     result = handler.handle(GetAllLotsQuery(product_id=5))
 
-    repo.filter_by.assert_called_once_with(product_id=5, limit=None, offset=None)
+    repo.paginate.assert_called_once_with(product_id=5, limit=None, offset=None)
     assert result["total"] == 2
     assert len(result["items"]) == 2
 
 
 def test_get_lots_by_product_empty():
     repo = MagicMock()
-    repo.filter_by.return_value = []
-    repo.count_by.return_value = 0
+    repo.paginate.return_value = {
+        "total": 0,
+        "limit": None,
+        "offset": None,
+        "items": [],
+    }
     handler = GetAllLotsQueryHandler(repo)
 
     result = handler.handle(GetAllLotsQuery(product_id=99))
@@ -88,21 +104,29 @@ def test_get_expiring_lots():
     expiry = date.today() + timedelta(days=10)
     lot = _make_lot(expiration_date=expiry, current_quantity=5)
     repo = MagicMock()
-    repo.filter_by_spec.return_value = [lot]
-    repo.count_by_spec.return_value = 1
+    repo.paginate_by_spec.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [lot.dict()],
+    }
     handler = GetAllLotsQueryHandler(repo)
 
     result = handler.handle(GetAllLotsQuery(expiring_in_days=30))
 
-    repo.filter_by_spec.assert_called_once()
+    repo.paginate_by_spec.assert_called_once()
     assert result["total"] == 1
     assert len(result["items"]) == 1
 
 
 def test_get_expiring_lots_empty():
     repo = MagicMock()
-    repo.filter_by_spec.return_value = []
-    repo.count_by_spec.return_value = 0
+    repo.paginate_by_spec.return_value = {
+        "total": 0,
+        "limit": None,
+        "offset": None,
+        "items": [],
+    }
     handler = GetAllLotsQueryHandler(repo)
 
     result = handler.handle(GetAllLotsQuery(expiring_in_days=30))

@@ -20,14 +20,7 @@ class GetAllCategoriesQueryHandler(QueryHandler[GetAllCategoriesQuery, dict]):
         self.repo = repo
 
     def _handle(self, query: GetAllCategoriesQuery) -> dict:
-        categories = self.repo.filter_by(limit=query.limit, offset=query.offset)
-        total = self.repo.count_by()
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [c.dict() for c in categories],
-        }
+        return self.repo.paginate(limit=query.limit, offset=query.offset)
 
 
 @dataclass

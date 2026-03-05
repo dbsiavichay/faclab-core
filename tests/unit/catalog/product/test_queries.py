@@ -28,8 +28,12 @@ def test_get_all_products_query_handler():
         Product(id=1, sku="SKU-001", name="Product 1"),
         Product(id=2, sku="SKU-002", name="Product 2"),
     ]
-    mock_repo.filter_by.return_value = products
-    mock_repo.count_by.return_value = 2
+    mock_repo.paginate.return_value = {
+        "total": 2,
+        "limit": None,
+        "offset": None,
+        "items": [p.dict() for p in products],
+    }
 
     handler = GetAllProductsQueryHandler(mock_repo)
     query = GetAllProductsQuery()
@@ -40,16 +44,19 @@ def test_get_all_products_query_handler():
     assert result["items"][0]["id"] == 1
     assert result["items"][1]["id"] == 2
     assert result["total"] == 2
-    mock_repo.filter_by.assert_called_once()
-    mock_repo.count_by.assert_called_once()
+    mock_repo.paginate.assert_called_once_with(limit=None, offset=None)
 
 
 def test_get_all_products_with_category_filter():
     """Test GetAllProductsQueryHandler filters by category."""
     mock_repo = Mock()
     products = [Product(id=1, sku="SKU-001", name="Product 1", category_id=1)]
-    mock_repo.filter_by_spec.return_value = products
-    mock_repo.count_by_spec.return_value = 1
+    mock_repo.paginate_by_spec.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [p.dict() for p in products],
+    }
 
     handler = GetAllProductsQueryHandler(mock_repo)
     query = GetAllProductsQuery(category_id=1)
@@ -59,8 +66,7 @@ def test_get_all_products_with_category_filter():
     assert len(result["items"]) == 1
     assert result["items"][0]["category_id"] == 1
     assert result["total"] == 1
-    mock_repo.filter_by_spec.assert_called_once()
-    mock_repo.count_by_spec.assert_called_once()
+    mock_repo.paginate_by_spec.assert_called_once()
 
 
 def test_get_product_by_id_handler():
@@ -117,8 +123,12 @@ def test_get_all_categories_query_handler():
         Category(id=1, name="Electronics", description="Electronic items"),
         Category(id=2, name="Books", description="Book items"),
     ]
-    mock_repo.filter_by.return_value = categories
-    mock_repo.count_by.return_value = 2
+    mock_repo.paginate.return_value = {
+        "total": 2,
+        "limit": None,
+        "offset": None,
+        "items": [c.dict() for c in categories],
+    }
 
     handler = GetAllCategoriesQueryHandler(mock_repo)
     query = GetAllCategoriesQuery()
@@ -129,8 +139,7 @@ def test_get_all_categories_query_handler():
     assert result["items"][0]["id"] == 1
     assert result["items"][1]["id"] == 2
     assert result["total"] == 2
-    mock_repo.filter_by.assert_called_once()
-    mock_repo.count_by.assert_called_once()
+    mock_repo.paginate.assert_called_once_with(limit=None, offset=None)
 
 
 def test_get_category_by_id_handler():

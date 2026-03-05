@@ -39,20 +39,10 @@ class GetAllTransfersQueryHandler(QueryHandler[GetAllTransfersQuery, dict]):
             spec = location_spec if spec is None else spec & location_spec
 
         if spec is not None:
-            transfers = self.repo.filter_by_spec(
+            return self.repo.paginate_by_spec(
                 spec, limit=query.limit, offset=query.offset
             )
-            total = self.repo.count_by_spec(spec)
-        else:
-            transfers = self.repo.filter_by(limit=query.limit, offset=query.offset)
-            total = self.repo.count_by()
-
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [t.dict() for t in transfers],
-        }
+        return self.repo.paginate(limit=query.limit, offset=query.offset)
 
 
 @dataclass

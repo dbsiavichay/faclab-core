@@ -29,8 +29,12 @@ def _make_customer(**overrides) -> Customer:
 def test_get_all_customers_query_handler():
     customers = [_make_customer(id=1), _make_customer(id=2, name="Second")]
     repo = MagicMock()
-    repo.filter_by.return_value = customers
-    repo.count_by.return_value = 2
+    repo.paginate.return_value = {
+        "total": 2,
+        "limit": None,
+        "offset": None,
+        "items": [c.dict() for c in customers],
+    }
     handler = GetAllCustomersQueryHandler(repo)
 
     result = handler.handle(GetAllCustomersQuery())

@@ -34,27 +34,16 @@ class GetAllLotsQueryHandler(QueryHandler[GetAllLotsQuery, dict]):
                 from src.inventory.lot.domain.specifications import LotsByProduct
 
                 spec = spec & LotsByProduct(query.product_id)
-            lots = self.repo.filter_by_spec(
+            return self.repo.paginate_by_spec(
                 spec, limit=query.limit, offset=query.offset
             )
-            total = self.repo.count_by_spec(spec)
-        elif query.product_id is not None:
-            lots = self.repo.filter_by(
+        if query.product_id is not None:
+            return self.repo.paginate(
                 product_id=query.product_id,
                 limit=query.limit,
                 offset=query.offset,
             )
-            total = self.repo.count_by(product_id=query.product_id)
-        else:
-            lots = self.repo.filter_by(limit=query.limit, offset=query.offset)
-            total = self.repo.count_by()
-
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [lot.dict() for lot in lots],
-        }
+        return self.repo.paginate(limit=query.limit, offset=query.offset)
 
 
 @injectable(lifetime="scoped")

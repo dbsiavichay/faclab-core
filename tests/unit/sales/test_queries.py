@@ -70,7 +70,12 @@ def test_get_all_sales_query_handler():
         _make_sale(id=2, customer_id=20),
     ]
     repo = _mock_repo(entities=sales)
-    repo.count_by.return_value = 2
+    repo.paginate.return_value = {
+        "total": 2,
+        "limit": None,
+        "offset": None,
+        "items": [s.dict() for s in sales],
+    }
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery()
@@ -80,20 +85,25 @@ def test_get_all_sales_query_handler():
     assert result["items"][0]["id"] == 1
     assert result["items"][1]["id"] == 2
     assert result["total"] == 2
-    repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    repo.paginate.assert_called_once_with(limit=None, offset=None)
 
 
 def test_get_all_sales_with_customer_filter():
     """Test filtrar ventas por cliente"""
     sales = [_make_sale(id=1, customer_id=10)]
     repo = _mock_repo(entities=sales)
-    repo.count_by.return_value = 1
+    repo.paginate.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [s.dict() for s in sales],
+    }
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery(customer_id=10)
     result = handler.handle(query)
 
-    repo.filter_by.assert_called_once_with(limit=None, offset=None, customer_id=10)
+    repo.paginate.assert_called_once_with(limit=None, offset=None, customer_id=10)
     assert len(result["items"]) == 1
     assert result["items"][0]["customer_id"] == 10
     assert result["total"] == 1
@@ -103,28 +113,38 @@ def test_get_all_sales_with_status_filter():
     """Test filtrar ventas por estado"""
     sales = [_make_sale(id=1, status=SaleStatus.CONFIRMED)]
     repo = _mock_repo(entities=sales)
-    repo.count_by.return_value = 1
+    repo.paginate.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [s.dict() for s in sales],
+    }
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery(status="CONFIRMED")
     result = handler.handle(query)
 
-    repo.filter_by.assert_called_once_with(limit=None, offset=None, status="CONFIRMED")
+    repo.paginate.assert_called_once_with(limit=None, offset=None, status="CONFIRMED")
     assert len(result["items"]) == 1
     assert result["total"] == 1
 
 
 def test_get_all_sales_with_pagination():
     """Test paginacion de ventas"""
-    sales = [_make_sale(id=i) for i in range(1, 11)]
-    repo = _mock_repo(entities=sales[:5])  # Simular primera pagina
-    repo.count_by.return_value = 10
+    sales = [_make_sale(id=i) for i in range(1, 6)]
+    repo = _mock_repo(entities=sales)
+    repo.paginate.return_value = {
+        "total": 10,
+        "limit": 5,
+        "offset": 0,
+        "items": [s.dict() for s in sales],
+    }
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery(limit=5, offset=0)
     result = handler.handle(query)
 
-    repo.filter_by.assert_called_once_with(limit=5, offset=0)
+    repo.paginate.assert_called_once_with(limit=5, offset=0)
     assert len(result["items"]) == 5
     assert result["total"] == 10
 
@@ -132,13 +152,18 @@ def test_get_all_sales_with_pagination():
 def test_get_all_sales_empty():
     """Test obtener ventas cuando no hay ninguna"""
     repo = _mock_repo(entities=[])
-    repo.count_by.return_value = 0
+    repo.paginate.return_value = {
+        "total": 0,
+        "limit": None,
+        "offset": None,
+        "items": [],
+    }
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery()
     result = handler.handle(query)
 
-    repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    repo.paginate.assert_called_once_with(limit=None, offset=None)
     assert len(result["items"]) == 0
     assert result["total"] == 0
 
@@ -230,14 +255,19 @@ def test_get_all_sales_multiple_filters():
     """Test filtrar ventas con multiples criterios"""
     sales = [_make_sale(id=1, customer_id=10, status=SaleStatus.CONFIRMED)]
     repo = _mock_repo(entities=sales)
-    repo.count_by.return_value = 1
+    repo.paginate.return_value = {
+        "total": 1,
+        "limit": 10,
+        "offset": None,
+        "items": [s.dict() for s in sales],
+    }
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery(customer_id=10, status="CONFIRMED", limit=10)
     handler.handle(query)
 
     # Verificar que se aplicaron los filtros
-    call_kwargs = repo.filter_by.call_args[1]
+    call_kwargs = repo.paginate.call_args[1]
     assert call_kwargs["customer_id"] == 10
     assert call_kwargs["status"] == "CONFIRMED"
     assert call_kwargs["limit"] == 10
