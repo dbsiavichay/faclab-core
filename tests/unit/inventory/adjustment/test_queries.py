@@ -55,13 +55,17 @@ def test_get_all_adjustments_no_filters():
     adj2 = _make_adjustment(id=2, status=AdjustmentStatus.CONFIRMED)
 
     repo = MagicMock()
-    repo.filter_by.return_value = [adj1, adj2]
-    repo.count_by.return_value = 2
+    repo.paginate.return_value = {
+        "total": 2,
+        "limit": None,
+        "offset": None,
+        "items": [adj1.dict(), adj2.dict()],
+    }
     handler = GetAllAdjustmentsQueryHandler(repo)
 
     result = handler.handle(GetAllAdjustmentsQuery())
 
-    repo.filter_by.assert_called_once()
+    repo.paginate.assert_called_once()
     assert len(result["items"]) == 2
     assert result["total"] == 2
 
@@ -70,14 +74,17 @@ def test_get_all_adjustments_filtered_by_status():
     adj = _make_adjustment(id=1, status=AdjustmentStatus.DRAFT)
 
     repo = MagicMock()
-    repo.filter_by_spec.return_value = [adj]
-    repo.count_by_spec.return_value = 1
+    repo.paginate_by_spec.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [adj.dict()],
+    }
     handler = GetAllAdjustmentsQueryHandler(repo)
 
     result = handler.handle(GetAllAdjustmentsQuery(status="draft"))
 
-    repo.filter_by_spec.assert_called_once()
-    repo.count_by_spec.assert_called_once()
+    repo.paginate_by_spec.assert_called_once()
     assert len(result["items"]) == 1
     assert result["items"][0]["status"] == AdjustmentStatus.DRAFT
     assert result["total"] == 1
@@ -87,14 +94,17 @@ def test_get_all_adjustments_filtered_by_warehouse():
     adj = _make_adjustment(id=1, warehouse_id=10)
 
     repo = MagicMock()
-    repo.filter_by_spec.return_value = [adj]
-    repo.count_by_spec.return_value = 1
+    repo.paginate_by_spec.return_value = {
+        "total": 1,
+        "limit": None,
+        "offset": None,
+        "items": [adj.dict()],
+    }
     handler = GetAllAdjustmentsQueryHandler(repo)
 
     result = handler.handle(GetAllAdjustmentsQuery(warehouse_id=10))
 
-    repo.filter_by_spec.assert_called_once()
-    repo.count_by_spec.assert_called_once()
+    repo.paginate_by_spec.assert_called_once()
     assert len(result["items"]) == 1
     assert result["items"][0]["warehouse_id"] == 10
     assert result["total"] == 1

@@ -201,3 +201,23 @@ class SqlAlchemyRepository(Repository[E], Generic[E]):
         return (
             self.session.query(func.count(self.__model__.id)).filter(*criteria).scalar()
         )
+
+    def paginate(self, limit=None, offset=None, **kwargs) -> dict:
+        items = self.filter_by(limit=limit, offset=offset, **kwargs)
+        total = self.count_by(**kwargs)
+        return {
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "items": [item.dict() for item in items],
+        }
+
+    def paginate_by_spec(self, spec, limit=None, offset=None) -> dict:
+        items = self.filter_by_spec(spec, limit=limit, offset=offset)
+        total = self.count_by_spec(spec)
+        return {
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "items": [item.dict() for item in items],
+        }

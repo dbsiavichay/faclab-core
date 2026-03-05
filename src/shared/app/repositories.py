@@ -51,3 +51,15 @@ class Repository(Generic[T], ABC):
         offset: int | None = None,
     ) -> list[T]:
         raise NotImplementedError
+
+    @abstractmethod
+    def paginate(
+        self, limit: int | None = None, offset: int | None = None, **kwargs
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
+    def paginate_by_spec(
+        self, spec: Specification, limit: int | None = None, offset: int | None = None
+    ) -> dict:
+        raise NotImplementedError

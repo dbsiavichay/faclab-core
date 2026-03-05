@@ -32,17 +32,7 @@ class GetAllMovementsQueryHandler(QueryHandler[GetAllMovementsQuery, dict]):
         if query.type is not None:
             filters["type"] = query.type
         # TODO: Implementar filtros por from_date y to_date cuando sea necesario
-
-        movements = self.repo.filter_by(
-            limit=query.limit, offset=query.offset, **filters
-        )
-        total = self.repo.count_by(**filters)
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [movement.dict() for movement in movements],
-        }
+        return self.repo.paginate(limit=query.limit, offset=query.offset, **filters)
 
 
 @dataclass

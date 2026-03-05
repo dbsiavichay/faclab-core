@@ -32,20 +32,7 @@ class GetAllSalesQueryHandler(QueryHandler[GetAllSalesQuery, dict]):
             filters["customer_id"] = query.customer_id
         if query.status is not None:
             filters["status"] = query.status
-
-        sales = self.repo.filter_by(
-            limit=query.limit,
-            offset=query.offset,
-            **filters,
-        )
-        total = self.repo.count_by(**filters)
-
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [sale.dict() for sale in sales],
-        }
+        return self.repo.paginate(limit=query.limit, offset=query.offset, **filters)
 
 
 @dataclass

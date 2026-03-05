@@ -37,14 +37,7 @@ class GetSerialsQueryHandler(QueryHandler[GetSerialsQuery, dict]):
             kwargs["product_id"] = query.product_id
         if query.status is not None:
             kwargs["status"] = query.status
-        serials = self.repo.filter_by(limit=query.limit, offset=query.offset, **kwargs)
-        total = self.repo.count_by(**kwargs)
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [s.dict() for s in serials],
-        }
+        return self.repo.paginate(limit=query.limit, offset=query.offset, **kwargs)
 
 
 @injectable(lifetime="scoped")

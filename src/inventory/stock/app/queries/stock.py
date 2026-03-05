@@ -29,17 +29,9 @@ class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, dict]):
             filter_kwargs["product_id"] = query.product_id
         if query.location_id is not None:
             filter_kwargs["location_id"] = query.location_id
-
-        stocks = self.repo.filter_by(
+        return self.repo.paginate(
             limit=query.limit, offset=query.offset, **filter_kwargs
         )
-        total = self.repo.count_by(**filter_kwargs)
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [stock.dict() for stock in stocks],
-        }
 
 
 @dataclass

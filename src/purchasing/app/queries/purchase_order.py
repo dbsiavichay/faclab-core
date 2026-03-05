@@ -27,16 +27,7 @@ class GetAllPurchaseOrdersQueryHandler(QueryHandler[GetAllPurchaseOrdersQuery, d
             filters["status"] = query.status
         if query.supplier_id is not None:
             filters["supplier_id"] = query.supplier_id
-
-        orders = self.repo.filter_by(limit=query.limit, offset=query.offset, **filters)
-        total = self.repo.count_by(**filters)
-
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [order.dict() for order in orders],
-        }
+        return self.repo.paginate(limit=query.limit, offset=query.offset, **filters)
 
 
 @dataclass

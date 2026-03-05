@@ -39,20 +39,10 @@ class GetAllAdjustmentsQueryHandler(QueryHandler[GetAllAdjustmentsQuery, dict]):
             spec = warehouse_spec if spec is None else spec & warehouse_spec
 
         if spec is not None:
-            adjustments = self.repo.filter_by_spec(
+            return self.repo.paginate_by_spec(
                 spec, limit=query.limit, offset=query.offset
             )
-            total = self.repo.count_by_spec(spec)
-        else:
-            adjustments = self.repo.filter_by(limit=query.limit, offset=query.offset)
-            total = self.repo.count_by()
-
-        return {
-            "total": total,
-            "limit": query.limit,
-            "offset": query.offset,
-            "items": [adj.dict() for adj in adjustments],
-        }
+        return self.repo.paginate(limit=query.limit, offset=query.offset)
 
 
 @dataclass
