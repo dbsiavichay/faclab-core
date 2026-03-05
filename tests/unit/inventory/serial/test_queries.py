@@ -35,24 +35,32 @@ def test_get_serials_by_product():
     s2 = _make_serial(id=2, serial_number="SN-002")
     repo = MagicMock()
     repo.filter_by.return_value = [s1, s2]
+    repo.count_by.return_value = 2
     handler = GetSerialsQueryHandler(repo)
 
     result = handler.handle(GetSerialsQuery(product_id=5))
 
-    repo.filter_by.assert_called_once_with(product_id=5)
-    assert len(result) == 2
+    repo.filter_by.assert_called_once_with(limit=None, offset=None, product_id=5)
+    assert len(result["items"]) == 2
+    assert result["total"] == 2
+    repo.count_by.assert_called_once_with(product_id=5)
 
 
 def test_get_serials_with_status_filter():
     s1 = _make_serial(status=SerialStatus.AVAILABLE)
     repo = MagicMock()
     repo.filter_by.return_value = [s1]
+    repo.count_by.return_value = 1
     handler = GetSerialsQueryHandler(repo)
 
     result = handler.handle(GetSerialsQuery(product_id=5, status="available"))
 
-    repo.filter_by.assert_called_once_with(product_id=5, status="available")
-    assert len(result) == 1
+    repo.filter_by.assert_called_once_with(
+        limit=None, offset=None, product_id=5, status="available"
+    )
+    assert len(result["items"]) == 1
+    assert result["total"] == 1
+    repo.count_by.assert_called_once_with(product_id=5, status="available")
 
 
 def test_get_serials_without_filters():
@@ -60,21 +68,26 @@ def test_get_serials_without_filters():
     s2 = _make_serial(id=2, serial_number="SN-002")
     repo = MagicMock()
     repo.filter_by.return_value = [s1, s2]
+    repo.count_by.return_value = 2
     handler = GetSerialsQueryHandler(repo)
 
     result = handler.handle(GetSerialsQuery())
 
-    repo.filter_by.assert_called_once_with()
-    assert len(result) == 2
+    repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    assert len(result["items"]) == 2
+    assert result["total"] == 2
+    repo.count_by.assert_called_once_with()
 
 
 def test_get_serials_by_product_empty():
     repo = MagicMock()
     repo.filter_by.return_value = []
+    repo.count_by.return_value = 0
     handler = GetSerialsQueryHandler(repo)
 
     result = handler.handle(GetSerialsQuery(product_id=99))
-    assert result == []
+    assert result["items"] == []
+    assert result["total"] == 0
 
 
 # ---------------------------------------------------------------------------

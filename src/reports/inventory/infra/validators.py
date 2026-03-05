@@ -1,8 +1,10 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
+
+from src.shared.infra.validators import QueryParams
 
 # ---------------------------------------------------------------------------
 # Valuation
@@ -84,25 +86,31 @@ class MovementHistoryItemResponse(BaseModel):
     created_at: datetime | None = None
 
 
-class MovementHistoryResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
-    total: int
-    limit: int
-    offset: int
-    items: list[MovementHistoryItemResponse]
-
-
-class MovementHistoryQueryParams(BaseModel):
-    product_id: int | None = Field(None, ge=1, alias="productId")
+class MovementHistoryQueryParams(QueryParams):
+    limit: int | None = Field(50, ge=1, le=500)
+    product_id: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("productId", "product_id"),
+        serialization_alias="productId",
+    )
     type: str | None = None
-    from_date: date | None = Field(None, alias="fromDate")
-    to_date: date | None = Field(None, alias="toDate")
-    warehouse_id: int | None = Field(None, ge=1, alias="warehouseId")
-    limit: int = Field(50, ge=1, le=500)
-    offset: int = Field(0, ge=0)
-
-    model_config = ConfigDict(populate_by_name=True)
+    from_date: date | None = Field(
+        None,
+        validation_alias=AliasChoices("fromDate", "from_date"),
+        serialization_alias="fromDate",
+    )
+    to_date: date | None = Field(
+        None,
+        validation_alias=AliasChoices("toDate", "to_date"),
+        serialization_alias="toDate",
+    )
+    warehouse_id: int | None = Field(
+        None,
+        ge=1,
+        validation_alias=AliasChoices("warehouseId", "warehouse_id"),
+        serialization_alias="warehouseId",
+    )
 
 
 # ---------------------------------------------------------------------------

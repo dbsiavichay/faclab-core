@@ -12,25 +12,31 @@ from src.shared.domain.exceptions import NotFoundError
 class GetAllPurchaseOrdersQuery(Query):
     status: str | None = None
     supplier_id: int | None = None
+    limit: int | None = None
+    offset: int | None = None
 
 
 @injectable(lifetime="scoped")
-class GetAllPurchaseOrdersQueryHandler(
-    QueryHandler[GetAllPurchaseOrdersQuery, list[dict]]
-):
+class GetAllPurchaseOrdersQueryHandler(QueryHandler[GetAllPurchaseOrdersQuery, dict]):
     def __init__(self, repo: Repository[PurchaseOrder]):
         self.repo = repo
 
-    def _handle(self, query: GetAllPurchaseOrdersQuery) -> list[dict]:
+    def _handle(self, query: GetAllPurchaseOrdersQuery) -> dict:
         filters = {}
         if query.status is not None:
             filters["status"] = query.status
         if query.supplier_id is not None:
             filters["supplier_id"] = query.supplier_id
 
-        orders = self.repo.filter_by(**filters) if filters else self.repo.get_all()
+        orders = self.repo.filter_by(limit=query.limit, offset=query.offset, **filters)
+        total = self.repo.count_by(**filters)
 
-        return [order.dict() for order in orders]
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [order.dict() for order in orders],
+        }
 
 
 @dataclass

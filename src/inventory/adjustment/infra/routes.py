@@ -36,6 +36,7 @@ from src.inventory.adjustment.infra.validators import (
     UpdateAdjustmentItemRequest,
     UpdateAdjustmentRequest,
 )
+from src.shared.infra.validators import PaginatedResponse
 
 
 class AdjustmentRouter:
@@ -45,7 +46,9 @@ class AdjustmentRouter:
 
     def _setup_routes(self):
         self.router.get(
-            "", response_model=list[AdjustmentResponse], summary="Get all adjustments"
+            "",
+            response_model=PaginatedResponse[AdjustmentResponse],
+            summary="Get all adjustments",
         )(self.get_all)
         self.router.post(
             "", response_model=AdjustmentResponse, summary="Create adjustment"
@@ -84,12 +87,17 @@ class AdjustmentRouter:
         self,
         handler: Injected[GetAllAdjustmentsQueryHandler],
         query_params: AdjustmentQueryParams = Depends(),
-    ) -> list[AdjustmentResponse]:
+    ) -> PaginatedResponse[AdjustmentResponse]:
         """Get all inventory adjustments."""
         result = handler.handle(
             GetAllAdjustmentsQuery(**query_params.model_dump(exclude_none=True))
         )
-        return [AdjustmentResponse.model_validate(a) for a in result]
+        return PaginatedResponse[AdjustmentResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[AdjustmentResponse.model_validate(a) for a in result["items"]],
+        )
 
     def create(
         self,

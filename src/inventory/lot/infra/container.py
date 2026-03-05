@@ -4,9 +4,7 @@ from src.inventory.lot.app.commands.lot import (
 )
 from src.inventory.lot.app.queries.lot import (
     GetAllLotsQueryHandler,
-    GetExpiringLotsQueryHandler,
     GetLotByIdQueryHandler,
-    GetLotsByProductQueryHandler,
 )
 from src.inventory.lot.infra.mappers import LotMapper, MovementLotItemMapper
 from src.inventory.lot.infra.repositories import (
@@ -22,7 +20,5 @@ LOT_INJECTABLES = [
     CreateLotCommandHandler,
     UpdateLotCommandHandler,
     GetAllLotsQueryHandler,
-    GetLotsByProductQueryHandler,
-    GetExpiringLotsQueryHandler,
     GetLotByIdQueryHandler,
 ]

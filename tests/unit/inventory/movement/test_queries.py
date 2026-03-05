@@ -43,6 +43,7 @@ def test_get_all_movements_query_handler(mock_movement_repo):
         ),
     ]
     mock_movement_repo.filter_by.return_value = movements
+    mock_movement_repo.count_by.return_value = 2
 
     query = GetAllMovementsQuery()
     handler = GetAllMovementsQueryHandler(mock_movement_repo)
@@ -51,10 +52,12 @@ def test_get_all_movements_query_handler(mock_movement_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 2
-    assert result[0]["id"] == 1
-    assert result[1]["id"] == 2
+    assert len(result["items"]) == 2
+    assert result["items"][0]["id"] == 1
+    assert result["items"][1]["id"] == 2
+    assert result["total"] == 2
     mock_movement_repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    mock_movement_repo.count_by.assert_called_once_with()
 
 
 def test_get_all_movements_with_product_filter(mock_movement_repo):
@@ -69,6 +72,7 @@ def test_get_all_movements_with_product_filter(mock_movement_repo):
         ),
     ]
     mock_movement_repo.filter_by.return_value = movements
+    mock_movement_repo.count_by.return_value = 1
 
     query = GetAllMovementsQuery(product_id=1)
     handler = GetAllMovementsQueryHandler(mock_movement_repo)
@@ -77,11 +81,13 @@ def test_get_all_movements_with_product_filter(mock_movement_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 1
-    assert result[0]["product_id"] == 1
+    assert len(result["items"]) == 1
+    assert result["items"][0]["product_id"] == 1
+    assert result["total"] == 1
     mock_movement_repo.filter_by.assert_called_once_with(
         limit=None, offset=None, product_id=1
     )
+    mock_movement_repo.count_by.assert_called_once_with(product_id=1)
 
 
 def test_get_all_movements_with_type_filter(mock_movement_repo):
@@ -96,6 +102,7 @@ def test_get_all_movements_with_type_filter(mock_movement_repo):
         ),
     ]
     mock_movement_repo.filter_by.return_value = movements
+    mock_movement_repo.count_by.return_value = 1
 
     query = GetAllMovementsQuery(type=MovementType.IN.value)
     handler = GetAllMovementsQueryHandler(mock_movement_repo)
@@ -104,11 +111,13 @@ def test_get_all_movements_with_type_filter(mock_movement_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 1
-    assert result[0]["type"] == MovementType.IN
+    assert len(result["items"]) == 1
+    assert result["items"][0]["type"] == MovementType.IN
+    assert result["total"] == 1
     mock_movement_repo.filter_by.assert_called_once_with(
         limit=None, offset=None, type=MovementType.IN.value
     )
+    mock_movement_repo.count_by.assert_called_once_with(type=MovementType.IN.value)
 
 
 def test_get_all_movements_with_multiple_filters(mock_movement_repo):
@@ -123,6 +132,7 @@ def test_get_all_movements_with_multiple_filters(mock_movement_repo):
         ),
     ]
     mock_movement_repo.filter_by.return_value = movements
+    mock_movement_repo.count_by.return_value = 1
 
     query = GetAllMovementsQuery(product_id=1, type=MovementType.IN.value)
     handler = GetAllMovementsQueryHandler(mock_movement_repo)
@@ -131,9 +141,13 @@ def test_get_all_movements_with_multiple_filters(mock_movement_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 1
+    assert len(result["items"]) == 1
+    assert result["total"] == 1
     mock_movement_repo.filter_by.assert_called_once_with(
         limit=None, offset=None, product_id=1, type=MovementType.IN.value
+    )
+    mock_movement_repo.count_by.assert_called_once_with(
+        product_id=1, type=MovementType.IN.value
     )
 
 
@@ -141,6 +155,7 @@ def test_get_all_movements_empty(mock_movement_repo):
     """Test getting all movements when none exist"""
     # Arrange
     mock_movement_repo.filter_by.return_value = []
+    mock_movement_repo.count_by.return_value = 0
 
     query = GetAllMovementsQuery()
     handler = GetAllMovementsQueryHandler(mock_movement_repo)
@@ -149,8 +164,10 @@ def test_get_all_movements_empty(mock_movement_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 0
+    assert len(result["items"]) == 0
+    assert result["total"] == 0
     mock_movement_repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    mock_movement_repo.count_by.assert_called_once_with()
 
 
 def test_get_all_movements_with_pagination(mock_movement_repo):
@@ -171,6 +188,7 @@ def test_get_all_movements_with_pagination(mock_movement_repo):
         ),
     ]
     mock_movement_repo.filter_by.return_value = movements
+    mock_movement_repo.count_by.return_value = 2
 
     query = GetAllMovementsQuery(limit=10, offset=5)
     handler = GetAllMovementsQueryHandler(mock_movement_repo)
@@ -179,7 +197,8 @@ def test_get_all_movements_with_pagination(mock_movement_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 2
+    assert len(result["items"]) == 2
+    assert result["total"] == 2
     mock_movement_repo.filter_by.assert_called_once_with(limit=10, offset=5)
 
 

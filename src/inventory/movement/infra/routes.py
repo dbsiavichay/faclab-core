@@ -14,6 +14,7 @@ from src.inventory.movement.infra.validators import (
     MovementRequest,
     MovementResponse,
 )
+from src.shared.infra.validators import PaginatedResponse
 
 
 class MovementRouter:
@@ -27,7 +28,9 @@ class MovementRouter:
             self.create
         )
         self.router.get(
-            "", response_model=list[MovementResponse], summary="Get all movements"
+            "",
+            response_model=PaginatedResponse[MovementResponse],
+            summary="Get all movements",
         )(self.get_all)
 
     def create(
@@ -45,9 +48,14 @@ class MovementRouter:
         self,
         handler: Injected[GetAllMovementsQueryHandler],
         query_params: MovementQueryParams = Depends(),
-    ) -> list[MovementResponse]:
+    ) -> PaginatedResponse[MovementResponse]:
         """Get all movements."""
         result = handler.handle(
             GetAllMovementsQuery(**query_params.model_dump(exclude_none=True))
         )
-        return [MovementResponse.model_validate(m) for m in result]
+        return PaginatedResponse[MovementResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[MovementResponse.model_validate(m) for m in result["items"]],
+        )

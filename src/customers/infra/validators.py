@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, Field
 
+from src.shared.infra.validators import QueryParams
+
 
 # Customer Requests
 class CustomerRequest(BaseModel):
@@ -82,3 +84,8 @@ class CustomerContactResponse(CustomerContactRequest):
         validation_alias=AliasChoices("customerId", "customer_id"),
         serialization_alias="customerId",
     )
+
+
+# Query Params
+class CustomerQueryParams(QueryParams):
+    pass

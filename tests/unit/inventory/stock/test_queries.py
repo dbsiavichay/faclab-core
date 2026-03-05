@@ -31,6 +31,7 @@ def test_get_all_stocks_query_handler(mock_stock_repo):
         Stock(id=2, product_id=2, quantity=50),
     ]
     mock_stock_repo.filter_by.return_value = stocks
+    mock_stock_repo.count_by.return_value = 2
 
     query = GetAllStocksQuery()
     handler = GetAllStocksQueryHandler(mock_stock_repo)
@@ -39,12 +40,14 @@ def test_get_all_stocks_query_handler(mock_stock_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 2
-    assert result[0]["id"] == 1
-    assert result[0]["quantity"] == 100
-    assert result[1]["id"] == 2
-    assert result[1]["quantity"] == 50
+    assert len(result["items"]) == 2
+    assert result["items"][0]["id"] == 1
+    assert result["items"][0]["quantity"] == 100
+    assert result["items"][1]["id"] == 2
+    assert result["items"][1]["quantity"] == 50
+    assert result["total"] == 2
     mock_stock_repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    mock_stock_repo.count_by.assert_called_once_with()
 
 
 def test_get_all_stocks_with_product_filter(mock_stock_repo):
@@ -54,6 +57,7 @@ def test_get_all_stocks_with_product_filter(mock_stock_repo):
         Stock(id=1, product_id=1, quantity=100),
     ]
     mock_stock_repo.filter_by.return_value = stocks
+    mock_stock_repo.count_by.return_value = 1
 
     query = GetAllStocksQuery(product_id=1)
     handler = GetAllStocksQueryHandler(mock_stock_repo)
@@ -62,18 +66,21 @@ def test_get_all_stocks_with_product_filter(mock_stock_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 1
-    assert result[0]["product_id"] == 1
-    assert result[0]["quantity"] == 100
+    assert len(result["items"]) == 1
+    assert result["items"][0]["product_id"] == 1
+    assert result["items"][0]["quantity"] == 100
+    assert result["total"] == 1
     mock_stock_repo.filter_by.assert_called_once_with(
         limit=None, offset=None, product_id=1
     )
+    mock_stock_repo.count_by.assert_called_once_with(product_id=1)
 
 
 def test_get_all_stocks_empty(mock_stock_repo):
     """Test getting all stocks when none exist"""
     # Arrange
     mock_stock_repo.filter_by.return_value = []
+    mock_stock_repo.count_by.return_value = 0
 
     query = GetAllStocksQuery()
     handler = GetAllStocksQueryHandler(mock_stock_repo)
@@ -82,8 +89,10 @@ def test_get_all_stocks_empty(mock_stock_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 0
+    assert len(result["items"]) == 0
+    assert result["total"] == 0
     mock_stock_repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    mock_stock_repo.count_by.assert_called_once_with()
 
 
 def test_get_all_stocks_with_pagination(mock_stock_repo):
@@ -94,6 +103,7 @@ def test_get_all_stocks_with_pagination(mock_stock_repo):
         Stock(id=2, product_id=2, quantity=50),
     ]
     mock_stock_repo.filter_by.return_value = stocks
+    mock_stock_repo.count_by.return_value = 2
 
     query = GetAllStocksQuery(limit=10, offset=5)
     handler = GetAllStocksQueryHandler(mock_stock_repo)
@@ -102,7 +112,8 @@ def test_get_all_stocks_with_pagination(mock_stock_repo):
     result = handler.handle(query)
 
     # Assert
-    assert len(result) == 2
+    assert len(result["items"]) == 2
+    assert result["total"] == 2
     mock_stock_repo.filter_by.assert_called_once_with(limit=10, offset=5)
 
 

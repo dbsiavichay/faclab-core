@@ -29,16 +29,19 @@ def test_get_all_products_query_handler():
         Product(id=2, sku="SKU-002", name="Product 2"),
     ]
     mock_repo.filter_by.return_value = products
+    mock_repo.count_by.return_value = 2
 
     handler = GetAllProductsQueryHandler(mock_repo)
     query = GetAllProductsQuery()
 
     result = handler.handle(query)
 
-    assert len(result) == 2
-    assert result[0]["id"] == 1
-    assert result[1]["id"] == 2
+    assert len(result["items"]) == 2
+    assert result["items"][0]["id"] == 1
+    assert result["items"][1]["id"] == 2
+    assert result["total"] == 2
     mock_repo.filter_by.assert_called_once()
+    mock_repo.count_by.assert_called_once()
 
 
 def test_get_all_products_with_category_filter():
@@ -46,15 +49,18 @@ def test_get_all_products_with_category_filter():
     mock_repo = Mock()
     products = [Product(id=1, sku="SKU-001", name="Product 1", category_id=1)]
     mock_repo.filter_by_spec.return_value = products
+    mock_repo.count_by_spec.return_value = 1
 
     handler = GetAllProductsQueryHandler(mock_repo)
     query = GetAllProductsQuery(category_id=1)
 
     result = handler.handle(query)
 
-    assert len(result) == 1
-    assert result[0]["category_id"] == 1
+    assert len(result["items"]) == 1
+    assert result["items"][0]["category_id"] == 1
+    assert result["total"] == 1
     mock_repo.filter_by_spec.assert_called_once()
+    mock_repo.count_by_spec.assert_called_once()
 
 
 def test_get_product_by_id_handler():
@@ -112,16 +118,19 @@ def test_get_all_categories_query_handler():
         Category(id=2, name="Books", description="Book items"),
     ]
     mock_repo.filter_by.return_value = categories
+    mock_repo.count_by.return_value = 2
 
     handler = GetAllCategoriesQueryHandler(mock_repo)
     query = GetAllCategoriesQuery()
 
     result = handler.handle(query)
 
-    assert len(result) == 2
-    assert result[0]["id"] == 1
-    assert result[1]["id"] == 2
+    assert len(result["items"]) == 2
+    assert result["items"][0]["id"] == 1
+    assert result["items"][1]["id"] == 2
+    assert result["total"] == 2
     mock_repo.filter_by.assert_called_once()
+    mock_repo.count_by.assert_called_once()
 
 
 def test_get_category_by_id_handler():

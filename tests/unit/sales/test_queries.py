@@ -70,14 +70,16 @@ def test_get_all_sales_query_handler():
         _make_sale(id=2, customer_id=20),
     ]
     repo = _mock_repo(entities=sales)
+    repo.count_by.return_value = 2
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery()
     result = handler.handle(query)
 
-    assert len(result) == 2
-    assert result[0]["id"] == 1
-    assert result[1]["id"] == 2
+    assert len(result["items"]) == 2
+    assert result["items"][0]["id"] == 1
+    assert result["items"][1]["id"] == 2
+    assert result["total"] == 2
     repo.filter_by.assert_called_once_with(limit=None, offset=None)
 
 
@@ -85,52 +87,60 @@ def test_get_all_sales_with_customer_filter():
     """Test filtrar ventas por cliente"""
     sales = [_make_sale(id=1, customer_id=10)]
     repo = _mock_repo(entities=sales)
+    repo.count_by.return_value = 1
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery(customer_id=10)
     result = handler.handle(query)
 
     repo.filter_by.assert_called_once_with(limit=None, offset=None, customer_id=10)
-    assert len(result) == 1
-    assert result[0]["customer_id"] == 10
+    assert len(result["items"]) == 1
+    assert result["items"][0]["customer_id"] == 10
+    assert result["total"] == 1
 
 
 def test_get_all_sales_with_status_filter():
     """Test filtrar ventas por estado"""
     sales = [_make_sale(id=1, status=SaleStatus.CONFIRMED)]
     repo = _mock_repo(entities=sales)
+    repo.count_by.return_value = 1
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery(status="CONFIRMED")
     result = handler.handle(query)
 
     repo.filter_by.assert_called_once_with(limit=None, offset=None, status="CONFIRMED")
-    assert len(result) == 1
+    assert len(result["items"]) == 1
+    assert result["total"] == 1
 
 
 def test_get_all_sales_with_pagination():
-    """Test paginación de ventas"""
+    """Test paginacion de ventas"""
     sales = [_make_sale(id=i) for i in range(1, 11)]
-    repo = _mock_repo(entities=sales[:5])  # Simular primera página
+    repo = _mock_repo(entities=sales[:5])  # Simular primera pagina
+    repo.count_by.return_value = 10
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery(limit=5, offset=0)
     result = handler.handle(query)
 
     repo.filter_by.assert_called_once_with(limit=5, offset=0)
-    assert len(result) == 5
+    assert len(result["items"]) == 5
+    assert result["total"] == 10
 
 
 def test_get_all_sales_empty():
     """Test obtener ventas cuando no hay ninguna"""
     repo = _mock_repo(entities=[])
+    repo.count_by.return_value = 0
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery()
     result = handler.handle(query)
 
     repo.filter_by.assert_called_once_with(limit=None, offset=None)
-    assert len(result) == 0
+    assert len(result["items"]) == 0
+    assert result["total"] == 0
 
 
 def test_get_sale_by_id_query_handler():
@@ -217,9 +227,10 @@ def test_get_sale_payments_empty():
 
 
 def test_get_all_sales_multiple_filters():
-    """Test filtrar ventas con múltiples criterios"""
+    """Test filtrar ventas con multiples criterios"""
     sales = [_make_sale(id=1, customer_id=10, status=SaleStatus.CONFIRMED)]
     repo = _mock_repo(entities=sales)
+    repo.count_by.return_value = 1
     handler = GetAllSalesQueryHandler(repo)
 
     query = GetAllSalesQuery(customer_id=10, status="CONFIRMED", limit=10)

@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, Field
 
+from src.shared.infra.validators import QueryParams
+
 
 # Supplier Requests
 class SupplierRequest(BaseModel):
@@ -126,3 +128,12 @@ class SupplierProductRequest(BaseModel):
 
 class SupplierProductResponse(SupplierProductRequest):
     id: int = Field(ge=1, description="Supplier product ID")
+
+
+# Query Params
+class SupplierQueryParams(QueryParams):
+    is_active: bool | None = Field(
+        None,
+        validation_alias=AliasChoices("isActive", "is_active"),
+        serialization_alias="isActive",
+    )

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends
 from wireup import Injected
 
 from src.inventory.serial.app.commands.serial import (
@@ -16,8 +16,10 @@ from src.inventory.serial.app.queries.serial import (
 from src.inventory.serial.infra.validators import (
     SerialNumberRequest,
     SerialNumberResponse,
+    SerialQueryParams,
     SerialStatusUpdateRequest,
 )
+from src.shared.infra.validators import PaginatedResponse
 
 
 class SerialRouter:
@@ -33,7 +35,7 @@ class SerialRouter:
         )(self.create)
         self.router.get(
             "",
-            response_model=list[SerialNumberResponse],
+            response_model=PaginatedResponse[SerialNumberResponse],
             summary="Get serial numbers",
         )(self.get_all)
         self.router.get(
@@ -61,12 +63,18 @@ class SerialRouter:
     def get_all(
         self,
         handler: Injected[GetSerialsQueryHandler],
-        product_id: int | None = Query(None, description="Filter by product ID"),
-        status: str | None = Query(None, description="Filter by status"),
-    ) -> list[SerialNumberResponse]:
+        query_params: SerialQueryParams = Depends(),
+    ) -> PaginatedResponse[SerialNumberResponse]:
         """Retrieves serial numbers with optional filtering."""
-        result = handler.handle(GetSerialsQuery(product_id=product_id, status=status))
-        return [SerialNumberResponse.model_validate(s) for s in result]
+        result = handler.handle(
+            GetSerialsQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return PaginatedResponse[SerialNumberResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[SerialNumberResponse.model_validate(s) for s in result["items"]],
+        )
 
     def get_by_id(
         self,

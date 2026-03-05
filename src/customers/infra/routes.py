@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from wireup import Injected
 
 from src.customers.app.commands.customer import (
@@ -38,9 +38,11 @@ from src.customers.app.queries.customer_contact import (
 from src.customers.infra.validators import (
     CustomerContactRequest,
     CustomerContactResponse,
+    CustomerQueryParams,
     CustomerRequest,
     CustomerResponse,
 )
+from src.shared.infra.validators import PaginatedResponse
 
 
 class CustomerRouter:
@@ -58,7 +60,9 @@ class CustomerRouter:
         )(self.update)
         self.router.delete("/{id}", summary="Delete customer")(self.delete)
         self.router.get(
-            "", response_model=list[CustomerResponse], summary="Get all customers"
+            "",
+            response_model=PaginatedResponse[CustomerResponse],
+            summary="Get all customers",
         )(self.get_all)
         self.router.get(
             "/{id}", response_model=CustomerResponse, summary="Get customer by ID"
@@ -121,11 +125,20 @@ class CustomerRouter:
         handler.handle(DeleteCustomerCommand(id=id))
 
     def get_all(
-        self, handler: Injected[GetAllCustomersQueryHandler]
-    ) -> list[CustomerResponse]:
+        self,
+        handler: Injected[GetAllCustomersQueryHandler],
+        query_params: CustomerQueryParams = Depends(),
+    ) -> PaginatedResponse[CustomerResponse]:
         """Retrieves all customers."""
-        result = handler.handle(GetAllCustomersQuery())
-        return [CustomerResponse.model_validate(c) for c in result]
+        result = handler.handle(
+            GetAllCustomersQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return PaginatedResponse[CustomerResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[CustomerResponse.model_validate(c) for c in result["items"]],
+        )
 
     def get_by_id(
         self, handler: Injected[GetCustomerByIdQueryHandler], id: int

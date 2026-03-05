@@ -38,6 +38,10 @@ class Repository(Generic[T], ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def count_by(self, **kwargs) -> int:
+        raise NotImplementedError
+
+    @abstractmethod
     def filter_by_spec(
         self,
         spec: Specification,

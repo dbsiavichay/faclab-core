@@ -19,29 +19,33 @@ class GetAllSalesQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllSalesQueryHandler(QueryHandler[GetAllSalesQuery, list[dict]]):
+class GetAllSalesQueryHandler(QueryHandler[GetAllSalesQuery, dict]):
     """Handler para obtener todas las ventas"""
 
     def __init__(self, repo: Repository[Sale]):
         self.repo = repo
 
-    def _handle(self, query: GetAllSalesQuery) -> list[dict]:
+    def _handle(self, query: GetAllSalesQuery) -> dict:
         """Obtiene las ventas con los filtros especificados"""
-        # Preparar filtros
         filters = {}
         if query.customer_id is not None:
             filters["customer_id"] = query.customer_id
         if query.status is not None:
             filters["status"] = query.status
 
-        # Aplicar filtros con paginación
         sales = self.repo.filter_by(
             limit=query.limit,
             offset=query.offset,
             **filters,
         )
+        total = self.repo.count_by(**filters)
 
-        return [sale.dict() for sale in sales]
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [sale.dict() for sale in sales],
+        }
 
 
 @dataclass

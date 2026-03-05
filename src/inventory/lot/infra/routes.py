@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends
 from wireup import Injected
 
 from src.inventory.lot.app.commands.lot import (
@@ -10,14 +10,16 @@ from src.inventory.lot.app.commands.lot import (
 from src.inventory.lot.app.queries.lot import (
     GetAllLotsQuery,
     GetAllLotsQueryHandler,
-    GetExpiringLotsQuery,
-    GetExpiringLotsQueryHandler,
     GetLotByIdQuery,
     GetLotByIdQueryHandler,
-    GetLotsByProductQuery,
-    GetLotsByProductQueryHandler,
 )
-from src.inventory.lot.infra.validators import LotRequest, LotResponse, LotUpdateRequest
+from src.inventory.lot.infra.validators import (
+    LotQueryParams,
+    LotRequest,
+    LotResponse,
+    LotUpdateRequest,
+)
+from src.shared.infra.validators import PaginatedResponse
 
 
 class LotRouter:
@@ -38,7 +40,7 @@ class LotRouter:
         )(self.update)
         self.router.get(
             "",
-            response_model=list[LotResponse],
+            response_model=PaginatedResponse[LotResponse],
             summary="Get lots",
         )(self.get_all)
         self.router.get(
@@ -70,26 +72,19 @@ class LotRouter:
 
     def get_all(
         self,
-        all_handler: Injected[GetAllLotsQueryHandler],
-        handler: Injected[GetLotsByProductQueryHandler],
-        expiring_handler: Injected[GetExpiringLotsQueryHandler],
-        product_id: int | None = Query(None, description="Filter by product ID"),
-        expiring_in_days: int | None = Query(
-            None, description="Return lots expiring within this many days"
-        ),
-    ) -> list[LotResponse]:
-        """Retrieves lots with optional filtering. Use product_id or expiring_in_days."""
-        if expiring_in_days is not None:
-            result = expiring_handler.handle(
-                GetExpiringLotsQuery(days=expiring_in_days)
-            )
-            if product_id is not None:
-                result = [r for r in result if r["product_id"] == product_id]
-        elif product_id is not None:
-            result = handler.handle(GetLotsByProductQuery(product_id=product_id))
-        else:
-            result = all_handler.handle(GetAllLotsQuery())
-        return [LotResponse.model_validate(lot) for lot in result]
+        handler: Injected[GetAllLotsQueryHandler],
+        query_params: LotQueryParams = Depends(),
+    ) -> PaginatedResponse[LotResponse]:
+        """Retrieves lots with optional filtering."""
+        result = handler.handle(
+            GetAllLotsQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return PaginatedResponse[LotResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[LotResponse.model_validate(lot) for lot in result["items"]],
+        )
 
     def get_by_id(
         self,

@@ -29,14 +29,16 @@ def _make_customer(**overrides) -> Customer:
 def test_get_all_customers_query_handler():
     customers = [_make_customer(id=1), _make_customer(id=2, name="Second")]
     repo = MagicMock()
-    repo.get_all.return_value = customers
+    repo.filter_by.return_value = customers
+    repo.count_by.return_value = 2
     handler = GetAllCustomersQueryHandler(repo)
 
     result = handler.handle(GetAllCustomersQuery())
 
-    assert len(result) == 2
-    assert result[0]["name"] == "Test Customer"
-    assert result[1]["name"] == "Second"
+    assert len(result["items"]) == 2
+    assert result["items"][0]["name"] == "Test Customer"
+    assert result["items"][1]["name"] == "Second"
+    assert result["total"] == 2
 
 
 def test_get_customer_by_id_handler():

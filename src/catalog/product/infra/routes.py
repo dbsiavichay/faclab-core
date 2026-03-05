@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from wireup import Injected
 
 from src.catalog.product.app.commands.create_category import (
@@ -38,11 +38,14 @@ from src.catalog.product.app.queries.get_products import (
     GetProductByIdQueryHandler,
 )
 from src.catalog.product.infra.validators import (
+    CategoryQueryParams,
     CategoryRequest,
     CategoryResponse,
+    ProductQueryParams,
     ProductRequest,
     ProductResponse,
 )
+from src.shared.infra.validators import PaginatedResponse
 
 
 class CategoryRouter:
@@ -60,7 +63,9 @@ class CategoryRouter:
         )(self.update)
         self.router.delete("/{id}", summary="Delete category")(self.delete)
         self.router.get(
-            "", response_model=list[CategoryResponse], summary="Get all categories"
+            "",
+            response_model=PaginatedResponse[CategoryResponse],
+            summary="Get all categories",
         )(self.get_all)
         self.router.get(
             "/{id}", response_model=CategoryResponse, summary="Get category by ID"
@@ -96,11 +101,20 @@ class CategoryRouter:
         handler.handle(DeleteCategoryCommand(category_id=id))
 
     def get_all(
-        self, handler: Injected[GetAllCategoriesQueryHandler]
-    ) -> list[CategoryResponse]:
+        self,
+        handler: Injected[GetAllCategoriesQueryHandler],
+        query_params: CategoryQueryParams = Depends(),
+    ) -> PaginatedResponse[CategoryResponse]:
         """Retrieves all categories."""
-        result = handler.handle(GetAllCategoriesQuery())
-        return [CategoryResponse.model_validate(c) for c in result]
+        result = handler.handle(
+            GetAllCategoriesQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return PaginatedResponse[CategoryResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[CategoryResponse.model_validate(c) for c in result["items"]],
+        )
 
     def get_by_id(
         self, id: int, handler: Injected[GetCategoryByIdQueryHandler]
@@ -125,7 +139,9 @@ class ProductRouter:
         )(self.update)
         self.router.delete("/{id}", summary="Delete product")(self.delete)
         self.router.get(
-            "", response_model=list[ProductResponse], summary="Get all products"
+            "",
+            response_model=PaginatedResponse[ProductResponse],
+            summary="Get all products",
         )(self.get_all)
         self.router.get(
             "/{id}", response_model=ProductResponse, summary="Get product by ID"
@@ -159,11 +175,20 @@ class ProductRouter:
         handler.handle(DeleteProductCommand(product_id=id))
 
     def get_all(
-        self, handler: Injected[GetAllProductsQueryHandler]
-    ) -> list[ProductResponse]:
+        self,
+        handler: Injected[GetAllProductsQueryHandler],
+        query_params: ProductQueryParams = Depends(),
+    ) -> PaginatedResponse[ProductResponse]:
         """Retrieves all products."""
-        result = handler.handle(GetAllProductsQuery())
-        return [ProductResponse.model_validate(p) for p in result]
+        result = handler.handle(
+            GetAllProductsQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return PaginatedResponse[ProductResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[ProductResponse.model_validate(p) for p in result["items"]],
+        )
 
     def get_by_id(
         self, id: int, handler: Injected[GetProductByIdQueryHandler]

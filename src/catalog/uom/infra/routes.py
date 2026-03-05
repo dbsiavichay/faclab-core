@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from wireup import Injected
 
 from src.catalog.uom.app.commands.create import (
@@ -19,7 +19,12 @@ from src.catalog.uom.app.queries.get_uom import (
     GetUnitOfMeasureByIdQuery,
     GetUnitOfMeasureByIdQueryHandler,
 )
-from src.catalog.uom.infra.validators import UnitOfMeasureRequest, UnitOfMeasureResponse
+from src.catalog.uom.infra.validators import (
+    UnitOfMeasureQueryParams,
+    UnitOfMeasureRequest,
+    UnitOfMeasureResponse,
+)
+from src.shared.infra.validators import PaginatedResponse
 
 
 class UnitOfMeasureRouter:
@@ -39,7 +44,7 @@ class UnitOfMeasureRouter:
         self.router.delete("/{id}", summary="Delete unit of measure")(self.delete)
         self.router.get(
             "",
-            response_model=list[UnitOfMeasureResponse],
+            response_model=PaginatedResponse[UnitOfMeasureResponse],
             summary="Get all units of measure",
         )(self.get_all)
         self.router.get(
@@ -77,10 +82,17 @@ class UnitOfMeasureRouter:
     def get_all(
         self,
         handler: Injected[GetAllUnitsOfMeasureQueryHandler],
-        is_active: bool | None = None,
-    ) -> list[UnitOfMeasureResponse]:
-        result = handler.handle(GetAllUnitsOfMeasureQuery(is_active=is_active))
-        return [UnitOfMeasureResponse.model_validate(u) for u in result]
+        query_params: UnitOfMeasureQueryParams = Depends(),
+    ) -> PaginatedResponse[UnitOfMeasureResponse]:
+        result = handler.handle(
+            GetAllUnitsOfMeasureQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return PaginatedResponse[UnitOfMeasureResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[UnitOfMeasureResponse.model_validate(u) for u in result["items"]],
+        )
 
     def get_by_id(
         self, id: int, handler: Injected[GetUnitOfMeasureByIdQueryHandler]

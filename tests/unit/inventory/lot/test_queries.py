@@ -6,12 +6,8 @@ import pytest
 from src.inventory.lot.app.queries.lot import (
     GetAllLotsQuery,
     GetAllLotsQueryHandler,
-    GetExpiringLotsQuery,
-    GetExpiringLotsQueryHandler,
     GetLotByIdQuery,
     GetLotByIdQueryHandler,
-    GetLotsByProductQuery,
-    GetLotsByProductQueryHandler,
 )
 from src.inventory.lot.domain.entities import Lot
 from src.shared.domain.exceptions import NotFoundError
@@ -38,29 +34,28 @@ def test_get_all_lots():
     lot1 = _make_lot(id=1, lot_number="LOT-001")
     lot2 = _make_lot(id=2, lot_number="LOT-002")
     repo = MagicMock()
-    repo.get_all.return_value = [lot1, lot2]
+    repo.filter_by.return_value = [lot1, lot2]
+    repo.count_by.return_value = 2
     handler = GetAllLotsQueryHandler(repo)
 
     result = handler.handle(GetAllLotsQuery())
 
-    repo.get_all.assert_called_once()
-    assert len(result) == 2
-    assert result[0]["lot_number"] == "LOT-001"
-    assert result[1]["lot_number"] == "LOT-002"
+    repo.filter_by.assert_called_once_with(limit=None, offset=None)
+    assert result["total"] == 2
+    assert len(result["items"]) == 2
+    assert result["items"][0]["lot_number"] == "LOT-001"
+    assert result["items"][1]["lot_number"] == "LOT-002"
 
 
 def test_get_all_lots_empty():
     repo = MagicMock()
-    repo.get_all.return_value = []
+    repo.filter_by.return_value = []
+    repo.count_by.return_value = 0
     handler = GetAllLotsQueryHandler(repo)
 
     result = handler.handle(GetAllLotsQuery())
-    assert result == []
-
-
-# ---------------------------------------------------------------------------
-# GetLotsByProductQueryHandler
-# ---------------------------------------------------------------------------
+    assert result["total"] == 0
+    assert result["items"] == []
 
 
 def test_get_lots_by_product():
@@ -68,27 +63,25 @@ def test_get_lots_by_product():
     lot2 = _make_lot(id=2, lot_number="LOT-002")
     repo = MagicMock()
     repo.filter_by.return_value = [lot1, lot2]
-    handler = GetLotsByProductQueryHandler(repo)
+    repo.count_by.return_value = 2
+    handler = GetAllLotsQueryHandler(repo)
 
-    result = handler.handle(GetLotsByProductQuery(product_id=5))
+    result = handler.handle(GetAllLotsQuery(product_id=5))
 
-    repo.filter_by.assert_called_once_with(product_id=5)
-    assert len(result) == 2
-    assert result[0]["lot_number"] == "LOT-001"
+    repo.filter_by.assert_called_once_with(product_id=5, limit=None, offset=None)
+    assert result["total"] == 2
+    assert len(result["items"]) == 2
 
 
 def test_get_lots_by_product_empty():
     repo = MagicMock()
     repo.filter_by.return_value = []
-    handler = GetLotsByProductQueryHandler(repo)
+    repo.count_by.return_value = 0
+    handler = GetAllLotsQueryHandler(repo)
 
-    result = handler.handle(GetLotsByProductQuery(product_id=99))
-    assert result == []
-
-
-# ---------------------------------------------------------------------------
-# GetExpiringLotsQueryHandler
-# ---------------------------------------------------------------------------
+    result = handler.handle(GetAllLotsQuery(product_id=99))
+    assert result["total"] == 0
+    assert result["items"] == []
 
 
 def test_get_expiring_lots():
@@ -96,21 +89,25 @@ def test_get_expiring_lots():
     lot = _make_lot(expiration_date=expiry, current_quantity=5)
     repo = MagicMock()
     repo.filter_by_spec.return_value = [lot]
-    handler = GetExpiringLotsQueryHandler(repo)
+    repo.count_by_spec.return_value = 1
+    handler = GetAllLotsQueryHandler(repo)
 
-    result = handler.handle(GetExpiringLotsQuery(days=30))
+    result = handler.handle(GetAllLotsQuery(expiring_in_days=30))
 
     repo.filter_by_spec.assert_called_once()
-    assert len(result) == 1
+    assert result["total"] == 1
+    assert len(result["items"]) == 1
 
 
 def test_get_expiring_lots_empty():
     repo = MagicMock()
     repo.filter_by_spec.return_value = []
-    handler = GetExpiringLotsQueryHandler(repo)
+    repo.count_by_spec.return_value = 0
+    handler = GetAllLotsQueryHandler(repo)
 
-    result = handler.handle(GetExpiringLotsQuery(days=30))
-    assert result == []
+    result = handler.handle(GetAllLotsQuery(expiring_in_days=30))
+    assert result["total"] == 0
+    assert result["items"] == []
 
 
 # ---------------------------------------------------------------------------

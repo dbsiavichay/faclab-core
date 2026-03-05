@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends
 from wireup import Injected
 
 from src.purchasing.app.commands.purchase_order import (
@@ -45,10 +45,12 @@ from src.purchasing.infra.validators import (
     PurchaseOrderItemRequest,
     PurchaseOrderItemResponse,
     PurchaseOrderItemUpdateRequest,
+    PurchaseOrderQueryParams,
     PurchaseOrderRequest,
     PurchaseOrderResponse,
     PurchaseReceiptResponse,
 )
+from src.shared.infra.validators import PaginatedResponse
 
 
 class PurchaseOrderRouter:
@@ -70,7 +72,7 @@ class PurchaseOrderRouter:
         self.router.delete("/{id}", summary="Delete purchase order")(self.delete)
         self.router.get(
             "",
-            response_model=list[PurchaseOrderResponse],
+            response_model=PaginatedResponse[PurchaseOrderResponse],
             summary="Get all purchase orders",
         )(self.get_all)
         self.router.get(
@@ -138,14 +140,18 @@ class PurchaseOrderRouter:
     def get_all(
         self,
         handler: Injected[GetAllPurchaseOrdersQueryHandler],
-        status: str | None = Query(None, description="Filter by status"),
-        supplier_id: int | None = Query(None, description="Filter by supplier ID"),
-    ) -> list[PurchaseOrderResponse]:
+        query_params: PurchaseOrderQueryParams = Depends(),
+    ) -> PaginatedResponse[PurchaseOrderResponse]:
         """Retrieves all purchase orders."""
         result = handler.handle(
-            GetAllPurchaseOrdersQuery(status=status, supplier_id=supplier_id)
+            GetAllPurchaseOrdersQuery(**query_params.model_dump(exclude_none=True))
         )
-        return [PurchaseOrderResponse.model_validate(po) for po in result]
+        return PaginatedResponse[PurchaseOrderResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[PurchaseOrderResponse.model_validate(po) for po in result["items"]],
+        )
 
     def get_by_id(
         self,

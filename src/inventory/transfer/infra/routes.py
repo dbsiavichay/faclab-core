@@ -38,6 +38,7 @@ from src.inventory.transfer.infra.validators import (
     UpdateTransferItemRequest,
     UpdateTransferRequest,
 )
+from src.shared.infra.validators import PaginatedResponse
 
 
 class TransferRouter:
@@ -47,7 +48,9 @@ class TransferRouter:
 
     def _setup_routes(self):
         self.router.get(
-            "", response_model=list[TransferResponse], summary="Get all transfers"
+            "",
+            response_model=PaginatedResponse[TransferResponse],
+            summary="Get all transfers",
         )(self.get_all)
         self.router.post(
             "", response_model=TransferResponse, summary="Create transfer"
@@ -91,12 +94,17 @@ class TransferRouter:
         self,
         handler: Injected[GetAllTransfersQueryHandler],
         query_params: TransferQueryParams = Depends(),
-    ) -> list[TransferResponse]:
+    ) -> PaginatedResponse[TransferResponse]:
         """Get all stock transfers."""
         result = handler.handle(
             GetAllTransfersQuery(**query_params.model_dump(exclude_none=True))
         )
-        return [TransferResponse.model_validate(t) for t in result]
+        return PaginatedResponse[TransferResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[TransferResponse.model_validate(t) for t in result["items"]],
+        )
 
     def create(
         self,

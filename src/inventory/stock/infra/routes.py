@@ -6,6 +6,7 @@ from src.inventory.stock.app.queries.stock import (
     GetAllStocksQueryHandler,
 )
 from src.inventory.stock.infra.validators import StockQueryParams, StockResponse
+from src.shared.infra.validators import PaginatedResponse
 
 
 class StockRouter:
@@ -16,16 +17,23 @@ class StockRouter:
     def _setup_routes(self):
         """Sets up all the routes for the router."""
         self.router.get(
-            "", response_model=list[StockResponse], summary="Get all stocks"
+            "",
+            response_model=PaginatedResponse[StockResponse],
+            summary="Get all stocks",
         )(self.get_all)
 
     def get_all(
         self,
         handler: Injected[GetAllStocksQueryHandler],
         query_params: StockQueryParams = Depends(),
-    ) -> list[StockResponse]:
+    ) -> PaginatedResponse[StockResponse]:
         """Gets all products stock."""
         result = handler.handle(
             GetAllStocksQuery(**query_params.model_dump(exclude_none=True))
         )
-        return [StockResponse.model_validate(s) for s in result]
+        return PaginatedResponse[StockResponse](
+            total=result["total"],
+            limit=result["limit"],
+            offset=result["offset"],
+            items=[StockResponse.model_validate(s) for s in result["items"]],
+        )

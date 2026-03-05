@@ -17,19 +17,26 @@ class GetAllProductsQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetAllProductsQueryHandler(QueryHandler[GetAllProductsQuery, list[dict]]):
+class GetAllProductsQueryHandler(QueryHandler[GetAllProductsQuery, dict]):
     def __init__(self, repo: Repository[Product]):
         self.repo = repo
 
-    def _handle(self, query: GetAllProductsQuery) -> list[dict]:
+    def _handle(self, query: GetAllProductsQuery) -> dict:
         if query.category_id is not None:
             spec = ProductInCategory(query.category_id)
             products = self.repo.filter_by_spec(
                 spec, limit=query.limit, offset=query.offset
             )
+            total = self.repo.count_by_spec(spec)
         else:
             products = self.repo.filter_by(limit=query.limit, offset=query.offset)
-        return [p.dict() for p in products]
+            total = self.repo.count_by()
+        return {
+            "total": total,
+            "limit": query.limit,
+            "offset": query.offset,
+            "items": [p.dict() for p in products],
+        }
 
 
 @dataclass

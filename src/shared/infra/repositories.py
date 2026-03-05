@@ -151,6 +151,19 @@ class SqlAlchemyRepository(Repository[E], Generic[E]):
         models = query.all()
         return [self.mapper.to_entity(model) for model in models]
 
+    def count_by(self, **kwargs) -> int:
+        """
+        Counts entities by given keyword arguments.
+        Args:
+            **kwargs: Keyword arguments to filter by
+        Returns:
+            Count of entities that match the criteria
+        """
+        query = self.session.query(func.count(self.__model__.id))
+        for key, value in kwargs.items():
+            query = query.filter(getattr(self.__model__, key) == value)
+        return query.scalar()
+
     def filter_by(self, limit=None, offset=None, **kwargs) -> list[E]:
         """
         Filters entities by given keyword arguments.
