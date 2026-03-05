@@ -254,7 +254,7 @@ class ReceiveStockTransferCommandHandler(
             self.movement_handler.handle(
                 CreateMovementCommand(
                     product_id=item.product_id,
-                    quantity=item.quantity,
+                    quantity=-abs(item.quantity),
                     type=MovementType.OUT.value,
                     location_id=transfer.source_location_id,
                     source_location_id=None,

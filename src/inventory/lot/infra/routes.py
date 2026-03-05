@@ -8,6 +8,8 @@ from src.inventory.lot.app.commands.lot import (
     UpdateLotCommandHandler,
 )
 from src.inventory.lot.app.queries.lot import (
+    GetAllLotsQuery,
+    GetAllLotsQueryHandler,
     GetExpiringLotsQuery,
     GetExpiringLotsQueryHandler,
     GetLotByIdQuery,
@@ -68,6 +70,7 @@ class LotRouter:
 
     def get_all(
         self,
+        all_handler: Injected[GetAllLotsQueryHandler],
         handler: Injected[GetLotsByProductQueryHandler],
         expiring_handler: Injected[GetExpiringLotsQueryHandler],
         product_id: int | None = Query(None, description="Filter by product ID"),
@@ -85,7 +88,7 @@ class LotRouter:
         elif product_id is not None:
             result = handler.handle(GetLotsByProductQuery(product_id=product_id))
         else:
-            result = []
+            result = all_handler.handle(GetAllLotsQuery())
         return [LotResponse.model_validate(lot) for lot in result]
 
     def get_by_id(

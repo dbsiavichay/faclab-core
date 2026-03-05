@@ -28,3 +28,6 @@ upgrade:  ## Apply all pending migrations with Alembic
 
 downgrade:  ## Downgrade the database to the previous migration
 	docker compose run --no-deps --rm api alembic downgrade $(d)
+
+seed:  ## Seed the database with test data
+	docker compose run --rm api python -m scripts.seed

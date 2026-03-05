@@ -5,7 +5,7 @@ from src.inventory.serial.app.commands.serial import (
 from src.inventory.serial.app.queries.serial import (
     GetSerialByIdQueryHandler,
     GetSerialByNumberQueryHandler,
-    GetSerialsByProductQueryHandler,
+    GetSerialsQueryHandler,
 )
 from src.inventory.serial.infra.mappers import SerialNumberMapper
 from src.inventory.serial.infra.repositories import SerialNumberRepository
@@ -15,7 +15,7 @@ SERIAL_INJECTABLES = [
     SerialNumberRepository,
     CreateSerialNumberCommandHandler,
     UpdateSerialStatusCommandHandler,
-    GetSerialsByProductQueryHandler,
+    GetSerialsQueryHandler,
     GetSerialByNumberQueryHandler,
     GetSerialByIdQueryHandler,
 ]

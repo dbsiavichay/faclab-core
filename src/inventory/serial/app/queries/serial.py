@@ -9,8 +9,8 @@ from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
-class GetSerialsByProductQuery(Query):
-    product_id: int = 0
+class GetSerialsQuery(Query):
+    product_id: int | None = None
     status: str | None = None
 
 
@@ -25,19 +25,17 @@ class GetSerialByIdQuery(Query):
 
 
 @injectable(lifetime="scoped")
-class GetSerialsByProductQueryHandler(
-    QueryHandler[GetSerialsByProductQuery, list[dict]]
-):
+class GetSerialsQueryHandler(QueryHandler[GetSerialsQuery, list[dict]]):
     def __init__(self, repo: Repository[SerialNumber]):
         self.repo = repo
 
-    def _handle(self, query: GetSerialsByProductQuery) -> list[dict]:
+    def _handle(self, query: GetSerialsQuery) -> list[dict]:
+        kwargs = {}
+        if query.product_id is not None:
+            kwargs["product_id"] = query.product_id
         if query.status is not None:
-            serials = self.repo.filter_by(
-                product_id=query.product_id, status=query.status
-            )
-        else:
-            serials = self.repo.filter_by(product_id=query.product_id)
+            kwargs["status"] = query.status
+        serials = self.repo.filter_by(**kwargs)
         return [s.dict() for s in serials]
 
 

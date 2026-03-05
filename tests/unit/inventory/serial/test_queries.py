@@ -7,8 +7,8 @@ from src.inventory.serial.app.queries.serial import (
     GetSerialByIdQueryHandler,
     GetSerialByNumberQuery,
     GetSerialByNumberQueryHandler,
-    GetSerialsByProductQuery,
-    GetSerialsByProductQueryHandler,
+    GetSerialsQuery,
+    GetSerialsQueryHandler,
 )
 from src.inventory.serial.domain.entities import SerialNumber, SerialStatus
 from src.shared.domain.exceptions import NotFoundError
@@ -26,7 +26,7 @@ def _make_serial(**overrides) -> SerialNumber:
 
 
 # ---------------------------------------------------------------------------
-# GetSerialsByProductQueryHandler
+# GetSerialsQueryHandler
 # ---------------------------------------------------------------------------
 
 
@@ -35,32 +35,45 @@ def test_get_serials_by_product():
     s2 = _make_serial(id=2, serial_number="SN-002")
     repo = MagicMock()
     repo.filter_by.return_value = [s1, s2]
-    handler = GetSerialsByProductQueryHandler(repo)
+    handler = GetSerialsQueryHandler(repo)
 
-    result = handler.handle(GetSerialsByProductQuery(product_id=5))
+    result = handler.handle(GetSerialsQuery(product_id=5))
 
     repo.filter_by.assert_called_once_with(product_id=5)
     assert len(result) == 2
 
 
-def test_get_serials_by_product_with_status_filter():
+def test_get_serials_with_status_filter():
     s1 = _make_serial(status=SerialStatus.AVAILABLE)
     repo = MagicMock()
     repo.filter_by.return_value = [s1]
-    handler = GetSerialsByProductQueryHandler(repo)
+    handler = GetSerialsQueryHandler(repo)
 
-    result = handler.handle(GetSerialsByProductQuery(product_id=5, status="available"))
+    result = handler.handle(GetSerialsQuery(product_id=5, status="available"))
 
     repo.filter_by.assert_called_once_with(product_id=5, status="available")
     assert len(result) == 1
 
 
+def test_get_serials_without_filters():
+    s1 = _make_serial(id=1, serial_number="SN-001")
+    s2 = _make_serial(id=2, serial_number="SN-002")
+    repo = MagicMock()
+    repo.filter_by.return_value = [s1, s2]
+    handler = GetSerialsQueryHandler(repo)
+
+    result = handler.handle(GetSerialsQuery())
+
+    repo.filter_by.assert_called_once_with()
+    assert len(result) == 2
+
+
 def test_get_serials_by_product_empty():
     repo = MagicMock()
     repo.filter_by.return_value = []
-    handler = GetSerialsByProductQueryHandler(repo)
+    handler = GetSerialsQueryHandler(repo)
 
-    result = handler.handle(GetSerialsByProductQuery(product_id=99))
+    result = handler.handle(GetSerialsQuery(product_id=99))
     assert result == []
 
 

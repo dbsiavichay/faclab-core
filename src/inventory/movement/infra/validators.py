@@ -15,7 +15,7 @@ class MovementBase(BaseModel):
         validation_alias=AliasChoices("productId", "product_id"),
         serialization_alias="productId",
     )
-    quantity: int = Field(..., ge=1, description="Quantity")
+    quantity: int = Field(..., description="Quantity")
     type: MovementType
     location_id: int | None = Field(
         None,
