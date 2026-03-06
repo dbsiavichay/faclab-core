@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, Field
 
@@ -38,7 +39,9 @@ class SerialNumberRequest(BaseModel):
 
 
 class SerialStatusUpdateRequest(BaseModel):
-    status: str = Field(..., description="New status for the serial number")
+    status: Literal["available", "reserved", "sold", "returned", "scrapped"] = Field(
+        ..., description="New status for the serial number"
+    )
 
 
 class SerialNumberResponse(BaseModel):

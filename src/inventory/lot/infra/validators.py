@@ -21,8 +21,8 @@ class LotRequest(BaseModel):
         serialization_alias="lotNumber",
     )
     initial_quantity: int = Field(
-        0,
-        ge=0,
+        ...,
+        ge=1,
         description="Initial quantity in this lot",
         validation_alias=AliasChoices("initialQuantity", "initial_quantity"),
         serialization_alias="initialQuantity",

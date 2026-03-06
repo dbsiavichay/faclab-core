@@ -202,3 +202,42 @@ def test_skips_duplicate_serial_numbers(mock_container):
     handle_purchase_order_received_serials(event)
 
     serial_repo.create.assert_not_called()
+
+
+@patch("src.wireup_container")
+def test_logs_error_when_serial_exists_for_different_product(mock_container):
+    """Logs error when serial already exists for a different product."""
+    from src.inventory.serial.infra import event_handlers  # noqa: F401
+
+    existing_serial = SerialNumber(
+        id=1, product_id=99, serial_number="SN-MISMATCH", status=SerialStatus.AVAILABLE
+    )
+    event = _make_event(
+        items=[
+            {
+                "product_id": 5,
+                "quantity": 1,
+                "location_id": None,
+                "lot_number": None,
+                "serial_numbers": ["SN-MISMATCH"],
+                "purchase_order_id": 1,
+            }
+        ]
+    )
+
+    serial_repo = MagicMock()
+    serial_repo.first.return_value = existing_serial
+
+    lot_repo = MagicMock()
+    lot_repo.first.return_value = None
+
+    mock_scope = _make_scope(serial_repo, lot_repo)
+    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+
+    from src.inventory.serial.infra.event_handlers import (
+        handle_purchase_order_received_serials,
+    )
+
+    handle_purchase_order_received_serials(event)
+
+    serial_repo.create.assert_not_called()

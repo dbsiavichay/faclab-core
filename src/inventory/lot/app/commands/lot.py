@@ -67,6 +67,10 @@ class UpdateLotCommandHandler(CommandHandler[UpdateLotCommand, dict]):
 
         updates = {}
         if command.current_quantity is not None:
+            if command.current_quantity < 0:
+                raise DomainError(
+                    f"Current quantity cannot be negative. Received: {command.current_quantity}"
+                )
             updates["current_quantity"] = command.current_quantity
         if command.manufacture_date is not None:
             updates["manufacture_date"] = command.manufacture_date
