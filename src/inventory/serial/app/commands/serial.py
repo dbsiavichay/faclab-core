@@ -59,7 +59,13 @@ class UpdateSerialStatusCommandHandler(CommandHandler[UpdateSerialStatusCommand,
         if serial is None:
             raise NotFoundError(f"Serial number with id {command.id} not found")
 
-        new_status = SerialStatus(command.status)
+        try:
+            new_status = SerialStatus(command.status)
+        except ValueError as err:
+            raise DomainError(
+                f"Invalid serial status: '{command.status}'. "
+                f"Valid values: {', '.join(s.value for s in SerialStatus)}"
+            ) from err
 
         if new_status == SerialStatus.SOLD:
             serial = serial.mark_sold()

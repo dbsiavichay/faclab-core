@@ -41,6 +41,8 @@ def handle_purchase_order_received_lots(event: PurchaseOrderReceived) -> None:
             movement_lot_item_repo = scope.get(Repository[MovementLotItem])
             movement_repo = scope.get(Repository[Movement])
 
+            used_movement_ids: set[int] = set()
+
             for item in items_with_lots:
                 product_id = item["product_id"]
                 lot_number = item["lot_number"]
@@ -69,6 +71,7 @@ def handle_purchase_order_received_lots(event: PurchaseOrderReceived) -> None:
                 else:
                     lot = replace(
                         existing_lot,
+                        initial_quantity=existing_lot.initial_quantity + quantity,
                         current_quantity=existing_lot.current_quantity + quantity,
                     )
                     lot = lot_repo.update(lot)
@@ -85,9 +88,14 @@ def handle_purchase_order_received_lots(event: PurchaseOrderReceived) -> None:
                     reference_type="purchase_order",
                     reference_id=event.purchase_order_id,
                     product_id=product_id,
+                    quantity=quantity,
                 )
-                if movements:
-                    movement = movements[-1]
+                movement = next(
+                    (m for m in movements if m.id not in used_movement_ids),
+                    None,
+                )
+                if movement is not None:
+                    used_movement_ids.add(movement.id)
                     movement_lot_item = MovementLotItem(
                         movement_id=movement.id,
                         lot_id=lot.id,

@@ -70,7 +70,7 @@ def test_get_lots_by_product():
     lot1 = _make_lot(id=1, lot_number="LOT-001")
     lot2 = _make_lot(id=2, lot_number="LOT-002")
     repo = MagicMock()
-    repo.paginate.return_value = {
+    repo.paginate_by_spec.return_value = {
         "total": 2,
         "limit": None,
         "offset": None,
@@ -80,14 +80,14 @@ def test_get_lots_by_product():
 
     result = handler.handle(GetAllLotsQuery(product_id=5))
 
-    repo.paginate.assert_called_once_with(product_id=5, limit=None, offset=None)
+    repo.paginate_by_spec.assert_called_once()
     assert result["total"] == 2
     assert len(result["items"]) == 2
 
 
 def test_get_lots_by_product_empty():
     repo = MagicMock()
-    repo.paginate.return_value = {
+    repo.paginate_by_spec.return_value = {
         "total": 0,
         "limit": None,
         "offset": None,

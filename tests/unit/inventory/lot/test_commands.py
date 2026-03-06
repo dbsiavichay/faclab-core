@@ -115,3 +115,15 @@ def test_update_lot_not_found_raises():
 
     with pytest.raises(NotFoundError):
         handler.handle(UpdateLotCommand(id=99, current_quantity=50))
+
+
+def test_update_lot_negative_quantity_raises():
+    lot = _make_lot()
+    repo = MagicMock()
+    repo.get_by_id.return_value = lot
+    handler = UpdateLotCommandHandler(repo)
+
+    with pytest.raises(DomainError, match="cannot be negative"):
+        handler.handle(UpdateLotCommand(id=1, current_quantity=-5))
+
+    repo.update.assert_not_called()

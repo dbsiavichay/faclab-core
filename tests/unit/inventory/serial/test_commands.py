@@ -121,6 +121,18 @@ def test_update_status_not_found_raises():
         handler.handle(UpdateSerialStatusCommand(id=99, status="sold"))
 
 
+def test_update_status_invalid_value_raises_domain_error():
+    serial = _make_serial(status=SerialStatus.AVAILABLE)
+    repo = MagicMock()
+    repo.get_by_id.return_value = serial
+    handler = UpdateSerialStatusCommandHandler(repo)
+
+    with pytest.raises(DomainError, match="Invalid serial status"):
+        handler.handle(UpdateSerialStatusCommand(id=1, status="invalid_status"))
+
+    repo.update.assert_not_called()
+
+
 def test_update_status_to_scrapped_from_any():
     for status in [
         SerialStatus.AVAILABLE,

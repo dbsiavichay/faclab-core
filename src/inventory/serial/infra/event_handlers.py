@@ -57,11 +57,19 @@ def handle_purchase_order_received_serials(event: PurchaseOrderReceived) -> None
                 for sn in serial_numbers:
                     existing = serial_repo.first(serial_number=sn)
                     if existing is not None:
-                        logger.warning(
-                            "serial_number_already_exists",
-                            serial_number=sn,
-                            product_id=product_id,
-                        )
+                        if existing.product_id != product_id:
+                            logger.error(
+                                "serial_number_product_mismatch",
+                                serial_number=sn,
+                                expected_product_id=product_id,
+                                existing_product_id=existing.product_id,
+                            )
+                        else:
+                            logger.warning(
+                                "serial_number_already_exists",
+                                serial_number=sn,
+                                product_id=product_id,
+                            )
                         continue
 
                     serial = SerialNumber(
