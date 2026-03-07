@@ -19,8 +19,8 @@ class AddSaleItemCommand(Command):
     sale_id: int
     product_id: int
     quantity: int
-    unit_price: float
-    discount: float | None = 0.0
+    unit_price: Decimal
+    discount: Decimal = Decimal("0")
 
 
 @injectable(lifetime="scoped")
@@ -53,8 +53,8 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
             sale_id=command.sale_id,
             product_id=command.product_id,
             quantity=command.quantity,
-            unit_price=Decimal(str(command.unit_price)),
-            discount=Decimal(str(command.discount)),
+            unit_price=command.unit_price,
+            discount=command.discount,
         )
 
         sale_item = self.sale_item_repo.create(sale_item)
@@ -84,11 +84,11 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
                 sale_item_id=sale_item.id,
                 product_id=sale_item.product_id,
                 quantity=sale_item.quantity,
-                unit_price=float(sale_item.unit_price),
+                unit_price=sale_item.unit_price,
             )
         )
 
         # Incluir el subtotal calculado en la respuesta
         result = sale_item.dict()
-        result["subtotal"] = float(sale_item.subtotal)
+        result["subtotal"] = sale_item.subtotal
         return result

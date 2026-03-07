@@ -70,7 +70,7 @@ class POSConfirmSaleCommandHandler(CommandHandler[POSConfirmSaleCommand, dict]):
             {
                 "product_id": item.product_id,
                 "quantity": item.quantity,
-                "unit_price": float(item.unit_price),
+                "unit_price": item.unit_price,
             }
             for item in items
         ]
@@ -81,7 +81,7 @@ class POSConfirmSaleCommandHandler(CommandHandler[POSConfirmSaleCommand, dict]):
                 sale_id=sale.id,
                 customer_id=sale.customer_id,
                 items=items_data,
-                total=float(sale.total),
+                total=sale.total,
                 source="pos",
             )
         )

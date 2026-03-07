@@ -1,10 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.shared.infra.database import Base
+from src.shared.infra.precision import MoneyColumn
 
 
 class PurchaseOrderModel(Base):
@@ -16,9 +17,9 @@ class PurchaseOrderModel(Base):
     )
     order_number: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="draft")
-    subtotal: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
-    tax: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
-    total: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    subtotal: Mapped[Decimal] = mapped_column(MoneyColumn, nullable=False, default=0)
+    tax: Mapped[Decimal] = mapped_column(MoneyColumn, nullable=False, default=0)
+    total: Mapped[Decimal] = mapped_column(MoneyColumn, nullable=False, default=0)
     notes: Mapped[str | None] = mapped_column(Text)
     expected_date: Mapped[datetime | None] = mapped_column(DateTime)
     created_at: Mapped[datetime] = mapped_column(
@@ -48,7 +49,7 @@ class PurchaseOrderItemModel(Base):
     )
     quantity_ordered: Mapped[int] = mapped_column(Integer, nullable=False)
     quantity_received: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    unit_cost: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    unit_cost: Mapped[Decimal] = mapped_column(MoneyColumn, nullable=False)
 
     purchase_order: Mapped["PurchaseOrderModel"] = relationship(back_populates="items")
 

@@ -1,10 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.shared.infra.database import Base
+from src.shared.infra.precision import MoneyColumn
 
 
 class CategoryModel(Base):
@@ -25,8 +26,8 @@ class ProductModel(Base):
     sku: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(255))
     barcode: Mapped[str | None] = mapped_column(String(64), unique=True)
-    purchase_price: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
-    sale_price: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
+    purchase_price: Mapped[Decimal | None] = mapped_column(MoneyColumn)
+    sale_price: Mapped[Decimal | None] = mapped_column(MoneyColumn)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_service: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     min_stock: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

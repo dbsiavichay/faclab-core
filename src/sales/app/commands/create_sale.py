@@ -42,7 +42,7 @@ class CreateSaleCommandHandler(CommandHandler[CreateSaleCommand, dict]):
                 aggregate_id=sale.id,
                 sale_id=sale.id,
                 customer_id=sale.customer_id,
-                total=float(sale.total),
+                total=sale.total,
             )
         )
 

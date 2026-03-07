@@ -28,6 +28,6 @@ class GetSaleItemsQueryHandler(QueryHandler[GetSaleItemsQuery, list[dict]]):
         result = []
         for item in items:
             item_dict = item.dict()
-            item_dict["subtotal"] = float(item.subtotal)
+            item_dict["subtotal"] = item.subtotal
             result.append(item_dict)
         return result

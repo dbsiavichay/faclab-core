@@ -1,10 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.shared.infra.database import Base
+from src.shared.infra.precision import MoneyColumn
 
 
 class CustomerModel(Base):
@@ -20,7 +21,7 @@ class CustomerModel(Base):
     city: Mapped[str | None] = mapped_column(String(64))
     state: Mapped[str | None] = mapped_column(String(64))
     country: Mapped[str | None] = mapped_column(String(64))
-    credit_limit: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    credit_limit: Mapped[Decimal | None] = mapped_column(MoneyColumn)
     payment_terms: Mapped[int | None] = mapped_column(Integer)  # Days
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
