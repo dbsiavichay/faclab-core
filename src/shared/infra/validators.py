@@ -1,7 +1,13 @@
-from typing import Generic, TypeVar
+from decimal import Decimal
+from typing import Annotated, Generic, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer
 from pydantic.alias_generators import to_camel
+
+DecimalNumber = Annotated[
+    Decimal,
+    PlainSerializer(lambda v: float(v), return_type=float),
+]
 
 T = TypeVar("T")
 

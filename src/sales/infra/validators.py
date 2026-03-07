@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
-from src.shared.infra.validators import QueryParams
+from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
 class SaleItemRequest(BaseModel):
@@ -92,13 +92,13 @@ class SaleItemResponse(BaseModel):
         serialization_alias="productId",
     )
     quantity: int
-    unit_price: Decimal = Field(
+    unit_price: DecimalNumber = Field(
         ...,
         validation_alias=AliasChoices("unitPrice", "unit_price"),
         serialization_alias="unitPrice",
     )
-    discount: Decimal
-    subtotal: Decimal
+    discount: DecimalNumber
+    subtotal: DecimalNumber
 
 
 class PaymentResponse(BaseModel):
@@ -112,7 +112,7 @@ class PaymentResponse(BaseModel):
         validation_alias=AliasChoices("saleId", "sale_id"),
         serialization_alias="saleId",
     )
-    amount: Decimal
+    amount: DecimalNumber
     payment_method: str = Field(
         ...,
         validation_alias=AliasChoices("paymentMethod", "payment_method"),
@@ -149,10 +149,10 @@ class SaleResponse(BaseModel):
         validation_alias=AliasChoices("saleDate", "sale_date"),
         serialization_alias="saleDate",
     )
-    subtotal: Decimal
-    tax: Decimal
-    discount: Decimal
-    total: Decimal
+    subtotal: DecimalNumber
+    tax: DecimalNumber
+    discount: DecimalNumber
+    total: DecimalNumber
     payment_status: str = Field(
         ...,
         validation_alias=AliasChoices("paymentStatus", "payment_status"),

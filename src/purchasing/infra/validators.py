@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, Field
 
-from src.shared.infra.validators import QueryParams
+from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
 # PurchaseOrder
@@ -36,9 +36,9 @@ class PurchaseOrderResponse(BaseModel):
         serialization_alias="orderNumber",
     )
     status: str
-    subtotal: Decimal
-    tax: Decimal
-    total: Decimal
+    subtotal: DecimalNumber
+    tax: DecimalNumber
+    total: DecimalNumber
     notes: str | None = None
     expected_date: datetime | None = Field(
         None,
@@ -126,7 +126,7 @@ class PurchaseOrderItemResponse(BaseModel):
         validation_alias=AliasChoices("quantityReceived", "quantity_received"),
         serialization_alias="quantityReceived",
     )
-    unit_cost: Decimal = Field(
+    unit_cost: DecimalNumber = Field(
         validation_alias=AliasChoices("unitCost", "unit_cost"),
         serialization_alias="unitCost",
     )
