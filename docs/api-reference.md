@@ -246,6 +246,8 @@ La documentacion interactiva (Scalar) esta disponible cuando `DOCS_ENABLED=true`
 
 ## POS API
 
+> **En desarrollo** — los endpoints listados a continuacion estan parcialmente implementados. Ver [pos-plan.md](pos-plan.md) para el plan completo.
+
 ### Ventas POS — `/api/pos/sales`
 
 | Metodo | Ruta | Descripcion |
