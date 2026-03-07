@@ -19,14 +19,16 @@ class SaleItemRequest(BaseModel):
         serialization_alias="productId",
     )
     quantity: int = Field(..., gt=0, description="Cantidad del producto")
-    unit_price: float = Field(
+    unit_price: Decimal = Field(
         ...,
         gt=0,
         description="Precio unitario",
         validation_alias=AliasChoices("unitPrice", "unit_price"),
         serialization_alias="unitPrice",
     )
-    discount: float = Field(0.0, ge=0, le=100, description="Porcentaje de descuento")
+    discount: Decimal = Field(
+        Decimal("0"), ge=0, le=100, description="Porcentaje de descuento"
+    )
 
 
 class SaleRequest(BaseModel):
@@ -52,7 +54,7 @@ class SaleRequest(BaseModel):
 class PaymentRequest(BaseModel):
     """Schema para registrar un pago"""
 
-    amount: float = Field(..., gt=0, description="Monto del pago")
+    amount: Decimal = Field(..., gt=0, description="Monto del pago")
     payment_method: str = Field(
         ...,
         description="Método de pago",

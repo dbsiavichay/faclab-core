@@ -1,18 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import (
-    Boolean,
-    DateTime,
-    ForeignKey,
-    Integer,
-    Numeric,
-    String,
-    UniqueConstraint,
-)
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.shared.infra.database import Base
+from src.shared.infra.precision import MoneyColumn
 
 
 class SupplierModel(Base):
@@ -69,7 +62,7 @@ class SupplierProductModel(Base):
     product_id: Mapped[int] = mapped_column(
         ForeignKey("products.id", ondelete="CASCADE"), nullable=False
     )
-    purchase_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    purchase_price: Mapped[Decimal] = mapped_column(MoneyColumn, nullable=False)
     supplier_sku: Mapped[str | None] = mapped_column(String(64))
     min_order_quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     lead_time_days: Mapped[int | None] = mapped_column(Integer)

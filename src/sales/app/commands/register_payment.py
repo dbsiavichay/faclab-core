@@ -16,7 +16,7 @@ class RegisterPaymentCommand(Command):
     """Comando para registrar un pago"""
 
     sale_id: int
-    amount: float
+    amount: Decimal
     payment_method: str
     reference: str | None = None
     notes: str | None = None
@@ -55,7 +55,7 @@ class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]
         # Crear el pago
         payment = Payment(
             sale_id=command.sale_id,
-            amount=Decimal(str(command.amount)),
+            amount=command.amount,
             payment_method=payment_method,
             reference=command.reference,
             notes=command.notes,
@@ -77,7 +77,7 @@ class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]
                 aggregate_id=payment.id,
                 payment_id=payment.id,
                 sale_id=sale.id,
-                amount=float(payment.amount),
+                amount=payment.amount,
                 payment_method=payment.payment_method.value,
                 reference=payment.reference or "",
             )

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from decimal import Decimal
 from typing import Any
 
 from src.shared.domain.events import DomainEvent
@@ -10,7 +11,7 @@ class SaleCreated(DomainEvent):
 
     sale_id: int = 0
     customer_id: int = 0
-    total: float = 0.0
+    total: Decimal = Decimal("0")
 
     def _payload(self) -> dict[str, Any]:
         return {
@@ -32,7 +33,7 @@ class SaleConfirmed(DomainEvent):
     items: list[dict[str, Any]] = field(
         default_factory=list
     )  # [{product_id, quantity, unit_price}]
-    total: float = 0.0
+    total: Decimal = Decimal("0")
     source: str = "admin"
 
     def _payload(self) -> dict[str, Any]:
@@ -81,7 +82,7 @@ class SaleInvoiced(DomainEvent):
     sale_id: int = 0
     customer_id: int = 0
     invoice_number: str = ""
-    total: float = 0.0
+    total: Decimal = Decimal("0")
 
     def _payload(self) -> dict[str, Any]:
         return {
@@ -101,7 +102,7 @@ class PaymentReceived(DomainEvent):
 
     payment_id: int = 0
     sale_id: int = 0
-    amount: float = 0.0
+    amount: Decimal = Decimal("0")
     payment_method: str = ""
     reference: str = ""
 
@@ -123,7 +124,7 @@ class SaleItemAdded(DomainEvent):
     sale_item_id: int = 0
     product_id: int = 0
     quantity: int = 0
-    unit_price: float = 0.0
+    unit_price: Decimal = Decimal("0")
 
     def _payload(self) -> dict[str, Any]:
         return {

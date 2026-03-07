@@ -1,10 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.shared.infra.database import Base
+from src.shared.infra.precision import MoneyColumn, PercentageColumn
 
 
 class SaleModel(Base):
@@ -19,16 +20,16 @@ class SaleModel(Base):
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="DRAFT")
     sale_date: Mapped[datetime | None] = mapped_column(DateTime)
     subtotal: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2), nullable=False, default=Decimal("0")
+        MoneyColumn, nullable=False, default=Decimal("0")
     )
     tax: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2), nullable=False, default=Decimal("0")
+        MoneyColumn, nullable=False, default=Decimal("0")
     )
     discount: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2), nullable=False, default=Decimal("0")
+        MoneyColumn, nullable=False, default=Decimal("0")
     )
     total: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2), nullable=False, default=Decimal("0")
+        MoneyColumn, nullable=False, default=Decimal("0")
     )
     payment_status: Mapped[str] = mapped_column(
         String(16), nullable=False, default="PENDING"
@@ -62,9 +63,9 @@ class SaleItemModel(Base):
         Integer, ForeignKey("products.id"), nullable=False
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    unit_price: Mapped[Decimal] = mapped_column(MoneyColumn, nullable=False)
     discount: Mapped[Decimal] = mapped_column(
-        Numeric(5, 2), nullable=False, default=Decimal("0")
+        PercentageColumn, nullable=False, default=Decimal("0")
     )
 
     # Relationships
@@ -80,7 +81,7 @@ class PaymentModel(Base):
     sale_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("sales.id", ondelete="CASCADE"), nullable=False
     )
-    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(MoneyColumn, nullable=False)
     payment_method: Mapped[str] = mapped_column(String(16), nullable=False)
     payment_date: Mapped[datetime | None] = mapped_column(DateTime)
     reference: Mapped[str | None] = mapped_column(String(128))
