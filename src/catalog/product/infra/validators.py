@@ -1,9 +1,7 @@
-from decimal import Decimal
-
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
-from src.shared.infra.validators import QueryParams
+from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
 # Requests
@@ -21,8 +19,8 @@ class ProductRequest(BaseModel):
     barcode: str | None = None
     category_id: int | None = Field(None, ge=1)
     unit_of_measure_id: int | None = Field(None, ge=1)
-    purchase_price: Decimal | None = Field(None, ge=0)
-    sale_price: Decimal | None = Field(None, ge=0)
+    purchase_price: DecimalNumber | None = Field(None, ge=0)
+    sale_price: DecimalNumber | None = Field(None, ge=0)
     is_active: bool = True
     is_service: bool = False
     min_stock: int = Field(0, ge=0)

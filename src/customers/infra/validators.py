@@ -1,8 +1,6 @@
-from decimal import Decimal
-
 from pydantic import AliasChoices, BaseModel, Field
 
-from src.shared.infra.validators import QueryParams
+from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
 # Customer Requests
@@ -33,7 +31,7 @@ class CustomerRequest(BaseModel):
     city: str | None = Field(None, max_length=64)
     state: str | None = Field(None, max_length=64)
     country: str | None = Field(None, max_length=64)
-    credit_limit: Decimal | None = Field(
+    credit_limit: DecimalNumber | None = Field(
         None,
         ge=0,
         description="Credit limit",

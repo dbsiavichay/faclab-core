@@ -1,8 +1,6 @@
-from decimal import Decimal
-
 from pydantic import AliasChoices, BaseModel, Field
 
-from src.shared.infra.validators import QueryParams
+from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
 # Supplier Requests
@@ -90,7 +88,7 @@ class SupplierProductRequest(BaseModel):
         validation_alias=AliasChoices("productId", "product_id"),
         serialization_alias="productId",
     )
-    purchase_price: Decimal = Field(
+    purchase_price: DecimalNumber = Field(
         ...,
         ge=0,
         description="Purchase price",

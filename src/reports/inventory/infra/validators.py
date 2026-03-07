@@ -1,10 +1,9 @@
 from datetime import date, datetime
-from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
-from src.shared.infra.validators import QueryParams
+from src.shared.infra.validators import DecimalNumber, QueryParams
 
 # ---------------------------------------------------------------------------
 # Valuation
@@ -18,14 +17,14 @@ class ValuationItemResponse(BaseModel):
     product_name: str
     sku: str
     quantity: int
-    average_cost: Decimal
-    total_value: Decimal
+    average_cost: DecimalNumber
+    total_value: DecimalNumber
 
 
 class InventoryValuationResponse(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel)
 
-    total_value: Decimal
+    total_value: DecimalNumber
     as_of_date: date
     items: list[ValuationItemResponse]
 
@@ -51,7 +50,7 @@ class ProductRotationResponse(BaseModel):
     total_in: int
     total_out: int
     current_stock: int
-    turnover_rate: Decimal
+    turnover_rate: DecimalNumber
     days_of_stock: int | None = None
 
 
@@ -128,7 +127,7 @@ class WarehouseSummaryResponse(BaseModel):
     total_quantity: int
     reserved_quantity: int
     available_quantity: int
-    total_value: Decimal
+    total_value: DecimalNumber
 
 
 class SummaryQueryParams(BaseModel):
