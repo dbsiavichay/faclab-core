@@ -39,7 +39,7 @@ Sistema integral de ventas e inventarios construido con **FastAPI**, **Clean Arc
 | **Proveedores** | Perfiles con contactos y catalogo de productos |
 | **Compras** | Ordenes de compra y recepciones |
 | **Ventas** | Ciclo completo DRAFT → CONFIRMED → CANCELLED |
-| **POS** | Punto de venta con operaciones atomicas |
+| **POS** | Punto de venta con operaciones atomicas (en desarrollo) |
 
 ## Arquitectura
 
@@ -76,7 +76,7 @@ faclab-core/
 │   ├── suppliers/                  # Proveedores y contactos
 │   ├── purchasing/                 # Ordenes de compra
 │   ├── sales/                      # Ventas, items y pagos
-│   ├── pos/                        # Punto de venta
+│   ├── pos/                        # Punto de venta (en desarrollo)
 │   ├── reports/                    # Reportes de inventario
 │   └── container.py                # Contenedor DI central
 ├── config/                         # Configuracion por entorno
@@ -100,8 +100,7 @@ modulo/
 │   ├── commands/                   # Handlers de escritura (CommandHandler)
 │   └── queries/                    # Handlers de lectura (QueryHandler)
 └── infra/
-    ├── routes.py                   # Rutas FastAPI
-    ├── controllers.py              # Controladores HTTP (inyeccion wireup)
+    ├── routes.py                   # Router classes con inyeccion wireup
     ├── validators.py               # Esquemas Pydantic
     ├── models.py                   # Modelos SQLAlchemy
     ├── mappers.py                  # Mappers declarativos Entity <-> Model
@@ -134,7 +133,7 @@ Ver [docs/api-reference.md](docs/api-reference.md) para la referencia completa d
 HTTP Request
     → FastAPI Router
     → ErrorHandlingMiddleware
-    → Controller (wireup-injected)
+    → Router handler (wireup-injected)
     → CommandHandler / QueryHandler
         → OpenTelemetry span + metricas
         → Repository → Mapper → SQLAlchemy → PostgreSQL

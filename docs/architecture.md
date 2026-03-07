@@ -23,7 +23,7 @@ El proyecto organiza el codigo en tres capas con dependencias unidireccionales:
 │         Infrastructure Layer            │
 │  FastAPI Routes · SQLAlchemy Models     │
 │  Mappers · Repositories · EventBus      │
-│  Middleware · Telemetry · Controllers   │
+│  Middleware · Telemetry                 │
 │  (implementa las interfaces del Domain) │
 └─────────────────────────────────────────┘
 ```
@@ -165,7 +165,7 @@ El contenedor wireup gestiona tres lifetimes:
 | Lifetime | Uso | Ejemplos |
 |---|---|---|
 | `SINGLETON` | Una instancia compartida por toda la app | Mappers (stateless) |
-| `SCOPED` | Una instancia por request HTTP | Repos, handlers, controladores, sesion DB |
+| `SCOPED` | Una instancia por request HTTP | Repos, handlers, routers, sesion DB |
 | `TRANSIENT` | Nueva instancia en cada resolucion | (uso puntual) |
 
 ### Registro
@@ -247,7 +247,7 @@ HTTP POST /api/admin/sales/{id}/items
     │      ├─ captura NotFoundError → 404
     │      └─ captura ValidationError → 422
     │
-    ├─ FastAPI Router → SaleController.add_item()
+    ├─ FastAPI Router → SaleRouter.add_item()
     │
     ├─ wireup scope creado (DB session compartida)
     │

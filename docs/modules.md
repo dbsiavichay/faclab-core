@@ -270,7 +270,9 @@ Ciclo de vida completo de ventas con items, pagos e integracion con inventario.
 
 ---
 
-## POS (Punto de Venta)
+## POS (Punto de Venta) — En desarrollo
+
+> Ver [pos-plan.md](pos-plan.md) para el plan completo de desarrollo.
 
 Operaciones atomicas del punto de venta. Confirma o anula ventas asegurando consistencia con el inventario en una sola transaccion.
 
