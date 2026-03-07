@@ -130,8 +130,4 @@ class SupplierProductResponse(SupplierProductRequest):
 
 # Query Params
 class SupplierQueryParams(QueryParams):
-    is_active: bool | None = Field(
-        None,
-        validation_alias=AliasChoices("isActive", "is_active"),
-        serialization_alias="isActive",
-    )
+    is_active: bool | None = None

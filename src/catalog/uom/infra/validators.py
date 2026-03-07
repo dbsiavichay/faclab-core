@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 from src.shared.infra.validators import QueryParams
@@ -25,7 +25,4 @@ class UnitOfMeasureResponse(BaseModel):
 
 # Query Params
 class UnitOfMeasureQueryParams(QueryParams):
-    is_active: bool | None = Field(
-        None,
-        validation_alias="isActive",
-    )
+    is_active: bool | None = None

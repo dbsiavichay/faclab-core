@@ -187,10 +187,5 @@ class SaleDetailResponse(SaleResponse):
 
 # Query Params
 class SaleQueryParams(QueryParams):
-    customer_id: int | None = Field(
-        None,
-        ge=1,
-        validation_alias=AliasChoices("customerId", "customer_id"),
-        serialization_alias="customerId",
-    )
+    customer_id: int | None = Field(None, ge=1)
     status: str | None = None

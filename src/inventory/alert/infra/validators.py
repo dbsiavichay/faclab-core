@@ -1,4 +1,4 @@
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 
@@ -17,12 +17,9 @@ class StockAlertResponse(BaseModel):
 
 
 class StockAlertQueryParams(BaseModel):
-    warehouse_id: int | None = Field(
-        None,
-        ge=1,
-        validation_alias=AliasChoices("warehouseId", "warehouse_id"),
-        serialization_alias="warehouseId",
-    )
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    warehouse_id: int | None = Field(None, ge=1)
 
 
 class ExpiringLotsQueryParams(BaseModel):
