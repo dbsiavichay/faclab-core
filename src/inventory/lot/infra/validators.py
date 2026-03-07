@@ -113,15 +113,5 @@ class LotResponse(BaseModel):
 
 # Query Params
 class LotQueryParams(QueryParams):
-    product_id: int | None = Field(
-        None,
-        ge=1,
-        validation_alias=AliasChoices("productId", "product_id"),
-        serialization_alias="productId",
-    )
-    expiring_in_days: int | None = Field(
-        None,
-        ge=1,
-        validation_alias=AliasChoices("expiringInDays", "expiring_in_days"),
-        serialization_alias="expiringInDays",
-    )
+    product_id: int | None = Field(None, ge=1)
+    expiring_in_days: int | None = Field(None, ge=1)

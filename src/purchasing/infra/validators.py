@@ -206,9 +206,4 @@ class PurchaseReceiptResponse(BaseModel):
 # Query Params
 class PurchaseOrderQueryParams(QueryParams):
     status: str | None = None
-    supplier_id: int | None = Field(
-        None,
-        ge=1,
-        validation_alias=AliasChoices("supplierId", "supplier_id"),
-        serialization_alias="supplierId",
-    )
+    supplier_id: int | None = Field(None, ge=1)

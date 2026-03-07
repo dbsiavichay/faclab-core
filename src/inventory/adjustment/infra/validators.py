@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 from src.shared.infra.validators import QueryParams
@@ -68,9 +68,4 @@ class AdjustmentItemResponse(BaseModel):
 
 class AdjustmentQueryParams(QueryParams):
     status: str | None = None
-    warehouse_id: int | None = Field(
-        None,
-        ge=1,
-        validation_alias=AliasChoices("warehouseId", "warehouse_id"),
-        serialization_alias="warehouseId",
-    )
+    warehouse_id: int | None = Field(None, ge=1)

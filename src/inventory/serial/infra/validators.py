@@ -86,10 +86,5 @@ class SerialNumberResponse(BaseModel):
 
 # Query Params
 class SerialQueryParams(QueryParams):
-    product_id: int | None = Field(
-        None,
-        ge=1,
-        validation_alias=AliasChoices("productId", "product_id"),
-        serialization_alias="productId",
-    )
+    product_id: int | None = Field(None, ge=1)
     status: str | None = None

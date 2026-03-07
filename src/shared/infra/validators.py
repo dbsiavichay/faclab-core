@@ -13,6 +13,8 @@ T = TypeVar("T")
 
 
 class QueryParams(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
     limit: int | None = Field(100, ge=1, le=1000)
     offset: int | None = Field(0, ge=0)
 
