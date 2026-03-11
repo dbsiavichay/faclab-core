@@ -1,0 +1,354 @@
+# Sales Module — API Specification (Admin, solo lectura)
+
+Specification del módulo de ventas para implementación frontend. Solo endpoints de consulta (Admin).
+
+---
+
+## 1. Enums
+
+### SaleStatus
+
+| Valor        | Descripción                  |
+|--------------|------------------------------|
+| `DRAFT`      | Borrador, editable           |
+| `CONFIRMED`  | Confirmada, stock descontado |
+| `INVOICED`   | Facturada                    |
+| `CANCELLED`  | Cancelada                    |
+
+### PaymentStatus
+
+| Valor     | Descripción                   |
+|-----------|-------------------------------|
+| `PENDING` | Sin pagos registrados         |
+| `PARTIAL` | Pago parcial recibido         |
+| `PAID`    | Pagado completamente          |
+
+### PaymentMethod
+
+`CASH` | `CARD` | `TRANSFER` | `CREDIT`
+
+---
+
+## 2. Endpoints
+
+Base URL: `/api/admin/sales`
+
+### 2.1 Listar ventas
+
+```
+GET /api/admin/sales?customerId=1&status=DRAFT&limit=20&offset=0
+```
+
+| Query Param  | Tipo   | Default | Validación    |
+|-------------|--------|---------|---------------|
+| customerId  | int    | null    | >= 1          |
+| status      | string | null    | SaleStatus    |
+| limit       | int    | 100     | 1–1000        |
+| offset      | int    | 0       | >= 0          |
+
+**Response** `200`:
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "customerId": 1,
+      "status": "CONFIRMED",
+      "saleDate": "2026-03-08T10:00:00",
+      "subtotal": 269.91,
+      "tax": 0,
+      "discount": 0,
+      "total": 269.91,
+      "paymentStatus": "PAID",
+      "notes": null,
+      "createdBy": "admin",
+      "createdAt": "2026-03-08T09:50:00",
+      "updatedAt": "2026-03-08T10:00:00"
+    }
+  ],
+  "meta": {
+    "requestId": "550e8400-e29b-41d4-a716-446655440000",
+    "timestamp": "2026-03-08T10:05:00",
+    "pagination": { "total": 50, "limit": 20, "offset": 0 }
+  }
+}
+```
+
+---
+
+### 2.2 Obtener venta por ID
+
+```
+GET /api/admin/sales/{sale_id}
+```
+
+**Response** `200`:
+
+```json
+{
+  "data": {
+    "id": 1,
+    "customerId": 1,
+    "status": "CONFIRMED",
+    "saleDate": "2026-03-08T10:00:00",
+    "subtotal": 269.91,
+    "tax": 0,
+    "discount": 0,
+    "total": 269.91,
+    "paymentStatus": "PAID",
+    "notes": null,
+    "createdBy": "admin",
+    "createdAt": "2026-03-08T09:50:00",
+    "updatedAt": "2026-03-08T10:00:00"
+  },
+  "meta": {
+    "requestId": "uuid",
+    "timestamp": "2026-03-08T10:05:00"
+  }
+}
+```
+
+**Error** `404`:
+
+```json
+{
+  "errors": [{ "code": "NOT_FOUND", "message": "Sale not found", "field": null }],
+  "meta": { "requestId": "uuid", "timestamp": "..." }
+}
+```
+
+---
+
+### 2.3 Listar items de una venta
+
+```
+GET /api/admin/sales/{sale_id}/items
+```
+
+**Response** `200`:
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "saleId": 1,
+      "productId": 5,
+      "quantity": 3,
+      "unitPrice": 29.99,
+      "discount": 10,
+      "subtotal": 80.97
+    },
+    {
+      "id": 2,
+      "saleId": 1,
+      "productId": 8,
+      "quantity": 2,
+      "unitPrice": 49.99,
+      "discount": 0,
+      "subtotal": 99.98
+    }
+  ],
+  "meta": { "requestId": "uuid", "timestamp": "..." }
+}
+```
+
+---
+
+### 2.4 Listar pagos de una venta
+
+```
+GET /api/admin/sales/{sale_id}/payments
+```
+
+**Response** `200`:
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "saleId": 1,
+      "amount": 150.00,
+      "paymentMethod": "CASH",
+      "paymentDate": "2026-03-08T10:00:00",
+      "reference": "REF-001",
+      "notes": null,
+      "createdAt": "2026-03-08T10:00:00"
+    },
+    {
+      "id": 2,
+      "saleId": 1,
+      "amount": 119.91,
+      "paymentMethod": "CARD",
+      "paymentDate": "2026-03-08T10:02:00",
+      "reference": null,
+      "notes": "Pago restante",
+      "createdAt": "2026-03-08T10:02:00"
+    }
+  ],
+  "meta": { "requestId": "uuid", "timestamp": "..." }
+}
+```
+
+---
+
+## 3. Formato de respuestas
+
+### Envelope estándar
+
+Todas las respuestas usan un envelope con `data` y `meta`:
+
+```typescript
+// Respuesta de un solo recurso
+interface DataResponse<T> {
+  data: T;
+  meta: { requestId: string; timestamp: string };
+}
+
+// Respuesta de lista
+interface ListResponse<T> {
+  data: T[];
+  meta: { requestId: string; timestamp: string };
+}
+
+// Respuesta paginada
+interface PaginatedDataResponse<T> {
+  data: T[];
+  meta: {
+    requestId: string;
+    timestamp: string;
+    pagination: { total: number; limit: number; offset: number };
+  };
+}
+
+// Respuesta de error
+interface ErrorResponse {
+  errors: Array<{ code: string; message: string; field: string | null }>;
+  meta: { requestId: string; timestamp: string };
+}
+```
+
+### Convenciones
+
+- Todos los campos JSON usan **camelCase**.
+- Los campos `Decimal` se serializan como **números JSON** (no strings).
+- Los campos `datetime` se serializan como strings ISO 8601.
+
+---
+
+## 4. Tipos TypeScript (referencia frontend)
+
+```typescript
+// Enums
+type SaleStatus = "DRAFT" | "CONFIRMED" | "INVOICED" | "CANCELLED";
+type PaymentStatus = "PENDING" | "PARTIAL" | "PAID";
+type PaymentMethod = "CASH" | "CARD" | "TRANSFER" | "CREDIT";
+
+// Entidades
+interface Sale {
+  id: number;
+  customerId: number;
+  status: SaleStatus;
+  saleDate: string | null;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  paymentStatus: PaymentStatus;
+  notes: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+interface SaleItem {
+  id: number;
+  saleId: number;
+  productId: number;
+  quantity: number;
+  unitPrice: number;
+  discount: number;
+  subtotal: number;
+}
+
+interface Payment {
+  id: number;
+  saleId: number;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  paymentDate: string | null;
+  reference: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+// Query params (para listar ventas)
+interface SaleQueryParams {
+  customerId?: number;
+  status?: SaleStatus;
+  limit?: number;  // default: 100, max: 1000
+  offset?: number; // default: 0
+}
+```
+
+---
+
+## 5. Manejo de errores
+
+| Código            | HTTP | Descripción                        |
+|-------------------|------|------------------------------------|
+| `NOT_FOUND`       | 404  | Venta no encontrada                |
+| `VALIDATION_ERROR`| 422  | Query params inválidos             |
+
+### Estructura de error
+
+```json
+{
+  "errors": [
+    {
+      "code": "NOT_FOUND",
+      "message": "Sale not found",
+      "field": null
+    }
+  ],
+  "meta": {
+    "requestId": "550e8400-e29b-41d4-a716-446655440000",
+    "timestamp": "2026-03-08T10:00:00"
+  }
+}
+```
+
+---
+
+## 6. Cálculos (referencia)
+
+Estos cálculos los hace el backend. Se documentan para que el frontend pueda mostrar o verificar los valores.
+
+### Subtotal de item
+
+```
+item.subtotal = (unitPrice × quantity) × (1 - discount / 100)
+```
+
+Ejemplo: unitPrice=100, quantity=2, discount=10 → `(100 × 2) × (1 - 0.10) = 180`
+
+### Totales de venta
+
+```
+sale.subtotal = Σ item.subtotal
+sale.tax = 0  (no implementado aún)
+sale.total = subtotal + tax
+```
+
+**Nota:** `sale.discount` existe pero actualmente no se aplica en el cálculo automático. Los descuentos se aplican a nivel de item.
+
+### Payment status
+
+```
+total_paid = Σ payment.amount
+if total_paid == 0:        PENDING
+elif total_paid < total:   PARTIAL
+else:                      PAID
+```

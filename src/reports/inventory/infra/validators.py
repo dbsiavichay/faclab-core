@@ -11,7 +11,7 @@ from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
 class ValuationItemResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     product_id: int
     product_name: str
@@ -22,7 +22,7 @@ class ValuationItemResponse(BaseModel):
 
 
 class InventoryValuationResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     total_value: DecimalNumber
     as_of_date: date
@@ -42,7 +42,7 @@ class ValuationQueryParams(BaseModel):
 
 
 class ProductRotationResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     product_id: int
     product_name: str
@@ -68,7 +68,7 @@ class RotationQueryParams(BaseModel):
 
 
 class MovementHistoryItemResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     id: int
     product_id: int
@@ -100,7 +100,7 @@ class MovementHistoryQueryParams(QueryParams):
 
 
 class WarehouseSummaryResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     warehouse_id: int
     warehouse_name: str

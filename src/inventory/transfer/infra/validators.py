@@ -39,7 +39,7 @@ class UpdateTransferItemRequest(BaseModel):
 
 
 class TransferResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     id: int
     source_location_id: int
@@ -52,7 +52,7 @@ class TransferResponse(BaseModel):
 
 
 class TransferItemResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     id: int
     transfer_id: int
