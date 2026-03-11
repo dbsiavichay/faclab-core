@@ -209,6 +209,13 @@ Faclab Core is a sales and inventory management API.
             "description": "Customer lookup for point-of-sale, including search by tax ID (RUC).",
         },
         {
+            "name": "pos - shifts",
+            "description": (
+                "Shift management: open and close cashier shifts, "
+                "track opening/closing balances, and calculate discrepancies."
+            ),
+        },
+        {
             "name": "pos - sales",
             "description": (
                 "Full sales lifecycle for the point-of-sale terminal: "
@@ -277,7 +284,12 @@ Faclab Core is a sales and inventory management API.
         },
         {
             "name": "POS",
-            "tags": ["pos - products", "pos - customers", "pos - sales"],
+            "tags": [
+                "pos - products",
+                "pos - customers",
+                "pos - shifts",
+                "pos - sales",
+            ],
         },
     ]
 

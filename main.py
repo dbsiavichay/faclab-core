@@ -25,6 +25,7 @@ from src.inventory.transfer.infra.routes import TransferItemRouter, TransferRout
 from src.inventory.warehouse.infra.routes import WarehouseRouter
 from src.pos.infra.routes import POSCustomerRouter, POSProductRouter
 from src.pos.sales.infra.routes import POSSaleRouter
+from src.pos.shift.infra.routes import POSShiftRouter
 from src.purchasing.infra.routes import POItemRouter, PurchaseOrderRouter
 from src.reports.inventory.infra.routes import ReportRouter
 from src.sales.infra.routes import SaleRouter
@@ -246,6 +247,9 @@ admin_router.include_router(
 # POS API
 pos_router = APIRouter(prefix="/api/pos")
 pos_router.include_router(POSSaleRouter().router, prefix="/sales", tags=["pos - sales"])
+pos_router.include_router(
+    POSShiftRouter().router, prefix="/shifts", tags=["pos - shifts"]
+)
 pos_router.include_router(
     POSProductRouter().router, prefix="/products", tags=["pos - products"]
 )
