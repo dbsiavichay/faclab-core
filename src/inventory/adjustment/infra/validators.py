@@ -40,7 +40,7 @@ class UpdateAdjustmentItemRequest(BaseModel):
 
 
 class AdjustmentResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     id: int
     warehouse_id: int
@@ -53,7 +53,7 @@ class AdjustmentResponse(BaseModel):
 
 
 class AdjustmentItemResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     id: int
     adjustment_id: int
