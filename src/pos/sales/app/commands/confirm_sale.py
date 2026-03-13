@@ -5,6 +5,8 @@ from wireup import injectable
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
 from src.inventory.stock.domain.entities import Stock
+from src.pos.shift.domain.entities import Shift, ShiftStatus
+from src.pos.shift.domain.exceptions import NoOpenShiftError
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleConfirmed
 from src.sales.domain.exceptions import InsufficientStockError, SaleHasNoItemsError
@@ -27,18 +29,26 @@ class POSConfirmSaleCommandHandler(CommandHandler[POSConfirmSaleCommand, dict]):
         sale_item_repo: Repository[SaleItem],
         movement_repo: Repository[Movement],
         stock_repo: Repository[Stock],
+        shift_repo: Repository[Shift],
         event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
         self.movement_repo = movement_repo
         self.stock_repo = stock_repo
+        self.shift_repo = shift_repo
         self.event_publisher = event_publisher
 
     def _handle(self, command: POSConfirmSaleCommand) -> dict:
         sale = self.sale_repo.get_by_id(command.sale_id)
         if not sale:
             raise NotFoundError(f"Sale with id {command.sale_id} not found")
+
+        # Validar que el turno sigue abierto
+        if sale.shift_id is not None:
+            shift = self.shift_repo.first(id=sale.shift_id)
+            if shift is None or shift.status != ShiftStatus.OPEN:
+                raise NoOpenShiftError()
 
         items = self.sale_item_repo.filter_by(sale_id=command.sale_id)
         if not items:

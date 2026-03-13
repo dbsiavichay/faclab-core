@@ -31,15 +31,30 @@ class SaleItemRequest(BaseModel):
     )
 
 
+class SaleItemUpdateRequest(BaseModel):
+    """Schema para actualizar un item de venta"""
+
+    quantity: int | None = Field(None, gt=0, description="Nueva cantidad")
+    discount: Decimal | None = Field(
+        None, ge=0, le=100, description="Nuevo porcentaje de descuento"
+    )
+
+
 class SaleRequest(BaseModel):
     """Schema para crear una venta"""
 
-    customer_id: int = Field(
-        ...,
+    customer_id: int | None = Field(
+        None,
         gt=0,
         description="ID del cliente",
         validation_alias=AliasChoices("customerId", "customer_id"),
         serialization_alias="customerId",
+    )
+    is_final_consumer: bool = Field(
+        False,
+        description="Indica si es consumidor final",
+        validation_alias=AliasChoices("isFinalConsumer", "is_final_consumer"),
+        serialization_alias="isFinalConsumer",
     )
     notes: str | None = Field(None, max_length=512, description="Notas adicionales")
     created_by: str | None = Field(
@@ -138,10 +153,20 @@ class SaleResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    customer_id: int = Field(
-        ...,
+    customer_id: int | None = Field(
+        None,
         validation_alias=AliasChoices("customerId", "customer_id"),
         serialization_alias="customerId",
+    )
+    is_final_consumer: bool = Field(
+        False,
+        validation_alias=AliasChoices("isFinalConsumer", "is_final_consumer"),
+        serialization_alias="isFinalConsumer",
+    )
+    shift_id: int | None = Field(
+        None,
+        validation_alias=AliasChoices("shiftId", "shift_id"),
+        serialization_alias="shiftId",
     )
     status: str
     sale_date: datetime | None = Field(

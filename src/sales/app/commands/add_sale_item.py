@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from wireup import injectable
 
+from src.sales.app.helpers import recalculate_sale_totals
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleItemAdded
 from src.sales.domain.exceptions import InvalidSaleStatusError
@@ -61,19 +62,7 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
 
         # Recalcular totales de la venta
         items = self.sale_item_repo.filter_by(sale_id=command.sale_id)
-        subtotal = sum(item.subtotal for item in items)
-
-        # Aplicar descuento general si existe
-        discount_amount = subtotal * (sale.discount / Decimal("100"))
-        subtotal_after_discount = subtotal - discount_amount
-
-        # Calcular impuestos (asumiendo 12% IVA en Ecuador)
-        tax_amount = subtotal_after_discount * (sale.tax / Decimal("100"))
-        total = subtotal_after_discount + tax_amount
-
-        # Actualizar la venta
-        sale.subtotal = subtotal
-        sale.total = total
+        recalculate_sale_totals(sale, items)
         self.sale_repo.update(sale)
 
         # Publicar evento

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.pos.shift.domain.entities import Shift
+from src.pos.shift.domain.exceptions import NoOpenShiftError
 from src.sales.domain.entities import Sale
 from src.sales.domain.events import SaleCreated
 from src.shared.app.commands import Command, CommandHandler
@@ -11,26 +13,36 @@ from src.shared.domain.exceptions import DomainError
 
 
 @dataclass
-class CreateSaleCommand(Command):
-    """Comando para crear una nueva venta"""
+class POSCreateSaleCommand(Command):
+    """Comando para crear una venta desde POS (vincula turno activo)"""
 
     customer_id: int | None = None
     is_final_consumer: bool = False
-    shift_id: int | None = None
     notes: str | None = None
     created_by: str | None = None
 
 
 @injectable(lifetime="scoped")
-class CreateSaleCommandHandler(CommandHandler[CreateSaleCommand, dict]):
-    """Handler para crear una nueva venta en estado DRAFT"""
+class POSCreateSaleCommandHandler(CommandHandler[POSCreateSaleCommand, dict]):
+    """Handler para crear una venta POS vinculada al turno activo"""
 
-    def __init__(self, repo: Repository[Sale], event_publisher: EventPublisher):
-        self.repo = repo
+    def __init__(
+        self,
+        sale_repo: Repository[Sale],
+        shift_repo: Repository[Shift],
+        event_publisher: EventPublisher,
+    ):
+        self.sale_repo = sale_repo
+        self.shift_repo = shift_repo
         self.event_publisher = event_publisher
 
-    def _handle(self, command: CreateSaleCommand) -> dict:
-        """Crea una nueva venta en estado DRAFT"""
+    def _handle(self, command: POSCreateSaleCommand) -> dict:
+        # Obtener turno activo
+        shift = self.shift_repo.first(status="OPEN")
+        if shift is None:
+            raise NoOpenShiftError()
+
+        # Validar consumidor final
         customer_id = command.customer_id
         if command.is_final_consumer:
             customer_id = None
@@ -40,14 +52,13 @@ class CreateSaleCommandHandler(CommandHandler[CreateSaleCommand, dict]):
         sale = Sale(
             customer_id=customer_id,
             is_final_consumer=command.is_final_consumer,
-            shift_id=command.shift_id,
+            shift_id=shift.id,
             notes=command.notes,
             created_by=command.created_by,
         )
 
-        sale = self.repo.create(sale)
+        sale = self.sale_repo.create(sale)
 
-        # Publicar evento
         self.event_publisher.publish(
             SaleCreated(
                 aggregate_id=sale.id,

@@ -1,82 +1,69 @@
 from dataclasses import dataclass
+from decimal import Decimal
 
 from wireup import injectable
 
 from src.sales.app.helpers import recalculate_sale_totals
 from src.sales.domain.entities import Sale, SaleItem
-from src.sales.domain.events import SaleItemRemoved
 from src.sales.domain.exceptions import InvalidSaleStatusError
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
 
 
 @dataclass
-class RemoveSaleItemCommand(Command):
-    """Comando para eliminar un item de una venta"""
+class UpdateSaleItemCommand(Command):
+    """Comando para actualizar un item de una venta"""
 
     sale_id: int
     sale_item_id: int
+    quantity: int | None = None
+    discount: Decimal | None = None
 
 
 @injectable(lifetime="scoped")
-class RemoveSaleItemCommandHandler(CommandHandler[RemoveSaleItemCommand, dict]):
-    """Handler para eliminar un item de una venta y recalcular totales"""
+class UpdateSaleItemCommandHandler(CommandHandler[UpdateSaleItemCommand, dict]):
+    """Handler para actualizar un item de una venta y recalcular totales"""
 
     def __init__(
         self,
         sale_repo: Repository[Sale],
         sale_item_repo: Repository[SaleItem],
-        event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
-        self.event_publisher = event_publisher
 
-    def _handle(self, command: RemoveSaleItemCommand) -> dict:
-        """Elimina un item de la venta y recalcula los totales"""
-        # Obtener la venta
+    def _handle(self, command: UpdateSaleItemCommand) -> dict:
+        """Actualiza un item de la venta y recalcula los totales"""
         sale = self.sale_repo.get_by_id(command.sale_id)
         if not sale:
             raise NotFoundError(f"Sale with id {command.sale_id} not found")
 
-        # Validar que la venta esté en DRAFT
         if sale.status.value != "DRAFT":
-            raise InvalidSaleStatusError(sale.status.value, "remove items from")
+            raise InvalidSaleStatusError(sale.status.value, "update items in")
 
-        # Obtener el item
         sale_item = self.sale_item_repo.get_by_id(command.sale_item_id)
         if not sale_item:
             raise NotFoundError(f"Sale item with id {command.sale_item_id} not found")
 
-        # Verificar que el item pertenece a la venta
         if sale_item.sale_id != command.sale_id:
             raise DomainError(
                 f"Sale item {command.sale_item_id} does not belong to "
                 f"sale {command.sale_id}"
             )
 
-        # Guardar info del item para el evento
-        item_dict = sale_item.dict()
+        if command.quantity is not None:
+            sale_item.quantity = command.quantity
+        if command.discount is not None:
+            sale_item.discount = command.discount
 
-        # Eliminar el item
-        self.sale_item_repo.delete(sale_item.id)
+        self.sale_item_repo.update(sale_item)
 
         # Recalcular totales de la venta
         items = self.sale_item_repo.filter_by(sale_id=command.sale_id)
         recalculate_sale_totals(sale, items)
         self.sale_repo.update(sale)
 
-        # Publicar evento
-        self.event_publisher.publish(
-            SaleItemRemoved(
-                aggregate_id=sale.id,
-                sale_id=sale.id,
-                sale_item_id=sale_item.id,
-                product_id=sale_item.product_id,
-                quantity=sale_item.quantity,
-            )
-        )
-
-        return {"success": True, "removed_item": item_dict}
+        result = sale_item.dict()
+        result["subtotal"] = sale_item.subtotal
+        return result
