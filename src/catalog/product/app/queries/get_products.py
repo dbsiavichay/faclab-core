@@ -3,7 +3,10 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from src.catalog.product.domain.entities import Product
-from src.catalog.product.domain.specifications import ProductByName, ProductInCategory
+from src.catalog.product.domain.specifications import (
+    ProductBySearchTerm,
+    ProductInCategory,
+)
 from src.shared.app.queries import Query, QueryHandler
 from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
@@ -59,6 +62,6 @@ class SearchProductsQueryHandler(QueryHandler[SearchProductsQuery, list[dict]]):
         self.repo = repo
 
     def _handle(self, query: SearchProductsQuery) -> list[dict]:
-        spec = ProductByName(query.search_term)
+        spec = ProductBySearchTerm(query.search_term)
         products = self.repo.filter_by_spec(spec, limit=query.limit)
         return [p.dict() for p in products]
