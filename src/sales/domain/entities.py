@@ -56,7 +56,9 @@ class SaleItem(Entity):
 class Sale(Entity):
     """Venta del sistema"""
 
-    customer_id: int
+    customer_id: int | None = None
+    is_final_consumer: bool = False
+    shift_id: int | None = None
     status: SaleStatus = SaleStatus.DRAFT
     sale_date: datetime | None = None
     subtotal: Decimal = Decimal("0")

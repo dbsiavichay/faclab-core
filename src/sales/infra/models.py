@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.shared.infra.database import Base
@@ -14,8 +14,14 @@ class SaleModel(Base):
     __tablename__ = "sales"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    customer_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("customers.id"), nullable=False
+    customer_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("customers.id"), nullable=True
+    )
+    is_final_consumer: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+    shift_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("pos_shifts.id"), nullable=True
     )
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="DRAFT")
     sale_date: Mapped[datetime | None] = mapped_column(DateTime)

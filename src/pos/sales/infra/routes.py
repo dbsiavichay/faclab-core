@@ -11,13 +11,14 @@ from src.pos.sales.app.commands.confirm_sale import (
     POSConfirmSaleCommand,
     POSConfirmSaleCommandHandler,
 )
+from src.pos.sales.app.commands.create_sale import (
+    POSCreateSaleCommand,
+    POSCreateSaleCommandHandler,
+)
+from src.pos.sales.infra.validators import POSSaleRequest
 from src.sales.app.commands.add_sale_item import (
     AddSaleItemCommand,
     AddSaleItemCommandHandler,
-)
-from src.sales.app.commands.create_sale import (
-    CreateSaleCommand,
-    CreateSaleCommandHandler,
 )
 from src.sales.app.commands.register_payment import (
     RegisterPaymentCommand,
@@ -26,6 +27,10 @@ from src.sales.app.commands.register_payment import (
 from src.sales.app.commands.remove_sale_item import (
     RemoveSaleItemCommand,
     RemoveSaleItemCommandHandler,
+)
+from src.sales.app.commands.update_sale_item import (
+    UpdateSaleItemCommand,
+    UpdateSaleItemCommandHandler,
 )
 from src.sales.app.queries.get_payments import (
     GetSalePaymentsQuery,
@@ -42,7 +47,7 @@ from src.sales.infra.validators import (
     PaymentResponse,
     SaleItemRequest,
     SaleItemResponse,
-    SaleRequest,
+    SaleItemUpdateRequest,
     SaleResponse,
 )
 from src.shared.infra.dependencies import get_meta
@@ -77,6 +82,11 @@ class POSSaleRouter:
             response_model=ListResponse[SaleItemResponse],
             summary="List sale items",
         )(self.get_sale_items)
+        self.router.put(
+            "/{sale_id}/items/{item_id}",
+            response_model=DataResponse[SaleItemResponse],
+            summary="Update sale item",
+        )(self.update_sale_item)
         self.router.delete(
             "/{sale_id}/items/{item_id}", summary="Remove item from sale"
         )(self.remove_sale_item)
@@ -104,11 +114,13 @@ class POSSaleRouter:
 
     def create_sale(
         self,
-        handler: Injected[CreateSaleCommandHandler],
-        sale: SaleRequest,
+        handler: Injected[POSCreateSaleCommandHandler],
+        sale: POSSaleRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleResponse]:
-        result = handler.handle(CreateSaleCommand(**sale.model_dump(exclude_none=True)))
+        result = handler.handle(
+            POSCreateSaleCommand(**sale.model_dump(exclude_none=True))
+        )
         return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
 
     def get_sale(
@@ -142,6 +154,23 @@ class POSSaleRouter:
         return ListResponse(
             data=[SaleItemResponse.model_validate(r) for r in result], meta=meta
         )
+
+    def update_sale_item(
+        self,
+        handler: Injected[UpdateSaleItemCommandHandler],
+        sale_id: int,
+        item_id: int,
+        item: SaleItemUpdateRequest,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SaleItemResponse]:
+        result = handler.handle(
+            UpdateSaleItemCommand(
+                sale_id=sale_id,
+                sale_item_id=item_id,
+                **item.model_dump(exclude_none=True),
+            )
+        )
+        return DataResponse(data=SaleItemResponse.model_validate(result), meta=meta)
 
     def remove_sale_item(
         self,
