@@ -38,3 +38,28 @@ class ProductBySku(Specification):
         from src.catalog.product.infra.models import ProductModel
 
         return [ProductModel.sku == self.sku]
+
+
+class ProductBySearchTerm(Specification):
+    def __init__(self, term: str):
+        self.term = term
+
+    def is_satisfied_by(self, product) -> bool:
+        return (
+            product.sku == self.term
+            or (product.barcode and product.barcode == self.term)
+            or self.term.lower() in product.name.lower()
+        )
+
+    def to_query_criteria(self):
+        from sqlalchemy import or_
+
+        from src.catalog.product.infra.models import ProductModel
+
+        return [
+            or_(
+                ProductModel.sku == self.term,
+                ProductModel.barcode == self.term,
+                ProductModel.name.ilike(f"%{self.term}%"),
+            )
+        ]
