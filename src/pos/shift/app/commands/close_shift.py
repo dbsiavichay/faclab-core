@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from sqlalchemy.orm import Session
 from wireup import injectable
 
+from src.pos.cash.app.queries.get_cash_summary import compute_cash_summary
 from src.pos.shift.domain.entities import Shift
 from src.pos.shift.domain.events import ShiftClosed
 from src.shared.app.commands import Command, CommandHandler
@@ -24,18 +26,29 @@ class CloseShiftCommand(Command):
 class CloseShiftCommandHandler(CommandHandler[CloseShiftCommand, dict]):
     """Handler para cerrar un turno"""
 
-    def __init__(self, repo: Repository[Shift], event_publisher: EventPublisher):
+    def __init__(
+        self,
+        repo: Repository[Shift],
+        event_publisher: EventPublisher,
+        session: Session,
+    ):
         self.repo = repo
         self.event_publisher = event_publisher
+        self.session = session
 
     def _handle(self, command: CloseShiftCommand) -> dict:
         shift = self.repo.get_by_id(command.shift_id)
         if shift is None:
             raise NotFoundError(f"Shift with id {command.shift_id} not found")
 
-        # Por ahora expected_balance = opening_balance
-        # En Session 8 se integrara con ventas en efectivo
-        expected_balance = shift.opening_balance
+        summary = compute_cash_summary(self.session, command.shift_id)
+        expected_balance = (
+            shift.opening_balance
+            + summary["cash_sales"]
+            - summary["cash_refunds"]
+            + summary["cash_in"]
+            - summary["cash_out"]
+        )
 
         shift.close(
             closing_balance=command.closing_balance,

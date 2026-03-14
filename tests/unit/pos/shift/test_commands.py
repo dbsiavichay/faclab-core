@@ -1,5 +1,5 @@
 from decimal import Decimal
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -17,6 +17,13 @@ from src.pos.shift.domain.exceptions import (
     ShiftAlreadyOpenError,
 )
 from src.shared.domain.exceptions import NotFoundError
+
+_ZERO_SUMMARY = {
+    "cash_sales": Decimal("0"),
+    "cash_refunds": Decimal("0"),
+    "cash_in": Decimal("0"),
+    "cash_out": Decimal("0"),
+}
 
 
 def _make_shift(**overrides) -> Shift:
@@ -105,12 +112,15 @@ def test_open_shift_fails_if_already_open():
 # --- CloseShift ---
 
 
-def test_close_shift_command_handler():
+@patch("src.pos.shift.app.commands.close_shift.compute_cash_summary")
+def test_close_shift_command_handler(mock_summary):
     """Test cerrar un turno exitosamente"""
+    mock_summary.return_value = _ZERO_SUMMARY
     shift = _make_shift()
     repo = _mock_repo(entity=shift)
     event_publisher = MagicMock()
-    handler = CloseShiftCommandHandler(repo, event_publisher)
+    session = MagicMock()
+    handler = CloseShiftCommandHandler(repo, event_publisher, session)
 
     command = CloseShiftCommand(
         shift_id=1,
@@ -124,14 +134,17 @@ def test_close_shift_command_handler():
     assert result["closing_balance"] == Decimal("600.00")
 
 
-def test_close_shift_publishes_event():
+@patch("src.pos.shift.app.commands.close_shift.compute_cash_summary")
+def test_close_shift_publishes_event(mock_summary):
     """Test que cerrar un turno publica evento"""
+    mock_summary.return_value = _ZERO_SUMMARY
     from src.pos.shift.domain.events import ShiftClosed
 
     shift = _make_shift()
     repo = _mock_repo(entity=shift)
     event_publisher = MagicMock()
-    handler = CloseShiftCommandHandler(repo, event_publisher)
+    session = MagicMock()
+    handler = CloseShiftCommandHandler(repo, event_publisher, session)
 
     handler.handle(CloseShiftCommand(shift_id=1, closing_balance=Decimal("600.00")))
 
@@ -144,7 +157,8 @@ def test_close_shift_publishes_event():
 def test_close_shift_not_found():
     """Test que falla si el turno no existe"""
     repo = _mock_repo()
-    handler = CloseShiftCommandHandler(repo, MagicMock())
+    session = MagicMock()
+    handler = CloseShiftCommandHandler(repo, MagicMock(), session)
 
     command = CloseShiftCommand(shift_id=999, closing_balance=Decimal("500.00"))
 
@@ -152,11 +166,14 @@ def test_close_shift_not_found():
         handler.handle(command)
 
 
-def test_close_shift_already_closed():
+@patch("src.pos.shift.app.commands.close_shift.compute_cash_summary")
+def test_close_shift_already_closed(mock_summary):
     """Test que falla si el turno ya esta cerrado"""
+    mock_summary.return_value = _ZERO_SUMMARY
     shift = _make_shift(status=ShiftStatus.CLOSED)
     repo = _mock_repo(entity=shift)
-    handler = CloseShiftCommandHandler(repo, MagicMock())
+    session = MagicMock()
+    handler = CloseShiftCommandHandler(repo, MagicMock(), session)
 
     command = CloseShiftCommand(shift_id=1, closing_balance=Decimal("500.00"))
 
@@ -164,11 +181,14 @@ def test_close_shift_already_closed():
         handler.handle(command)
 
 
-def test_close_shift_with_notes():
+@patch("src.pos.shift.app.commands.close_shift.compute_cash_summary")
+def test_close_shift_with_notes(mock_summary):
     """Test cerrar turno con notas"""
+    mock_summary.return_value = _ZERO_SUMMARY
     shift = _make_shift()
     repo = _mock_repo(entity=shift)
-    handler = CloseShiftCommandHandler(repo, MagicMock())
+    session = MagicMock()
+    handler = CloseShiftCommandHandler(repo, MagicMock(), session)
 
     command = CloseShiftCommand(
         shift_id=1,

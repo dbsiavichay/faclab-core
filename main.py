@@ -23,8 +23,10 @@ from src.inventory.serial.infra.routes import SerialRouter
 from src.inventory.stock.infra.routes import StockRouter
 from src.inventory.transfer.infra.routes import TransferItemRouter, TransferRouter
 from src.inventory.warehouse.infra.routes import WarehouseRouter
+from src.pos.cash.infra.routes import POSCashRouter
 from src.pos.infra.routes import POSCustomerRouter, POSProductRouter
 from src.pos.refund.infra.routes import POSRefundRouter
+from src.pos.reports.infra.routes import POSReportRouter
 from src.pos.sales.infra.routes import POSSaleRouter
 from src.pos.shift.infra.routes import POSShiftRouter
 from src.purchasing.infra.routes import POItemRouter, PurchaseOrderRouter
@@ -259,6 +261,10 @@ pos_router.include_router(
 )
 pos_router.include_router(
     POSRefundRouter().router, prefix="/refunds", tags=["pos - refunds"]
+)
+pos_router.include_router(POSCashRouter().router, prefix="/shifts", tags=["pos - cash"])
+pos_router.include_router(
+    POSReportRouter().router, prefix="/reports", tags=["pos - reports"]
 )
 
 # ---------------------------------------------------------------------------
