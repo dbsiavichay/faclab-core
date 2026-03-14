@@ -1,0 +1,195 @@
+from dataclasses import dataclass
+from decimal import Decimal
+
+from wireup import injectable
+
+from src.catalog.product.domain.entities import Product
+from src.inventory.movement.domain.constants import MovementType
+from src.inventory.movement.domain.entities import Movement
+from src.inventory.stock.domain.entities import Stock
+from src.pos.shift.domain.entities import Shift
+from src.pos.shift.domain.exceptions import NoOpenShiftError
+from src.sales.domain.entities import Payment, PaymentMethod, Sale, SaleItem
+from src.sales.domain.events import SaleConfirmed
+from src.sales.domain.exceptions import InsufficientStockError
+from src.sales.domain.services import recalculate_sale_totals
+from src.shared.app.commands import Command, CommandHandler
+from src.shared.app.events import EventPublisher
+from src.shared.app.repositories import Repository
+from src.shared.domain.exceptions import NotFoundError, ValidationError
+
+
+@dataclass
+class QuickSaleCommand(Command):
+    """Comando para venta rapida (checkout completo en un request)"""
+
+    items: list[dict]
+    payments: list[dict]
+    customer_id: int | None = None
+    notes: str | None = None
+    created_by: str | None = None
+
+
+@injectable(lifetime="scoped")
+class QuickSaleCommandHandler(CommandHandler[QuickSaleCommand, dict]):
+    """Handler para venta rapida: crea venta, items, confirma, paga en una transaccion"""
+
+    def __init__(
+        self,
+        sale_repo: Repository[Sale],
+        sale_item_repo: Repository[SaleItem],
+        product_repo: Repository[Product],
+        movement_repo: Repository[Movement],
+        stock_repo: Repository[Stock],
+        payment_repo: Repository[Payment],
+        shift_repo: Repository[Shift],
+        event_publisher: EventPublisher,
+    ):
+        self.sale_repo = sale_repo
+        self.sale_item_repo = sale_item_repo
+        self.product_repo = product_repo
+        self.movement_repo = movement_repo
+        self.stock_repo = stock_repo
+        self.payment_repo = payment_repo
+        self.shift_repo = shift_repo
+        self.event_publisher = event_publisher
+
+    def _handle(self, command: QuickSaleCommand) -> dict:
+        # 1. Obtener turno activo
+        shift = self.shift_repo.first(status="OPEN")
+        if shift is None:
+            raise NoOpenShiftError()
+
+        # 2. Determinar cliente
+        is_final_consumer = command.customer_id is None
+        customer_id = None if is_final_consumer else command.customer_id
+
+        # 3. Crear venta en DRAFT
+        sale = Sale(
+            customer_id=customer_id,
+            is_final_consumer=is_final_consumer,
+            shift_id=shift.id,
+            notes=command.notes,
+            created_by=command.created_by,
+        )
+        sale = self.sale_repo.create(sale)
+
+        # 4. Crear items
+        created_items = []
+        for item_data in command.items:
+            product = self.product_repo.get_by_id(item_data["product_id"])
+            if not product:
+                raise NotFoundError(
+                    f"Product with id {item_data['product_id']} not found"
+                )
+
+            unit_price = Decimal(str(item_data.get("unit_price") or product.sale_price))
+            quantity = item_data["quantity"]
+            discount = Decimal(str(item_data.get("discount", 0)))
+
+            base = unit_price * quantity
+            discount_amount = base * (discount / Decimal("100"))
+            item_subtotal = base - discount_amount
+            tax_amount = item_subtotal * product.tax_rate / Decimal("100")
+
+            sale_item = SaleItem(
+                sale_id=sale.id,
+                product_id=product.id,
+                quantity=quantity,
+                unit_price=unit_price,
+                discount=discount,
+                tax_rate=product.tax_rate,
+                tax_amount=tax_amount,
+            )
+            sale_item = self.sale_item_repo.create(sale_item)
+            created_items.append(sale_item)
+
+        # 5. Recalcular totales
+        recalculate_sale_totals(sale, created_items)
+        self.sale_repo.update(sale)
+
+        # 6. Validar stock
+        for item in created_items:
+            stock = self.stock_repo.first(product_id=item.product_id)
+            available = stock.quantity if stock else 0
+            if available < item.quantity:
+                raise InsufficientStockError(item.product_id, item.quantity, available)
+
+        # 7. Validar pagos cubren el total
+        total_payment = sum(Decimal(str(p["amount"])) for p in command.payments)
+        if total_payment < sale.total:
+            raise ValidationError(
+                message="Payment amount is insufficient",
+                detail=f"Total: {sale.total}, paid: {total_payment}",
+            )
+
+        # 8. Confirmar venta
+        sale.confirm()
+        self.sale_repo.update(sale)
+
+        # 9. Crear movimientos de inventario
+        for item in created_items:
+            movement = Movement(
+                product_id=item.product_id,
+                quantity=-abs(item.quantity),
+                type=MovementType.OUT,
+                reason=f"Sale #{sale.id} confirmed",
+            )
+            self.movement_repo.create(movement)
+
+            stock = self.stock_repo.first(product_id=item.product_id)
+            stock.update_quantity(-abs(item.quantity))
+            self.stock_repo.update(stock)
+
+        # 10. Registrar pagos
+        created_payments = []
+        for payment_data in command.payments:
+            try:
+                payment_method = PaymentMethod(payment_data["payment_method"])
+            except ValueError:
+                raise ValidationError(
+                    message=f"Invalid payment method: {payment_data['payment_method']}",
+                    detail=f"Valid methods: {[m.value for m in PaymentMethod]}",
+                ) from None
+
+            payment = Payment(
+                sale_id=sale.id,
+                amount=Decimal(str(payment_data["amount"])),
+                payment_method=payment_method,
+                reference=payment_data.get("reference"),
+            )
+            payment = self.payment_repo.create(payment)
+            created_payments.append(payment)
+
+        # 11. Actualizar estado de pago
+        sale.update_payment_status(total_payment)
+        self.sale_repo.update(sale)
+
+        # 12. Publicar evento
+        items_data = [
+            {
+                "product_id": item.product_id,
+                "quantity": item.quantity,
+                "unit_price": item.unit_price,
+            }
+            for item in created_items
+        ]
+
+        self.event_publisher.publish(
+            SaleConfirmed(
+                aggregate_id=sale.id,
+                sale_id=sale.id,
+                customer_id=sale.customer_id,
+                items=items_data,
+                total=sale.total,
+                source="pos",
+            )
+        )
+
+        # 13. Retornar venta completa
+        result = sale.dict()
+        result["items"] = [
+            {**item.dict(), "subtotal": item.subtotal} for item in created_items
+        ]
+        result["payments"] = [p.dict() for p in created_payments]
+        return result
