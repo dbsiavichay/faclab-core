@@ -222,6 +222,13 @@ Faclab Core is a sales and inventory management API.
                 "create, add items, confirm, cancel, and register payments."
             ),
         },
+        {
+            "name": "pos - refunds",
+            "description": (
+                "Process refunds for confirmed sales: create partial/total refunds, "
+                "process payments, and automatically restock inventory."
+            ),
+        },
     ]
 
     API_TAG_GROUPS: list[dict] = [
@@ -289,6 +296,7 @@ Faclab Core is a sales and inventory management API.
                 "pos - customers",
                 "pos - shifts",
                 "pos - sales",
+                "pos - refunds",
             ],
         },
     ]
