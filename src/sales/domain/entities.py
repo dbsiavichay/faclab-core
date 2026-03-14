@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 
-from src.sales.domain.exceptions import InvalidSaleStatusError
+from src.sales.domain.exceptions import InvalidSaleStatusError, SaleNotParkedError
 from src.shared.domain.entities import Entity
 
 
@@ -68,6 +68,8 @@ class Sale(Entity):
     payment_status: PaymentStatus = PaymentStatus.PENDING
     notes: str | None = None
     created_by: str | None = None
+    parked_at: datetime | None = None
+    park_reason: str | None = None
     id: int | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -91,6 +93,20 @@ class Sale(Entity):
         if self.status != SaleStatus.CONFIRMED:
             raise InvalidSaleStatusError(self.status, "invoice")
         self.status = SaleStatus.INVOICED
+
+    def park(self, reason: str | None = None) -> None:
+        """Aparca la venta para retomarla después (solo si está en DRAFT)"""
+        if self.status != SaleStatus.DRAFT:
+            raise InvalidSaleStatusError(self.status, "park")
+        self.parked_at = datetime.now()
+        self.park_reason = reason
+
+    def resume(self) -> None:
+        """Retoma una venta aparcada"""
+        if self.parked_at is None:
+            raise SaleNotParkedError(self.id)
+        self.parked_at = None
+        self.park_reason = None
 
     def update_payment_status(self, total_paid: Decimal) -> None:
         """Actualiza el estado de pago basándose en el monto pagado"""

@@ -3,6 +3,14 @@
 from pydantic import AliasChoices, BaseModel, Field
 
 
+class ParkSaleRequest(BaseModel):
+    """Schema para aparcar una venta"""
+
+    reason: str | None = Field(
+        None, max_length=512, description="Razon para aparcar la venta"
+    )
+
+
 class POSSaleRequest(BaseModel):
     """Schema para crear una venta desde POS"""
 

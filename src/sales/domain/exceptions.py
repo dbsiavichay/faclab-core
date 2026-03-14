@@ -36,6 +36,19 @@ class SaleHasNoItemsError(SalesError):
         )
 
 
+class SaleNotParkedError(SalesError):
+    """Se lanza cuando se intenta retomar una venta que no está aparcada"""
+
+    error_code = "SALE_NOT_PARKED"
+
+    def __init__(self, sale_id: int | None):
+        self.sale_id = sale_id
+        super().__init__(
+            message=f"Sale {sale_id} is not parked",
+            detail=f"sale_id={sale_id}",
+        )
+
+
 class InsufficientStockError(SalesError):
     """Se lanza cuando no hay suficiente stock para confirmar una venta"""
 
