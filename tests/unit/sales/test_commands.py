@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from src.catalog.product.domain.entities import Product
 from src.sales.app.commands import (
     AddSaleItemCommand,
     AddSaleItemCommandHandler,
@@ -38,9 +39,22 @@ def _make_sale_item(**overrides) -> SaleItem:
         "quantity": 10,
         "unit_price": Decimal("100.00"),
         "discount": Decimal("0"),
+        "tax_rate": Decimal("12.00"),
+        "tax_amount": Decimal("120.00"),
     }
     defaults.update(overrides)
     return SaleItem(**defaults)
+
+
+def _make_product(**overrides) -> Product:
+    defaults = {
+        "id": 100,
+        "name": "Test Product",
+        "sku": "TST-001",
+        "tax_rate": Decimal("12.00"),
+    }
+    defaults.update(overrides)
+    return Product(**defaults)
 
 
 def _make_payment(**overrides) -> Payment:
@@ -104,10 +118,14 @@ def test_add_sale_item_command_handler():
     """Test agregar un item a una venta"""
     sale = _make_sale()
     sale_item = _make_sale_item()
+    product = _make_product()
     sale_repo = _mock_repo(entity=sale)
     item_repo = _mock_repo(entity=sale_item, entities=[sale_item])
+    product_repo = _mock_repo(entity=product)
     event_publisher = MagicMock()
-    handler = AddSaleItemCommandHandler(sale_repo, item_repo, event_publisher)
+    handler = AddSaleItemCommandHandler(
+        sale_repo, item_repo, product_repo, event_publisher
+    )
 
     command = AddSaleItemCommand(
         sale_id=1,
@@ -128,9 +146,11 @@ def test_add_sale_item_only_draft():
     """Test que solo se pueden agregar items a ventas en DRAFT"""
     sale = _make_sale(status=SaleStatus.CONFIRMED)
     sale_item = _make_sale_item()
+    product = _make_product()
     sale_repo = _mock_repo(entity=sale)
     item_repo = _mock_repo(entity=sale_item)
-    handler = AddSaleItemCommandHandler(sale_repo, item_repo, MagicMock())
+    product_repo = _mock_repo(entity=product)
+    handler = AddSaleItemCommandHandler(sale_repo, item_repo, product_repo, MagicMock())
 
     command = AddSaleItemCommand(
         sale_id=1, product_id=100, quantity=10, unit_price=100.0
@@ -145,7 +165,8 @@ def test_add_sale_item_sale_not_found():
     sale_repo = _mock_repo()
     sale_repo.get_by_id.return_value = None
     item_repo = _mock_repo()
-    handler = AddSaleItemCommandHandler(sale_repo, item_repo, MagicMock())
+    product_repo = _mock_repo()
+    handler = AddSaleItemCommandHandler(sale_repo, item_repo, product_repo, MagicMock())
 
     command = AddSaleItemCommand(
         sale_id=999, product_id=100, quantity=10, unit_price=100.0

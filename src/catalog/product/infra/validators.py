@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
@@ -21,6 +23,7 @@ class ProductRequest(BaseModel):
     unit_of_measure_id: int | None = Field(None, ge=1)
     purchase_price: DecimalNumber | None = Field(None, ge=0)
     sale_price: DecimalNumber | None = Field(None, ge=0)
+    tax_rate: DecimalNumber = Field(Decimal("12.00"), ge=0, le=100)
     is_active: bool = True
     is_service: bool = False
     min_stock: int = Field(0, ge=0)

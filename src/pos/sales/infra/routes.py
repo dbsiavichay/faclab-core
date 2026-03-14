@@ -3,6 +3,10 @@
 from fastapi import APIRouter, Depends, status
 from wireup import Injected
 
+from src.pos.sales.app.commands.apply_discount import (
+    ApplySaleDiscountCommand,
+    ApplySaleDiscountCommandHandler,
+)
 from src.pos.sales.app.commands.cancel_sale import (
     POSCancelSaleCommand,
     POSCancelSaleCommandHandler,
@@ -27,7 +31,11 @@ from src.pos.sales.app.queries.get_parked_sales import (
     GetParkedSalesQuery,
     GetParkedSalesQueryHandler,
 )
-from src.pos.sales.infra.validators import ParkSaleRequest, POSSaleRequest
+from src.pos.sales.infra.validators import (
+    ApplyDiscountRequest,
+    ParkSaleRequest,
+    POSSaleRequest,
+)
 from src.sales.app.commands.add_sale_item import (
     AddSaleItemCommand,
     AddSaleItemCommandHandler,
@@ -128,6 +136,11 @@ class POSSaleRouter:
             summary="Resume parked sale",
         )(self.resume_sale)
         self.router.post(
+            "/{sale_id}/discount",
+            response_model=DataResponse[SaleResponse],
+            summary="Apply discount to sale",
+        )(self.apply_discount)
+        self.router.post(
             "/{sale_id}/payments",
             response_model=DataResponse[PaymentResponse],
             status_code=status.HTTP_201_CREATED,
@@ -227,6 +240,18 @@ class POSSaleRouter:
     ) -> DataResponse[SaleResponse]:
         reason = cancel_input.reason if cancel_input else None
         result = handler.handle(POSCancelSaleCommand(sale_id=sale_id, reason=reason))
+        return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
+
+    def apply_discount(
+        self,
+        handler: Injected[ApplySaleDiscountCommandHandler],
+        sale_id: int,
+        discount_input: ApplyDiscountRequest,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SaleResponse]:
+        result = handler.handle(
+            ApplySaleDiscountCommand(sale_id=sale_id, **discount_input.model_dump())
+        )
         return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
 
     def register_payment(

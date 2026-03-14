@@ -1,0 +1,144 @@
+from decimal import Decimal
+from unittest.mock import MagicMock
+
+import pytest
+
+from src.pos.sales.app.commands.apply_discount import (
+    ApplySaleDiscountCommand,
+    ApplySaleDiscountCommandHandler,
+)
+from src.sales.domain.entities import Sale, SaleItem, SaleStatus
+from src.sales.domain.exceptions import InvalidSaleStatusError
+from src.shared.domain.exceptions import NotFoundError, ValidationError
+
+
+def _make_sale(**overrides) -> Sale:
+    defaults = {
+        "id": 1,
+        "customer_id": 10,
+        "status": SaleStatus.DRAFT,
+        "subtotal": Decimal("0"),
+        "total": Decimal("0"),
+    }
+    defaults.update(overrides)
+    return Sale(**defaults)
+
+
+def _make_item(**overrides) -> SaleItem:
+    defaults = {
+        "sale_id": 1,
+        "product_id": 100,
+        "quantity": 1,
+        "unit_price": Decimal("100"),
+        "discount": Decimal("0"),
+        "tax_rate": Decimal("12"),
+        "tax_amount": Decimal("12"),
+    }
+    defaults.update(overrides)
+    return SaleItem(**defaults)
+
+
+def _build_handler(sale=None, items=None):
+    handler = ApplySaleDiscountCommandHandler.__new__(ApplySaleDiscountCommandHandler)
+    handler.sale_repo = MagicMock()
+    handler.sale_item_repo = MagicMock()
+
+    if sale is not None:
+        handler.sale_repo.get_by_id.return_value = sale
+        handler.sale_repo.update.return_value = sale
+    if items is not None:
+        handler.sale_item_repo.filter_by.return_value = items
+
+    return handler
+
+
+class TestApplySaleDiscountCommandHandler:
+    def test_apply_percentage_discount(self):
+        sale = _make_sale()
+        items = [_make_item()]
+        handler = _build_handler(sale=sale, items=items)
+
+        result = handler._handle(
+            ApplySaleDiscountCommand(
+                sale_id=1,
+                discount_type="PERCENTAGE",
+                discount_value=Decimal("10"),
+            )
+        )
+
+        assert result["discount_type"] == "PERCENTAGE"
+        assert result["discount_value"] == Decimal("10")
+        assert result["discount"] == Decimal("10")  # 10% of 100
+        assert result["total"] == Decimal("102")  # 100 + 12 - 10
+        handler.sale_repo.update.assert_called_once()
+
+    def test_apply_amount_discount(self):
+        sale = _make_sale()
+        items = [_make_item()]
+        handler = _build_handler(sale=sale, items=items)
+
+        result = handler._handle(
+            ApplySaleDiscountCommand(
+                sale_id=1,
+                discount_type="AMOUNT",
+                discount_value=Decimal("25"),
+            )
+        )
+
+        assert result["discount_type"] == "AMOUNT"
+        assert result["discount"] == Decimal("25")
+        assert result["total"] == Decimal("87")  # 100 + 12 - 25
+
+    def test_reject_if_not_draft(self):
+        sale = _make_sale(status=SaleStatus.CONFIRMED)
+        handler = _build_handler(sale=sale, items=[])
+
+        with pytest.raises(InvalidSaleStatusError):
+            handler._handle(
+                ApplySaleDiscountCommand(
+                    sale_id=1,
+                    discount_type="PERCENTAGE",
+                    discount_value=Decimal("10"),
+                )
+            )
+
+        handler.sale_repo.update.assert_not_called()
+
+    def test_sale_not_found(self):
+        handler = _build_handler()
+        handler.sale_repo.get_by_id.return_value = None
+
+        with pytest.raises(NotFoundError):
+            handler._handle(
+                ApplySaleDiscountCommand(
+                    sale_id=999,
+                    discount_type="PERCENTAGE",
+                    discount_value=Decimal("10"),
+                )
+            )
+
+    def test_invalid_discount_type(self):
+        sale = _make_sale()
+        handler = _build_handler(sale=sale, items=[])
+
+        with pytest.raises(ValidationError):
+            handler._handle(
+                ApplySaleDiscountCommand(
+                    sale_id=1,
+                    discount_type="INVALID",
+                    discount_value=Decimal("10"),
+                )
+            )
+
+    def test_percentage_over_100_raises(self):
+        sale = _make_sale()
+        handler = _build_handler(sale=sale, items=[])
+
+        with pytest.raises(ValidationError):
+            handler._handle(
+                ApplySaleDiscountCommand(
+                    sale_id=1,
+                    discount_type="PERCENTAGE",
+                    discount_value=Decimal("150"),
+                )
+            )

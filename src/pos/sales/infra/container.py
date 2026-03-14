@@ -4,6 +4,7 @@ from src.pos.sales.app.commands import (
     POSParkSaleCommandHandler,
     POSResumeSaleCommandHandler,
 )
+from src.pos.sales.app.commands.apply_discount import ApplySaleDiscountCommandHandler
 from src.pos.sales.app.commands.create_sale import POSCreateSaleCommandHandler
 from src.pos.sales.app.queries.get_parked_sales import GetParkedSalesQueryHandler
 
@@ -13,5 +14,6 @@ INJECTABLES = [
     POSCreateSaleCommandHandler,
     POSParkSaleCommandHandler,
     POSResumeSaleCommandHandler,
+    ApplySaleDiscountCommandHandler,
     GetParkedSalesQueryHandler,
 ]
