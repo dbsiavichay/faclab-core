@@ -229,6 +229,20 @@ Faclab Core is a sales and inventory management API.
                 "process payments, and automatically restock inventory."
             ),
         },
+        {
+            "name": "pos - cash",
+            "description": (
+                "Cash drawer movements: register cash-in/cash-out operations "
+                "within an open shift and query cash summaries."
+            ),
+        },
+        {
+            "name": "pos - reports",
+            "description": (
+                "POS operational reports: X-Report (mid-shift), Z-Report (closing), "
+                "daily sales summary, and sales breakdown by payment method."
+            ),
+        },
     ]
 
     API_TAG_GROUPS: list[dict] = [
@@ -297,6 +311,8 @@ Faclab Core is a sales and inventory management API.
                 "pos - shifts",
                 "pos - sales",
                 "pos - refunds",
+                "pos - cash",
+                "pos - reports",
             ],
         },
     ]
