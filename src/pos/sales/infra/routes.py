@@ -23,6 +23,10 @@ from src.pos.sales.app.commands.park_sale import (
     ParkSaleCommand,
     POSParkSaleCommandHandler,
 )
+from src.pos.sales.app.commands.quick_sale import (
+    QuickSaleCommand,
+    QuickSaleCommandHandler,
+)
 from src.pos.sales.app.commands.resume_sale import (
     POSResumeSaleCommandHandler,
     ResumeSaleCommand,
@@ -35,6 +39,7 @@ from src.pos.sales.infra.validators import (
     ApplyDiscountRequest,
     ParkSaleRequest,
     POSSaleRequest,
+    QuickSaleRequest,
 )
 from src.sales.app.commands.add_sale_item import (
     AddSaleItemCommand,
@@ -65,6 +70,7 @@ from src.sales.infra.validators import (
     CancelSaleRequest,
     PaymentRequest,
     PaymentResponse,
+    SaleDetailResponse,
     SaleItemRequest,
     SaleItemResponse,
     SaleItemUpdateRequest,
@@ -86,6 +92,12 @@ class POSSaleRouter:
             status_code=status.HTTP_201_CREATED,
             summary="Create sale",
         )(self.create_sale)
+        self.router.post(
+            "/quick",
+            response_model=DataResponse[SaleDetailResponse],
+            status_code=status.HTTP_201_CREATED,
+            summary="Quick sale (checkout in one request)",
+        )(self.quick_sale)
         self.router.get(
             "/parked",
             response_model=ListResponse[SaleResponse],
@@ -162,6 +174,23 @@ class POSSaleRouter:
             POSCreateSaleCommand(**sale.model_dump(exclude_none=True))
         )
         return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
+
+    def quick_sale(
+        self,
+        handler: Injected[QuickSaleCommandHandler],
+        sale: QuickSaleRequest,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SaleDetailResponse]:
+        result = handler.handle(
+            QuickSaleCommand(
+                items=[item.model_dump() for item in sale.items],
+                payments=[p.model_dump() for p in sale.payments],
+                customer_id=sale.customer_id,
+                notes=sale.notes,
+                created_by=sale.created_by,
+            )
+        )
+        return DataResponse(data=SaleDetailResponse.model_validate(result), meta=meta)
 
     def get_sale(
         self,
