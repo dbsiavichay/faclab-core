@@ -42,6 +42,8 @@ class SaleItem(Entity):
     quantity: int
     unit_price: Decimal
     discount: Decimal = Decimal("0")
+    tax_rate: Decimal = Decimal("0")
+    tax_amount: Decimal = Decimal("0")
     id: int | None = None
 
     @property
@@ -64,6 +66,8 @@ class Sale(Entity):
     subtotal: Decimal = Decimal("0")
     tax: Decimal = Decimal("0")
     discount: Decimal = Decimal("0")
+    discount_type: str | None = None
+    discount_value: Decimal = Decimal("0")
     total: Decimal = Decimal("0")
     payment_status: PaymentStatus = PaymentStatus.PENDING
     notes: str | None = None

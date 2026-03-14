@@ -113,6 +113,16 @@ class SaleItemResponse(BaseModel):
         serialization_alias="unitPrice",
     )
     discount: DecimalNumber
+    tax_rate: DecimalNumber = Field(
+        ...,
+        validation_alias=AliasChoices("taxRate", "tax_rate"),
+        serialization_alias="taxRate",
+    )
+    tax_amount: DecimalNumber = Field(
+        ...,
+        validation_alias=AliasChoices("taxAmount", "tax_amount"),
+        serialization_alias="taxAmount",
+    )
     subtotal: DecimalNumber
 
 
@@ -177,6 +187,16 @@ class SaleResponse(BaseModel):
     subtotal: DecimalNumber
     tax: DecimalNumber
     discount: DecimalNumber
+    discount_type: str | None = Field(
+        None,
+        validation_alias=AliasChoices("discountType", "discount_type"),
+        serialization_alias="discountType",
+    )
+    discount_value: DecimalNumber = Field(
+        Decimal("0"),
+        validation_alias=AliasChoices("discountValue", "discount_value"),
+        serialization_alias="discountValue",
+    )
     total: DecimalNumber
     payment_status: str = Field(
         ...,

@@ -34,6 +34,10 @@ class SaleModel(Base):
     discount: Mapped[Decimal] = mapped_column(
         MoneyColumn, nullable=False, default=Decimal("0")
     )
+    discount_type: Mapped[str | None] = mapped_column(String(16))
+    discount_value: Mapped[Decimal] = mapped_column(
+        MoneyColumn, nullable=False, default=Decimal("0")
+    )
     total: Mapped[Decimal] = mapped_column(
         MoneyColumn, nullable=False, default=Decimal("0")
     )
@@ -74,6 +78,12 @@ class SaleItemModel(Base):
     unit_price: Mapped[Decimal] = mapped_column(MoneyColumn, nullable=False)
     discount: Mapped[Decimal] = mapped_column(
         PercentageColumn, nullable=False, default=Decimal("0")
+    )
+    tax_rate: Mapped[Decimal] = mapped_column(
+        PercentageColumn, nullable=False, default=Decimal("0")
+    )
+    tax_amount: Mapped[Decimal] = mapped_column(
+        MoneyColumn, nullable=False, default=Decimal("0")
     )
 
     # Relationships

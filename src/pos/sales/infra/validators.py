@@ -1,5 +1,7 @@
 """Pydantic schemas para validacion POS Sales"""
 
+from decimal import Decimal
+
 from pydantic import AliasChoices, BaseModel, Field
 
 
@@ -8,6 +10,24 @@ class ParkSaleRequest(BaseModel):
 
     reason: str | None = Field(
         None, max_length=512, description="Razon para aparcar la venta"
+    )
+
+
+class ApplyDiscountRequest(BaseModel):
+    """Schema para aplicar descuento a una venta"""
+
+    discount_type: str = Field(
+        ...,
+        description="Tipo de descuento: PERCENTAGE o AMOUNT",
+        validation_alias=AliasChoices("discountType", "discount_type"),
+        serialization_alias="discountType",
+    )
+    discount_value: Decimal = Field(
+        ...,
+        ge=0,
+        description="Valor del descuento",
+        validation_alias=AliasChoices("discountValue", "discount_value"),
+        serialization_alias="discountValue",
     )
 
 

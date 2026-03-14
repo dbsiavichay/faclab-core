@@ -3,9 +3,9 @@ from decimal import Decimal
 
 from wireup import injectable
 
-from src.sales.app.helpers import recalculate_sale_totals
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.exceptions import InvalidSaleStatusError
+from src.sales.domain.services import recalculate_sale_totals
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
@@ -56,6 +56,9 @@ class UpdateSaleItemCommandHandler(CommandHandler[UpdateSaleItemCommand, dict]):
             sale_item.quantity = command.quantity
         if command.discount is not None:
             sale_item.discount = command.discount
+
+        # Recalcular tax_amount del item
+        sale_item.tax_amount = sale_item.subtotal * sale_item.tax_rate / Decimal("100")
 
         self.sale_item_repo.update(sale_item)
 

@@ -3,10 +3,11 @@ from decimal import Decimal
 
 from wireup import injectable
 
-from src.sales.app.helpers import recalculate_sale_totals
+from src.catalog.product.domain.entities import Product
 from src.sales.domain.entities import Sale, SaleItem
 from src.sales.domain.events import SaleItemAdded
 from src.sales.domain.exceptions import InvalidSaleStatusError
+from src.sales.domain.services import recalculate_sale_totals
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
 from src.shared.app.repositories import Repository
@@ -32,10 +33,12 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
         self,
         sale_repo: Repository[Sale],
         sale_item_repo: Repository[SaleItem],
+        product_repo: Repository[Product],
         event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo
+        self.product_repo = product_repo
         self.event_publisher = event_publisher
 
     def _handle(self, command: AddSaleItemCommand) -> dict:
@@ -49,6 +52,19 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
         if sale.status.value != "DRAFT":
             raise InvalidSaleStatusError(sale.status.value, "add items to")
 
+        # Obtener tax_rate del producto
+        product = self.product_repo.get_by_id(command.product_id)
+        if not product:
+            raise NotFoundError(f"Product with id {command.product_id} not found")
+
+        # Calcular subtotal y tax_amount del item
+        unit_price = Decimal(str(command.unit_price))
+        discount = Decimal(str(command.discount))
+        base = unit_price * command.quantity
+        discount_amount = base * (discount / Decimal("100"))
+        item_subtotal = base - discount_amount
+        tax_amount = item_subtotal * product.tax_rate / Decimal("100")
+
         # Crear el item
         sale_item = SaleItem(
             sale_id=command.sale_id,
@@ -56,6 +72,8 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
             quantity=command.quantity,
             unit_price=command.unit_price,
             discount=command.discount,
+            tax_rate=product.tax_rate,
+            tax_amount=tax_amount,
         )
 
         sale_item = self.sale_item_repo.create(sale_item)
