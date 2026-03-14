@@ -189,6 +189,16 @@ class SaleResponse(BaseModel):
         validation_alias=AliasChoices("createdBy", "created_by"),
         serialization_alias="createdBy",
     )
+    parked_at: datetime | None = Field(
+        None,
+        validation_alias=AliasChoices("parkedAt", "parked_at"),
+        serialization_alias="parkedAt",
+    )
+    park_reason: str | None = Field(
+        None,
+        validation_alias=AliasChoices("parkReason", "park_reason"),
+        serialization_alias="parkReason",
+    )
     created_at: datetime | None = Field(
         None,
         validation_alias=AliasChoices("createdAt", "created_at"),

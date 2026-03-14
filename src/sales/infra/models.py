@@ -42,6 +42,8 @@ class SaleModel(Base):
     )
     notes: Mapped[str | None] = mapped_column(String(512))
     created_by: Mapped[str | None] = mapped_column(String(64))
+    parked_at: Mapped[datetime | None] = mapped_column(DateTime)
+    park_reason: Mapped[str | None] = mapped_column(String(512))
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now
     )

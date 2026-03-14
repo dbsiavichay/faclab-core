@@ -12,6 +12,14 @@ from src.pos.sales.app.commands.create_sale import (
     POSCreateSaleCommand,
     POSCreateSaleCommandHandler,
 )
+from src.pos.sales.app.commands.park_sale import (
+    ParkSaleCommand,
+    POSParkSaleCommandHandler,
+)
+from src.pos.sales.app.commands.resume_sale import (
+    POSResumeSaleCommandHandler,
+    ResumeSaleCommand,
+)
 
 __all__ = [
     "POSConfirmSaleCommand",
@@ -20,4 +28,8 @@ __all__ = [
     "POSCancelSaleCommandHandler",
     "POSCreateSaleCommand",
     "POSCreateSaleCommandHandler",
+    "ParkSaleCommand",
+    "POSParkSaleCommandHandler",
+    "ResumeSaleCommand",
+    "POSResumeSaleCommandHandler",
 ]

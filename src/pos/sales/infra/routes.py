@@ -15,7 +15,19 @@ from src.pos.sales.app.commands.create_sale import (
     POSCreateSaleCommand,
     POSCreateSaleCommandHandler,
 )
-from src.pos.sales.infra.validators import POSSaleRequest
+from src.pos.sales.app.commands.park_sale import (
+    ParkSaleCommand,
+    POSParkSaleCommandHandler,
+)
+from src.pos.sales.app.commands.resume_sale import (
+    POSResumeSaleCommandHandler,
+    ResumeSaleCommand,
+)
+from src.pos.sales.app.queries.get_parked_sales import (
+    GetParkedSalesQuery,
+    GetParkedSalesQueryHandler,
+)
+from src.pos.sales.infra.validators import ParkSaleRequest, POSSaleRequest
 from src.sales.app.commands.add_sale_item import (
     AddSaleItemCommand,
     AddSaleItemCommandHandler,
@@ -67,6 +79,11 @@ class POSSaleRouter:
             summary="Create sale",
         )(self.create_sale)
         self.router.get(
+            "/parked",
+            response_model=ListResponse[SaleResponse],
+            summary="List parked sales",
+        )(self.get_parked_sales)
+        self.router.get(
             "/{sale_id}",
             response_model=DataResponse[SaleResponse],
             summary="Get sale",
@@ -100,6 +117,16 @@ class POSSaleRouter:
             response_model=DataResponse[SaleResponse],
             summary="Cancel sale",
         )(self.cancel_sale)
+        self.router.post(
+            "/{sale_id}/park",
+            response_model=DataResponse[SaleResponse],
+            summary="Park sale",
+        )(self.park_sale)
+        self.router.post(
+            "/{sale_id}/resume",
+            response_model=DataResponse[SaleResponse],
+            summary="Resume parked sale",
+        )(self.resume_sale)
         self.router.post(
             "/{sale_id}/payments",
             response_model=DataResponse[PaymentResponse],
@@ -225,4 +252,34 @@ class POSSaleRouter:
         result = handler.handle(GetSalePaymentsQuery(sale_id=sale_id))
         return ListResponse(
             data=[PaymentResponse.model_validate(r) for r in result], meta=meta
+        )
+
+    def park_sale(
+        self,
+        handler: Injected[POSParkSaleCommandHandler],
+        sale_id: int,
+        park_input: ParkSaleRequest | None = None,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SaleResponse]:
+        reason = park_input.reason if park_input else None
+        result = handler.handle(ParkSaleCommand(sale_id=sale_id, reason=reason))
+        return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
+
+    def resume_sale(
+        self,
+        handler: Injected[POSResumeSaleCommandHandler],
+        sale_id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SaleResponse]:
+        result = handler.handle(ResumeSaleCommand(sale_id=sale_id))
+        return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
+
+    def get_parked_sales(
+        self,
+        handler: Injected[GetParkedSalesQueryHandler],
+        meta: Meta = Depends(get_meta),
+    ) -> ListResponse[SaleResponse]:
+        result = handler.handle(GetParkedSalesQuery())
+        return ListResponse(
+            data=[SaleResponse.model_validate(r) for r in result], meta=meta
         )

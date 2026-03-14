@@ -11,7 +11,7 @@ from src.sales.domain.entities import (
     SaleItem,
     SaleStatus,
 )
-from src.sales.domain.exceptions import InvalidSaleStatusError
+from src.sales.domain.exceptions import InvalidSaleStatusError, SaleNotParkedError
 
 
 def test_sale_item_subtotal_calculation():
@@ -146,3 +146,57 @@ def test_payment_sets_default_date():
     )
     assert payment.payment_date is not None
     assert isinstance(payment.payment_date, datetime)
+
+
+# === Park / Resume Tests ===
+
+
+def test_park_sale_from_draft():
+    """Test que se puede aparcar una venta en DRAFT"""
+    sale = Sale(id=1, customer_id=1, status=SaleStatus.DRAFT)
+    sale.park(reason="Cliente olvidó billetera")
+    assert sale.parked_at is not None
+    assert isinstance(sale.parked_at, datetime)
+    assert sale.park_reason == "Cliente olvidó billetera"
+    assert sale.status == SaleStatus.DRAFT
+
+
+def test_park_sale_without_reason():
+    """Test que se puede aparcar sin razón"""
+    sale = Sale(id=1, customer_id=1, status=SaleStatus.DRAFT)
+    sale.park()
+    assert sale.parked_at is not None
+    assert sale.park_reason is None
+
+
+def test_park_sale_from_confirmed_raises():
+    """Test que no se puede aparcar una venta confirmada"""
+    sale = Sale(id=1, customer_id=1, status=SaleStatus.CONFIRMED)
+    with pytest.raises(InvalidSaleStatusError):
+        sale.park()
+
+
+def test_park_sale_from_cancelled_raises():
+    """Test que no se puede aparcar una venta cancelada"""
+    sale = Sale(id=1, customer_id=1, status=SaleStatus.CANCELLED)
+    with pytest.raises(InvalidSaleStatusError):
+        sale.park()
+
+
+def test_resume_parked_sale():
+    """Test que se puede retomar una venta aparcada"""
+    sale = Sale(id=1, customer_id=1, status=SaleStatus.DRAFT)
+    sale.park(reason="Test")
+    assert sale.parked_at is not None
+
+    sale.resume()
+    assert sale.parked_at is None
+    assert sale.park_reason is None
+    assert sale.status == SaleStatus.DRAFT
+
+
+def test_resume_non_parked_sale_raises():
+    """Test que no se puede retomar una venta que no está aparcada"""
+    sale = Sale(id=1, customer_id=1, status=SaleStatus.DRAFT)
+    with pytest.raises(SaleNotParkedError):
+        sale.resume()
