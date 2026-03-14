@@ -23,6 +23,11 @@ from src.inventory.transfer.infra.models import (  # noqa: F401
     StockTransferModel,
 )
 from src.inventory.warehouse.infra.models import WarehouseModel  # noqa: F401
+from src.pos.refund.infra.models import (  # noqa: F401
+    RefundItemModel,
+    RefundModel,
+    RefundPaymentModel,
+)
 from src.pos.shift.infra.models import ShiftModel  # noqa: F401
 from src.purchasing.infra.models import (  # noqa: F401
     PurchaseOrderItemModel,
