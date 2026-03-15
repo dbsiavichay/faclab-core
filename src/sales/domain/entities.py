@@ -44,6 +44,8 @@ class SaleItem(Entity):
     discount: Decimal = Decimal("0")
     tax_rate: Decimal = Decimal("0")
     tax_amount: Decimal = Decimal("0")
+    price_override: Decimal | None = None
+    override_reason: str | None = None
     id: int | None = None
 
     @property

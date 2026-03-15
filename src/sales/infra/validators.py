@@ -124,6 +124,16 @@ class SaleItemResponse(BaseModel):
         serialization_alias="taxAmount",
     )
     subtotal: DecimalNumber
+    price_override: DecimalNumber | None = Field(
+        None,
+        validation_alias=AliasChoices("priceOverride", "price_override"),
+        serialization_alias="priceOverride",
+    )
+    override_reason: str | None = Field(
+        None,
+        validation_alias=AliasChoices("overrideReason", "override_reason"),
+        serialization_alias="overrideReason",
+    )
 
 
 class PaymentResponse(BaseModel):

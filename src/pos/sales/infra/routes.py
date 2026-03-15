@@ -19,6 +19,10 @@ from src.pos.sales.app.commands.create_sale import (
     POSCreateSaleCommand,
     POSCreateSaleCommandHandler,
 )
+from src.pos.sales.app.commands.override_price import (
+    OverrideItemPriceCommand,
+    OverrideItemPriceCommandHandler,
+)
 from src.pos.sales.app.commands.park_sale import (
     ParkSaleCommand,
     POSParkSaleCommandHandler,
@@ -31,15 +35,21 @@ from src.pos.sales.app.commands.resume_sale import (
     POSResumeSaleCommandHandler,
     ResumeSaleCommand,
 )
+from src.pos.sales.app.queries.generate_receipt import (
+    GenerateReceiptQuery,
+    GenerateReceiptQueryHandler,
+)
 from src.pos.sales.app.queries.get_parked_sales import (
     GetParkedSalesQuery,
     GetParkedSalesQueryHandler,
 )
 from src.pos.sales.infra.validators import (
     ApplyDiscountRequest,
+    OverridePriceRequest,
     ParkSaleRequest,
     POSSaleRequest,
     QuickSaleRequest,
+    ReceiptResponse,
 )
 from src.sales.app.commands.add_sale_item import (
     AddSaleItemCommand,
@@ -163,6 +173,16 @@ class POSSaleRouter:
             response_model=ListResponse[PaymentResponse],
             summary="List sale payments",
         )(self.get_sale_payments)
+        self.router.put(
+            "/{sale_id}/items/{item_id}/price",
+            response_model=DataResponse[SaleItemResponse],
+            summary="Override item price",
+        )(self.override_item_price)
+        self.router.get(
+            "/{sale_id}/receipt",
+            response_model=DataResponse[ReceiptResponse],
+            summary="Generate receipt",
+        )(self.generate_receipt)
 
     def create_sale(
         self,
@@ -337,3 +357,30 @@ class POSSaleRouter:
         return ListResponse(
             data=[SaleResponse.model_validate(r) for r in result], meta=meta
         )
+
+    def override_item_price(
+        self,
+        handler: Injected[OverrideItemPriceCommandHandler],
+        sale_id: int,
+        item_id: int,
+        body: OverridePriceRequest,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[SaleItemResponse]:
+        result = handler.handle(
+            OverrideItemPriceCommand(
+                sale_id=sale_id,
+                item_id=item_id,
+                new_price=body.new_price,
+                reason=body.reason,
+            )
+        )
+        return DataResponse(data=SaleItemResponse.model_validate(result), meta=meta)
+
+    def generate_receipt(
+        self,
+        handler: Injected[GenerateReceiptQueryHandler],
+        sale_id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[ReceiptResponse]:
+        result = handler.handle(GenerateReceiptQuery(sale_id=sale_id))
+        return DataResponse(data=ReceiptResponse.model_validate(result), meta=meta)
