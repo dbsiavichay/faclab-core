@@ -85,6 +85,8 @@ class SaleItemModel(Base):
     tax_amount: Mapped[Decimal] = mapped_column(
         MoneyColumn, nullable=False, default=Decimal("0")
     )
+    price_override: Mapped[Decimal | None] = mapped_column(MoneyColumn, nullable=True)
+    override_reason: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     # Relationships
     sale: Mapped["SaleModel"] = relationship(back_populates="items")
