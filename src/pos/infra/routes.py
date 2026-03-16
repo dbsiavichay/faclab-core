@@ -59,7 +59,7 @@ class POSProductRouter:
     ) -> ListResponse[ProductResponse]:
         result = handler.handle(GetAllProductsQuery())
         return ListResponse(
-            data=[ProductResponse.model_validate(p) for p in result], meta=meta
+            data=[ProductResponse.model_validate(p) for p in result["items"]], meta=meta
         )
 
     def search(
@@ -71,7 +71,7 @@ class POSProductRouter:
     ) -> ListResponse[ProductResponse]:
         result = handler.handle(SearchProductsQuery(search_term=term, limit=limit))
         return ListResponse(
-            data=[ProductResponse.model_validate(p) for p in result], meta=meta
+            data=[ProductResponse.model_validate(p) for p in result["items"]], meta=meta
         )
 
     def get_by_id(
@@ -148,7 +148,7 @@ class POSCustomerRouter:
     def get_by_tax_id(
         self,
         handler: Injected[GetCustomerByTaxIdQueryHandler],
-        tax_id: str = Query(..., description="Tax ID to search for"),
+        tax_id: str = Query(..., alias="taxId", description="Tax ID to search for"),
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[CustomerResponse]:
         result = handler.handle(GetCustomerByTaxIdQuery(tax_id=tax_id))
