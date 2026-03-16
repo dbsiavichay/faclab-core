@@ -2,5 +2,5 @@ from enum import Enum
 
 
 class MovementType(Enum):
-    IN = "in"
-    OUT = "out"
+    IN = "IN"
+    OUT = "OUT"
