@@ -27,3 +27,13 @@ event_handler_errors = _meter.create_counter(
     "events.handler_errors",
     description="Number of event handler errors",
 )
+
+kafka_messages_sent = _meter.create_counter(
+    "kafka.messages_sent",
+    description="Number of messages sent to Kafka",
+)
+
+kafka_send_errors = _meter.create_counter(
+    "kafka.send_errors",
+    description="Number of Kafka send failures",
+)

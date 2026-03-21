@@ -73,5 +73,6 @@ def create_wireup_container():
     import src.inventory.serial.infra.event_handlers  # noqa: F401
     import src.inventory.stock.infra.event_handlers  # noqa: F401
     import src.purchasing.infra.event_handlers  # noqa: F401
+    import src.shared.infra.kafka.event_handlers  # noqa: F401
 
     return container

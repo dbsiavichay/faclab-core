@@ -21,7 +21,7 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - faclab_core_network
+      - faclab_network
   db:
     image: postgres:14
     container_name: db
@@ -38,9 +38,8 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - faclab_core_network
+      - faclab_network
 
 networks:
-  faclab_core_network:
-    name: faclab_core_network
-    driver: bridge
+  faclab_network:
+    external: true

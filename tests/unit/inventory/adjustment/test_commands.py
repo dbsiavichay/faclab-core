@@ -163,7 +163,7 @@ def test_confirm_adjustment_creates_in_movement_for_positive_diff():
     movement_handler.handle.assert_called_once()
     call_args = movement_handler.handle.call_args[0][0]
     assert call_args.quantity == 10
-    assert call_args.type == "in"
+    assert call_args.type == "IN"
     assert result["status"] == AdjustmentStatus.CONFIRMED
 
 
@@ -189,7 +189,7 @@ def test_confirm_adjustment_creates_out_movement_for_negative_diff():
 
     call_args = movement_handler.handle.call_args[0][0]
     assert call_args.quantity == -15
-    assert call_args.type == "out"
+    assert call_args.type == "OUT"
 
 
 def test_confirm_adjustment_skips_zero_diff_items():
