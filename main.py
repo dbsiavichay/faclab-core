@@ -325,6 +325,12 @@ async def root():
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    from src.shared.infra.kafka.event_handlers import _get_producer
+
+    producer = _get_producer()
+    if producer:
+        producer.close()
+
     otel.shutdown()
 
 

@@ -333,9 +333,9 @@ def test_receive_transfer_creates_movements_and_releases_reservation():
     assert movement_handler.handle.call_count == 2
     out_call = movement_handler.handle.call_args_list[0][0][0]
     in_call = movement_handler.handle.call_args_list[1][0][0]
-    assert out_call.type == "out"
+    assert out_call.type == "OUT"
     assert out_call.location_id == 10  # source
-    assert in_call.type == "in"
+    assert in_call.type == "IN"
     assert in_call.location_id == 20  # destination
     assert in_call.source_location_id == 10
 

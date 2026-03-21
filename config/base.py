@@ -48,6 +48,12 @@ class BaseConfig:
     OTEL_SAMPLING_RATE = env.float("OTEL_SAMPLING_RATE", 1.0)
 
     #
+    # Kafka config
+    #
+    KAFKA_BOOTSTRAP_SERVERS = env("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+    KAFKA_ENABLED = env.bool("KAFKA_ENABLED", False)
+
+    #
     # Docs config
     #
     DOCS_ENABLED = env.bool("DOCS_ENABLED", True)
