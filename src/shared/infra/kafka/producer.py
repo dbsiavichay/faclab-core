@@ -95,6 +95,37 @@ class KafkaEventProducer:
                     error=str(e),
                 )
 
+    def send_raw(self, topic: str, data: dict, event_type: str = "unknown") -> None:
+        if self._loop is None or self._producer is None:
+            logger.warning("kafka_producer_not_started")
+            return
+
+        with tracer.start_as_current_span(
+            f"kafka.send.{topic}",
+            attributes={"kafka.topic": topic, "event.type": event_type},
+        ):
+            future = asyncio.run_coroutine_threadsafe(
+                self._producer.send_and_wait(topic, data),
+                self._loop,
+            )
+            try:
+                future.result(timeout=5)
+                kafka_messages_sent.add(1, {"kafka.topic": topic})
+                logger.info(
+                    "kafka_message_sent",
+                    topic=topic,
+                    event_type=event_type,
+                    event_id=data.get("event_id"),
+                )
+            except Exception as e:
+                kafka_send_errors.add(1, {"kafka.topic": topic})
+                logger.error(
+                    "kafka_send_error",
+                    topic=topic,
+                    event_type=event_type,
+                    error=str(e),
+                )
+
     def close(self) -> None:
         if self._loop is None or self._producer is None:
             return

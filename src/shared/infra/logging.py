@@ -57,3 +57,4 @@ def configure_logging(log_level: str = "INFO", json_output: bool = False):
     root_logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
 
     logging.getLogger("opentelemetry.attributes").setLevel(logging.ERROR)
+    logging.getLogger("aiokafka").setLevel(logging.WARNING)
