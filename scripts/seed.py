@@ -1395,7 +1395,7 @@ def seed_sales(
     pay3 = PaymentModel(
         sale_id=s3.id,
         amount=Decimal("150.00"),
-        payment_method="CARD",
+        payment_method="CREDIT_CARD",
         payment_date=datetime(2026, 2, 15),
         reference="CARD-20260215-001",
         notes="Pago parcial con tarjeta de crédito",

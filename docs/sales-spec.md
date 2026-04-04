@@ -25,7 +25,7 @@ Specification del módulo de ventas para implementación frontend. Solo endpoint
 
 ### PaymentMethod
 
-`CASH` | `CARD` | `TRANSFER` | `CREDIT`
+`CASH` | `CREDIT_CARD` | `DEBIT_CARD` | `TRANSFER` | `OTHER`
 
 ---
 
@@ -181,7 +181,7 @@ GET /api/admin/sales/{sale_id}/payments
       "id": 2,
       "saleId": 1,
       "amount": 119.91,
-      "paymentMethod": "CARD",
+      "paymentMethod": "CREDIT_CARD",
       "paymentDate": "2026-03-08T10:02:00",
       "reference": null,
       "notes": "Pago restante",
@@ -244,7 +244,7 @@ interface ErrorResponse {
 // Enums
 type SaleStatus = "DRAFT" | "CONFIRMED" | "INVOICED" | "CANCELLED";
 type PaymentStatus = "PENDING" | "PARTIAL" | "PAID";
-type PaymentMethod = "CASH" | "CARD" | "TRANSFER" | "CREDIT";
+type PaymentMethod = "CASH" | "CREDIT_CARD" | "DEBIT_CARD" | "TRANSFER" | "OTHER";
 
 // Entidades
 interface Sale {

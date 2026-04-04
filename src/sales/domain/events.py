@@ -33,7 +33,10 @@ class SaleConfirmed(DomainEvent):
     items: list[dict[str, Any]] = field(
         default_factory=list
     )  # [{product_id, quantity, unit_price}]
+    subtotal: Decimal = Decimal("0")
+    total_discount: Decimal = Decimal("0")
     total: Decimal = Decimal("0")
+    payments: list[dict[str, Any]] = field(default_factory=list)  # [{method, amount}]
     source: str = "admin"
 
     def _payload(self) -> dict[str, Any]:
@@ -41,7 +44,10 @@ class SaleConfirmed(DomainEvent):
             "sale_id": self.sale_id,
             "customer_id": self.customer_id,
             "items": self.items,
+            "subtotal": self.subtotal,
+            "total_discount": self.total_discount,
             "total": self.total,
+            "payments": self.payments,
             "source": self.source,
         }
 

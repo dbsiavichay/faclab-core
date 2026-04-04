@@ -52,6 +52,8 @@ def _build_confirm_handler(sale=None, items=None, stock=None):
     handler.sale_item_repo = MagicMock()
     handler.movement_repo = MagicMock()
     handler.stock_repo = MagicMock()
+    handler.payment_repo = MagicMock()
+    handler.payment_repo.filter_by.return_value = []
     handler.event_publisher = MagicMock()
 
     if sale is not None:

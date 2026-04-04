@@ -78,9 +78,12 @@ def _build_enriched_payload(event: SaleConfirmed) -> dict:
         "payload": {
             "sale_id": event.sale_id,
             "source": event.source,
+            "subtotal": event.subtotal,
+            "total_discount": event.total_discount,
             "total": event.total,
             "customer": customer_data,
             "items": enriched_items,
+            "payments": event.payments,
         },
     }
 

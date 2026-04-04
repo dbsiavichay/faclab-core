@@ -111,7 +111,7 @@ Fórmula: `expectedBalance = openingBalance + cashSales - cashRefunds + cashIn -
 | id | int | ID |
 | saleId | int | Venta |
 | amount | decimal | Monto (>0) |
-| paymentMethod | enum | `CASH` \| `CARD` \| `TRANSFER` \| `CREDIT` |
+| paymentMethod | enum | `CASH` \| `CREDIT_CARD` \| `DEBIT_CARD` \| `TRANSFER` \| `OTHER` |
 | paymentDate | datetime | Fecha auto-generada |
 | reference | string? | Referencia de pago |
 | notes | string? | Notas |
@@ -337,7 +337,7 @@ Efectos:
 | id | int | ID |
 | refundId | int | Devolución |
 | amount | decimal | Monto (>0) |
-| paymentMethod | enum | `CASH` \| `CARD` \| `TRANSFER` \| `CREDIT` |
+| paymentMethod | enum | `CASH` \| `CREDIT_CARD` \| `DEBIT_CARD` \| `TRANSFER` \| `OTHER` |
 | reference | string? | Referencia |
 
 ### Flujo de devolución
@@ -461,7 +461,7 @@ Fórmula: `expectedBalance = openingBalance + cashSales - cashRefunds + cashIn -
     "salesSummary": { "count": 15, "subtotal": 1200, "tax": 180, "discount": 50, "total": 1330 },
     "paymentsByMethod": [
       { "paymentMethod": "CASH", "count": 10, "total": 800 },
-      { "paymentMethod": "CARD", "count": 5, "total": 530 }
+      { "paymentMethod": "CREDIT_CARD", "count": 5, "total": 530 }
     ],
     "itemsSold": [
       { "productName": "Producto X", "sku": "SKU001", "quantity": 20, "total": 500 }
