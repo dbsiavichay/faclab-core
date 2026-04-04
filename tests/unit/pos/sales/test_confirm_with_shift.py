@@ -87,6 +87,7 @@ def test_confirm_sale_with_open_shift():
         movement_repo,
         stock_repo,
         shift_repo,
+        _mock_repo(entities=[]),
         event_publisher,
     )
 
@@ -114,6 +115,7 @@ def test_confirm_sale_shift_closed_raises_error():
         movement_repo,
         stock_repo,
         shift_repo,
+        _mock_repo(entities=[]),
         event_publisher,
     )
 
@@ -140,6 +142,7 @@ def test_confirm_sale_no_shift_linked():
         movement_repo,
         stock_repo,
         shift_repo,
+        _mock_repo(entities=[]),
         event_publisher,
     )
 

@@ -28,9 +28,10 @@ class PaymentMethod(StrEnum):
     """Método de pago"""
 
     CASH = "CASH"
-    CARD = "CARD"
+    CREDIT_CARD = "CREDIT_CARD"
+    DEBIT_CARD = "DEBIT_CARD"
     TRANSFER = "TRANSFER"
-    CREDIT = "CREDIT"
+    OTHER = "OTHER"
 
 
 @dataclass

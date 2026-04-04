@@ -7,7 +7,7 @@ from src.inventory.movement.domain.entities import Movement
 from src.inventory.stock.domain.entities import Stock
 from src.pos.shift.domain.entities import Shift, ShiftStatus
 from src.pos.shift.domain.exceptions import NoOpenShiftError
-from src.sales.domain.entities import Sale, SaleItem
+from src.sales.domain.entities import Payment, Sale, SaleItem
 from src.sales.domain.events import SaleConfirmed
 from src.sales.domain.exceptions import InsufficientStockError, SaleHasNoItemsError
 from src.shared.app.commands import Command, CommandHandler
@@ -30,6 +30,7 @@ class POSConfirmSaleCommandHandler(CommandHandler[POSConfirmSaleCommand, dict]):
         movement_repo: Repository[Movement],
         stock_repo: Repository[Stock],
         shift_repo: Repository[Shift],
+        payment_repo: Repository[Payment],
         event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo
@@ -37,6 +38,7 @@ class POSConfirmSaleCommandHandler(CommandHandler[POSConfirmSaleCommand, dict]):
         self.movement_repo = movement_repo
         self.stock_repo = stock_repo
         self.shift_repo = shift_repo
+        self.payment_repo = payment_repo
         self.event_publisher = event_publisher
 
     def _handle(self, command: POSConfirmSaleCommand) -> dict:
@@ -89,13 +91,25 @@ class POSConfirmSaleCommandHandler(CommandHandler[POSConfirmSaleCommand, dict]):
             for item in items
         ]
 
+        payments = self.payment_repo.filter_by(sale_id=sale.id)
+        payments_data = [
+            {
+                "method": p.payment_method,
+                "amount": p.amount,
+            }
+            for p in payments
+        ]
+
         self.event_publisher.publish(
             SaleConfirmed(
                 aggregate_id=sale.id,
                 sale_id=sale.id,
                 customer_id=sale.customer_id,
                 items=items_data,
+                subtotal=sale.subtotal,
+                total_discount=sale.discount,
                 total=sale.total,
+                payments=payments_data,
                 source="pos",
             )
         )

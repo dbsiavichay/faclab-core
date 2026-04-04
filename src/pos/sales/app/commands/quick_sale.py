@@ -179,13 +179,24 @@ class QuickSaleCommandHandler(CommandHandler[QuickSaleCommand, dict]):
             for item in created_items
         ]
 
+        payments_data = [
+            {
+                "method": p.payment_method,
+                "amount": p.amount,
+            }
+            for p in created_payments
+        ]
+
         self.event_publisher.publish(
             SaleConfirmed(
                 aggregate_id=sale.id,
                 sale_id=sale.id,
                 customer_id=sale.customer_id,
                 items=items_data,
+                subtotal=sale.subtotal,
+                total_discount=sale.discount,
                 total=sale.total,
+                payments=payments_data,
                 source="pos",
             )
         )
