@@ -1,7 +1,10 @@
+from typing import Any
+
 import structlog
 
 from src.sales.domain.events import SaleConfirmed
 from src.shared.infra.events.decorators import event_handler
+from src.shared.infra.events.scope import create_sync_scope
 from src.shared.infra.kafka.producer import KafkaEventProducer
 
 logger = structlog.get_logger(__name__)
@@ -23,8 +26,7 @@ def _get_producer() -> KafkaEventProducer | None:
     return _producer
 
 
-def _build_enriched_payload(event: SaleConfirmed) -> dict:
-    from src import wireup_container
+def _build_enriched_payload(event: SaleConfirmed, session: Any = None) -> dict:
     from src.catalog.product.domain.entities import Product
     from src.customers.domain.entities import Customer
     from src.shared.app.repositories import Repository
@@ -32,27 +34,26 @@ def _build_enriched_payload(event: SaleConfirmed) -> dict:
     customer_data = None
     enriched_items = []
 
-    scope = wireup_container.enter_scope()
+    with create_sync_scope(session) as scope:
+        if event.customer_id:
+            customer_repo = scope.get(Repository[Customer])
+            customer = customer_repo.get_by_id(event.customer_id)
+            if customer:
+                customer_data = {
+                    "id": customer.id,
+                    "name": customer.name,
+                    "tax_id": customer.tax_id,
+                    "tax_type": customer.tax_type.name,
+                    "email": customer.email,
+                    "phone": customer.phone,
+                    "address": customer.address,
+                }
 
-    if event.customer_id:
-        customer_repo = scope._synchronous_get(Repository[Customer])
-        customer = customer_repo.get_by_id(event.customer_id)
-        if customer:
-            customer_data = {
-                "id": customer.id,
-                "name": customer.name,
-                "tax_id": customer.tax_id,
-                "tax_type": customer.tax_type.name,
-                "email": customer.email,
-                "phone": customer.phone,
-                "address": customer.address,
-            }
-
-    product_repo = scope._synchronous_get(Repository[Product])
-    product_ids = {item["product_id"] for item in event.items}
-    products = {
-        p.id: p for p in (product_repo.get_by_id(pid) for pid in product_ids) if p
-    }
+        product_repo = scope.get(Repository[Product])
+        product_ids = {item["product_id"] for item in event.items}
+        products = {
+            p.id: p for p in (product_repo.get_by_id(pid) for pid in product_ids) if p
+        }
 
     for item in event.items:
         product = products.get(item["product_id"])
@@ -89,13 +90,13 @@ def _build_enriched_payload(event: SaleConfirmed) -> dict:
 
 
 @event_handler(SaleConfirmed)
-def publish_sale_confirmed_to_kafka(event: SaleConfirmed) -> None:
+def publish_sale_confirmed_to_kafka(event: SaleConfirmed, session: Any = None) -> None:
     producer = _get_producer()
     if producer is None:
         return
 
     try:
-        enriched = _build_enriched_payload(event)
+        enriched = _build_enriched_payload(event, session=session)
         producer.send_raw("sales.confirmed", enriched, event_type="SaleConfirmed")
     except Exception:
         logger.error(

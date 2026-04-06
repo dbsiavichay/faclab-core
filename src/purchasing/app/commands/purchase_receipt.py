@@ -1,6 +1,7 @@
 from dataclasses import dataclass, replace
 from datetime import datetime
 
+from sqlalchemy.orm import Session
 from wireup import injectable
 
 from src.purchasing.domain.entities import (
@@ -49,12 +50,14 @@ class CreatePurchaseReceiptCommandHandler(
         receipt_repo: Repository[PurchaseReceipt],
         receipt_item_repo: Repository[PurchaseReceiptItem],
         event_publisher: EventPublisher,
+        session: Session,
     ):
         self.po_repo = po_repo
         self.item_repo = item_repo
         self.receipt_repo = receipt_repo
         self.receipt_item_repo = receipt_item_repo
         self.event_publisher = event_publisher
+        self.session = session
 
     def _handle(self, command: CreatePurchaseReceiptCommand) -> dict:
         purchase_order = self.po_repo.get_by_id(command.purchase_order_id)
@@ -151,7 +154,8 @@ class CreatePurchaseReceiptCommandHandler(
                 order_number=updated_po.order_number,
                 is_complete=all_received,
                 items=receipt_items_data,
-            )
+            ),
+            session=self.session,
         )
 
         return receipt.dict()

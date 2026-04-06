@@ -6,7 +6,7 @@ from src.shared.infra.mappers import Mapper
 from .models import MovementModel
 
 
-@injectable
+@injectable(lifetime="singleton")
 class MovementMapper(Mapper[Movement, MovementModel]):
     __entity__ = Movement
     __exclude_fields__ = frozenset({"created_at"})

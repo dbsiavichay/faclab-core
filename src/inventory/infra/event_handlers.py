@@ -3,6 +3,8 @@ Event handlers que reaccionan a eventos de otros módulos.
 Estos handlers permiten el desacoplamiento entre módulos vía eventos.
 """
 
+from typing import Any
+
 import structlog
 
 from src.inventory.movement.app.commands import (
@@ -12,12 +14,13 @@ from src.inventory.movement.app.commands import (
 from src.inventory.movement.domain.constants import MovementType
 from src.sales.domain.events import SaleCancelled, SaleConfirmed
 from src.shared.infra.events.decorators import event_handler
+from src.shared.infra.events.scope import create_sync_scope
 
 logger = structlog.get_logger(__name__)
 
 
 @event_handler(SaleConfirmed)
-def handle_sale_confirmed(event: SaleConfirmed) -> None:
+def handle_sale_confirmed(event: SaleConfirmed, session: Any = None) -> None:
     """
     Cuando se confirma una venta, crear movimientos OUT de inventario.
     Este handler desacopla el módulo de sales del módulo de inventory.
@@ -32,9 +35,7 @@ def handle_sale_confirmed(event: SaleConfirmed) -> None:
 
     logger.info("handling_sale_confirmed", sale_id=event.sale_id)
 
-    from src import wireup_container
-
-    with wireup_container.enter_scope() as scope:
+    with create_sync_scope(session) as scope:
         try:
             for item in event.items:
                 handler = scope.get(CreateMovementCommandHandler)
@@ -64,7 +65,7 @@ def handle_sale_confirmed(event: SaleConfirmed) -> None:
 
 
 @event_handler(SaleCancelled)
-def handle_sale_cancelled(event: SaleCancelled) -> None:
+def handle_sale_cancelled(event: SaleCancelled, session: Any = None) -> None:
     """
     Cuando se cancela una venta, revertir movimientos si la venta estaba confirmada.
     Solo crea movimientos IN si was_confirmed=True.
@@ -91,9 +92,7 @@ def handle_sale_cancelled(event: SaleCancelled) -> None:
         )
         return
 
-    from src import wireup_container
-
-    with wireup_container.enter_scope() as scope:
+    with create_sync_scope(session) as scope:
         try:
             for item in event.items:
                 handler = scope.get(CreateMovementCommandHandler)

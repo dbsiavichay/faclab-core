@@ -2,6 +2,8 @@
 Event handlers that react to purchasing domain events.
 """
 
+from typing import Any
+
 import structlog
 
 from src.inventory.movement.app.commands.movement import (
@@ -11,12 +13,15 @@ from src.inventory.movement.app.commands.movement import (
 from src.inventory.movement.domain.constants import MovementType
 from src.purchasing.domain.events import PurchaseOrderReceived
 from src.shared.infra.events.decorators import event_handler
+from src.shared.infra.events.scope import create_sync_scope
 
 logger = structlog.get_logger(__name__)
 
 
 @event_handler(PurchaseOrderReceived)
-def handle_purchase_order_received(event: PurchaseOrderReceived) -> None:
+def handle_purchase_order_received(
+    event: PurchaseOrderReceived, session: Any = None
+) -> None:
     """
     When goods are received for a purchase order, create IN inventory movements.
     Each receipt item becomes an individual IN movement.
@@ -29,9 +34,7 @@ def handle_purchase_order_received(event: PurchaseOrderReceived) -> None:
         item_count=len(event.items),
     )
 
-    from src import wireup_container
-
-    with wireup_container.enter_scope() as scope:
+    with create_sync_scope(session) as scope:
         try:
             for item in event.items:
                 handler = scope.get(CreateMovementCommandHandler)

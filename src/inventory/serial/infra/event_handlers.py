@@ -3,16 +3,21 @@ Event handlers for Serial Numbers that react to purchasing domain events.
 Creates serial numbers when purchase orders are received.
 """
 
+from typing import Any
+
 import structlog
 
 from src.purchasing.domain.events import PurchaseOrderReceived
 from src.shared.infra.events.decorators import event_handler
+from src.shared.infra.events.scope import create_sync_scope
 
 logger = structlog.get_logger(__name__)
 
 
 @event_handler(PurchaseOrderReceived)
-def handle_purchase_order_received_serials(event: PurchaseOrderReceived) -> None:
+def handle_purchase_order_received_serials(
+    event: PurchaseOrderReceived, session: Any = None
+) -> None:
     """
     When goods are received for a purchase order, create serial numbers.
     Only processes items that include serial_numbers list.
@@ -27,9 +32,7 @@ def handle_purchase_order_received_serials(event: PurchaseOrderReceived) -> None
         items_with_serials=len(items_with_serials),
     )
 
-    from src import wireup_container
-
-    with wireup_container.enter_scope() as scope:
+    with create_sync_scope(session) as scope:
         try:
             from src.inventory.lot.domain.entities import Lot
             from src.inventory.serial.domain.entities import SerialNumber, SerialStatus

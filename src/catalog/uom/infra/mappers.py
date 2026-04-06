@@ -5,6 +5,6 @@ from src.catalog.uom.infra.models import UnitOfMeasureModel
 from src.shared.infra.mappers import Mapper
 
 
-@injectable
+@injectable(lifetime="singleton")
 class UnitOfMeasureMapper(Mapper[UnitOfMeasure, UnitOfMeasureModel]):
     __entity__ = UnitOfMeasure

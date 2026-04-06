@@ -5,6 +5,6 @@ from src.inventory.stock.infra.models import StockModel
 from src.shared.infra.mappers import Mapper
 
 
-@injectable
+@injectable(lifetime="singleton")
 class StockMapper(Mapper[Stock, StockModel]):
     __entity__ = Stock

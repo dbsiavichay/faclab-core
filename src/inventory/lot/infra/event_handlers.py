@@ -3,16 +3,21 @@ Event handlers for Lot that react to purchasing domain events.
 Creates or updates lots when purchase orders are received.
 """
 
+from typing import Any
+
 import structlog
 
 from src.purchasing.domain.events import PurchaseOrderReceived
 from src.shared.infra.events.decorators import event_handler
+from src.shared.infra.events.scope import create_sync_scope
 
 logger = structlog.get_logger(__name__)
 
 
 @event_handler(PurchaseOrderReceived)
-def handle_purchase_order_received_lots(event: PurchaseOrderReceived) -> None:
+def handle_purchase_order_received_lots(
+    event: PurchaseOrderReceived, session: Any = None
+) -> None:
     """
     When goods are received for a purchase order, create or update lots.
     Only processes items that include a lot_number.
@@ -27,9 +32,7 @@ def handle_purchase_order_received_lots(event: PurchaseOrderReceived) -> None:
         items_with_lots=len(items_with_lots),
     )
 
-    from src import wireup_container
-
-    with wireup_container.enter_scope() as scope:
+    with create_sync_scope(session) as scope:
         try:
             from dataclasses import replace
 

@@ -38,20 +38,16 @@ def test_publish_without_subscribers():
     EventBus.publish(OrderCreated(aggregate_id=1, order_total=50.0))
 
 
-def test_handler_error_does_not_stop_others():
-    results = []
+def test_handler_error_propagates_to_caller():
+    """Event handler errors must propagate so the caller can rollback."""
 
     def failing_handler(event: OrderCreated):
         raise RuntimeError("handler failed")
 
-    def working_handler(event: OrderCreated):
-        results.append(event.order_total)
-
     EventBus.subscribe(OrderCreated, failing_handler)
-    EventBus.subscribe(OrderCreated, working_handler)
-    EventBus.publish(OrderCreated(aggregate_id=1, order_total=75.0))
 
-    assert results == [75.0]
+    with pytest.raises(RuntimeError, match="handler failed"):
+        EventBus.publish(OrderCreated(aggregate_id=1, order_total=75.0))
 
 
 def test_clear_removes_all():

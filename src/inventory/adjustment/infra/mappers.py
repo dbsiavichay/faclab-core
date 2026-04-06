@@ -6,12 +6,12 @@ from src.shared.infra.mappers import Mapper
 from .models import AdjustmentItemModel, InventoryAdjustmentModel
 
 
-@injectable
+@injectable(lifetime="singleton")
 class InventoryAdjustmentMapper(Mapper[InventoryAdjustment, InventoryAdjustmentModel]):
     __entity__ = InventoryAdjustment
     __exclude_fields__ = frozenset({"created_at"})
 
 
-@injectable
+@injectable(lifetime="singleton")
 class AdjustmentItemMapper(Mapper[AdjustmentItem, AdjustmentItemModel]):
     __entity__ = AdjustmentItem

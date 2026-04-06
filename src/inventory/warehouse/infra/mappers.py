@@ -5,7 +5,7 @@ from src.inventory.warehouse.infra.models import WarehouseModel
 from src.shared.infra.mappers import Mapper
 
 
-@injectable
+@injectable(lifetime="singleton")
 class WarehouseMapper(Mapper[Warehouse, WarehouseModel]):
     __entity__ = Warehouse
     __exclude_fields__ = frozenset({"created_at"})

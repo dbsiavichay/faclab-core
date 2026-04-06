@@ -9,17 +9,17 @@ from src.suppliers.infra.models import (
 )
 
 
-@injectable
+@injectable(lifetime="singleton")
 class SupplierMapper(Mapper[Supplier, SupplierModel]):
     __entity__ = Supplier
     __exclude_fields__ = frozenset({"created_at"})
 
 
-@injectable
+@injectable(lifetime="singleton")
 class SupplierContactMapper(Mapper[SupplierContact, SupplierContactModel]):
     __entity__ = SupplierContact
 
 
-@injectable
+@injectable(lifetime="singleton")
 class SupplierProductMapper(Mapper[SupplierProduct, SupplierProductModel]):
     __entity__ = SupplierProduct
