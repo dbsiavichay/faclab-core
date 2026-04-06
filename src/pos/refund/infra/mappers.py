@@ -5,16 +5,16 @@ from src.pos.refund.infra.models import RefundItemModel, RefundModel, RefundPaym
 from src.shared.infra.mappers import Mapper
 
 
-@injectable
+@injectable(lifetime="singleton")
 class RefundMapper(Mapper[Refund, RefundModel]):
     __entity__ = Refund
 
 
-@injectable
+@injectable(lifetime="singleton")
 class RefundItemMapper(Mapper[RefundItem, RefundItemModel]):
     __entity__ = RefundItem
 
 
-@injectable
+@injectable(lifetime="singleton")
 class RefundPaymentMapper(Mapper[RefundPayment, RefundPaymentModel]):
     __entity__ = RefundPayment

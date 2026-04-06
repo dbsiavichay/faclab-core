@@ -53,11 +53,9 @@ def _make_scope(lot_repo, movement_lot_item_repo, movement_repo):
 # ---------------------------------------------------------------------------
 
 
-@patch("src.wireup_container")
-def test_skips_items_without_lot_number(mock_container):
+@patch("src.inventory.lot.infra.event_handlers.create_sync_scope")
+def test_skips_items_without_lot_number(mock_create_scope):
     """Items without lot_number should not trigger lot creation."""
-    from src.inventory.lot.infra import event_handlers  # noqa: F401
-
     event = _make_event(
         items=[
             {
@@ -76,14 +74,12 @@ def test_skips_items_without_lot_number(mock_container):
 
     handle_purchase_order_received_lots(event)
 
-    mock_container.enter_scope.assert_not_called()
+    mock_create_scope.assert_not_called()
 
 
-@patch("src.wireup_container")
-def test_creates_new_lot_when_not_exists(mock_container):
+@patch("src.inventory.lot.infra.event_handlers.create_sync_scope")
+def test_creates_new_lot_when_not_exists(mock_create_scope):
     """Creates a new lot when lot_number is provided and doesn't exist."""
-    from src.inventory.lot.infra import event_handlers  # noqa: F401
-
     lot = _make_lot()
     event = _make_event(
         items=[
@@ -106,7 +102,7 @@ def test_creates_new_lot_when_not_exists(mock_container):
     movement_repo.filter_by.return_value = []
 
     mock_scope = _make_scope(lot_repo, movement_lot_item_repo, movement_repo)
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_create_scope.return_value.__enter__.return_value = mock_scope
 
     from src.inventory.lot.infra.event_handlers import (
         handle_purchase_order_received_lots,
@@ -123,11 +119,9 @@ def test_creates_new_lot_when_not_exists(mock_container):
     assert created.current_quantity == 10
 
 
-@patch("src.wireup_container")
-def test_updates_existing_lot_quantity(mock_container):
+@patch("src.inventory.lot.infra.event_handlers.create_sync_scope")
+def test_updates_existing_lot_quantity(mock_create_scope):
     """Updates current_quantity when lot already exists."""
-    from src.inventory.lot.infra import event_handlers  # noqa: F401
-
     existing_lot = _make_lot(current_quantity=50)
     updated_lot = _make_lot(current_quantity=60)
     event = _make_event(
@@ -151,7 +145,7 @@ def test_updates_existing_lot_quantity(mock_container):
     movement_repo.filter_by.return_value = []
 
     mock_scope = _make_scope(lot_repo, movement_lot_item_repo, movement_repo)
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_create_scope.return_value.__enter__.return_value = mock_scope
 
     from src.inventory.lot.infra.event_handlers import (
         handle_purchase_order_received_lots,
@@ -165,10 +159,9 @@ def test_updates_existing_lot_quantity(mock_container):
     assert updated.current_quantity == 60  # 50 + 10
 
 
-@patch("src.wireup_container")
-def test_creates_movement_lot_item_when_movement_exists(mock_container):
+@patch("src.inventory.lot.infra.event_handlers.create_sync_scope")
+def test_creates_movement_lot_item_when_movement_exists(mock_create_scope):
     """Creates MovementLotItem linking movement to lot."""
-    from src.inventory.lot.infra import event_handlers  # noqa: F401
     from src.inventory.movement.domain.constants import MovementType
     from src.inventory.movement.domain.entities import Movement
 
@@ -206,7 +199,7 @@ def test_creates_movement_lot_item_when_movement_exists(mock_container):
     movement_repo.filter_by.return_value = [movement]
 
     mock_scope = _make_scope(lot_repo, movement_lot_item_repo, movement_repo)
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_create_scope.return_value.__enter__.return_value = mock_scope
 
     from src.inventory.lot.infra.event_handlers import (
         handle_purchase_order_received_lots,
@@ -227,10 +220,9 @@ def test_creates_movement_lot_item_when_movement_exists(mock_container):
     assert created.quantity == 10
 
 
-@patch("src.wireup_container")
-def test_does_not_reuse_movement_for_duplicate_product_items(mock_container):
+@patch("src.inventory.lot.infra.event_handlers.create_sync_scope")
+def test_does_not_reuse_movement_for_duplicate_product_items(mock_create_scope):
     """Each item gets its own movement even with same product_id."""
-    from src.inventory.lot.infra import event_handlers  # noqa: F401
     from src.inventory.movement.domain.constants import MovementType
     from src.inventory.movement.domain.entities import Movement
 
@@ -284,7 +276,7 @@ def test_does_not_reuse_movement_for_duplicate_product_items(mock_container):
     movement_repo.filter_by.return_value = [movement1, movement2]
 
     mock_scope = _make_scope(lot_repo, movement_lot_item_repo, movement_repo)
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_create_scope.return_value.__enter__.return_value = mock_scope
 
     from src.inventory.lot.infra.event_handlers import (
         handle_purchase_order_received_lots,

@@ -3,6 +3,8 @@ Event handlers para Stock que reaccionan a eventos de otros módulos.
 Este handler desacopla Movement de Stock mediante eventos.
 """
 
+from typing import Any
+
 import structlog
 
 from src.inventory.movement.domain.events import MovementCreated
@@ -11,12 +13,13 @@ from src.inventory.stock.domain.events import StockCreated, StockUpdated
 from src.shared.app.repositories import Repository
 from src.shared.infra.events.decorators import event_handler
 from src.shared.infra.events.event_bus import EventBus
+from src.shared.infra.events.scope import create_sync_scope
 
 logger = structlog.get_logger(__name__)
 
 
 @event_handler(MovementCreated)
-def handle_movement_created(event: MovementCreated) -> None:
+def handle_movement_created(event: MovementCreated, session: Any = None) -> None:
     """
     Cuando se crea un movimiento, actualizar o crear el stock correspondiente.
     El stock se maneja por (product_id, location_id). Si location_id es None,
@@ -30,9 +33,7 @@ def handle_movement_created(event: MovementCreated) -> None:
         location_id=event.location_id,
     )
 
-    from src import wireup_container
-
-    with wireup_container.enter_scope() as scope:
+    with create_sync_scope(session) as scope:
         try:
             stock_repo = scope.get(Repository[Stock])
 
@@ -63,7 +64,8 @@ def handle_movement_created(event: MovementCreated) -> None:
                         product_id=stock.product_id,
                         quantity=stock.quantity,
                         location_id=stock.location_id,
-                    )
+                    ),
+                    session=session,
                 )
                 logger.info(
                     "stock_created",
@@ -92,7 +94,8 @@ def handle_movement_created(event: MovementCreated) -> None:
                         old_quantity=old_quantity,
                         new_quantity=stock.quantity,
                         location_id=stock.location_id,
-                    )
+                    ),
+                    session=session,
                 )
                 logger.info(
                     "stock_updated",

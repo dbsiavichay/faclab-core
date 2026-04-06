@@ -402,7 +402,12 @@ def _make_receipt_handler():
     event_publisher = MagicMock()
     return (
         CreatePurchaseReceiptCommandHandler(
-            po_repo, item_repo, receipt_repo, receipt_item_repo, event_publisher
+            po_repo,
+            item_repo,
+            receipt_repo,
+            receipt_item_repo,
+            event_publisher,
+            MagicMock(),
         ),
         po_repo,
         item_repo,

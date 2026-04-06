@@ -40,8 +40,8 @@ def _make_scope(serial_repo, lot_repo):
 # ---------------------------------------------------------------------------
 
 
-@patch("src.wireup_container")
-def test_skips_items_without_serial_numbers(mock_container):
+@patch("src.inventory.serial.infra.event_handlers.create_sync_scope")
+def test_skips_items_without_serial_numbers(mock_create_scope):
     """Items without serial_numbers should not trigger serial creation."""
     from src.inventory.serial.infra import event_handlers  # noqa: F401
 
@@ -63,11 +63,11 @@ def test_skips_items_without_serial_numbers(mock_container):
 
     handle_purchase_order_received_serials(event)
 
-    mock_container.enter_scope.assert_not_called()
+    mock_create_scope.assert_not_called()
 
 
-@patch("src.wireup_container")
-def test_creates_serial_numbers_when_provided(mock_container):
+@patch("src.inventory.serial.infra.event_handlers.create_sync_scope")
+def test_creates_serial_numbers_when_provided(mock_create_scope):
     """Creates serial numbers for items with serial_numbers list."""
     from src.inventory.serial.infra import event_handlers  # noqa: F401
 
@@ -95,7 +95,7 @@ def test_creates_serial_numbers_when_provided(mock_container):
     lot_repo.first.return_value = None
 
     mock_scope = _make_scope(serial_repo, lot_repo)
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_create_scope.return_value.__enter__.return_value = mock_scope
 
     from src.inventory.serial.infra.event_handlers import (
         handle_purchase_order_received_serials,
@@ -112,8 +112,8 @@ def test_creates_serial_numbers_when_provided(mock_container):
     assert created.lot_id is None
 
 
-@patch("src.wireup_container")
-def test_associates_lot_id_when_lot_number_provided(mock_container):
+@patch("src.inventory.serial.infra.event_handlers.create_sync_scope")
+def test_associates_lot_id_when_lot_number_provided(mock_create_scope):
     """Associates lot_id when lot_number is present in the item."""
     from src.inventory.serial.infra import event_handlers  # noqa: F401
 
@@ -153,7 +153,7 @@ def test_associates_lot_id_when_lot_number_provided(mock_container):
     lot_repo.first.return_value = lot
 
     mock_scope = _make_scope(serial_repo, lot_repo)
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_create_scope.return_value.__enter__.return_value = mock_scope
 
     from src.inventory.serial.infra.event_handlers import (
         handle_purchase_order_received_serials,
@@ -165,8 +165,8 @@ def test_associates_lot_id_when_lot_number_provided(mock_container):
     assert created.lot_id == 3
 
 
-@patch("src.wireup_container")
-def test_skips_duplicate_serial_numbers(mock_container):
+@patch("src.inventory.serial.infra.event_handlers.create_sync_scope")
+def test_skips_duplicate_serial_numbers(mock_create_scope):
     """Does not create a serial that already exists."""
     from src.inventory.serial.infra import event_handlers  # noqa: F401
 
@@ -193,7 +193,7 @@ def test_skips_duplicate_serial_numbers(mock_container):
     lot_repo.first.return_value = None
 
     mock_scope = _make_scope(serial_repo, lot_repo)
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_create_scope.return_value.__enter__.return_value = mock_scope
 
     from src.inventory.serial.infra.event_handlers import (
         handle_purchase_order_received_serials,
@@ -204,8 +204,8 @@ def test_skips_duplicate_serial_numbers(mock_container):
     serial_repo.create.assert_not_called()
 
 
-@patch("src.wireup_container")
-def test_logs_error_when_serial_exists_for_different_product(mock_container):
+@patch("src.inventory.serial.infra.event_handlers.create_sync_scope")
+def test_logs_error_when_serial_exists_for_different_product(mock_create_scope):
     """Logs error when serial already exists for a different product."""
     from src.inventory.serial.infra import event_handlers  # noqa: F401
 
@@ -232,7 +232,7 @@ def test_logs_error_when_serial_exists_for_different_product(mock_container):
     lot_repo.first.return_value = None
 
     mock_scope = _make_scope(serial_repo, lot_repo)
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_create_scope.return_value.__enter__.return_value = mock_scope
 
     from src.inventory.serial.infra.event_handlers import (
         handle_purchase_order_received_serials,

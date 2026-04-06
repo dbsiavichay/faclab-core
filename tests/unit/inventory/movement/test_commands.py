@@ -45,7 +45,7 @@ def test_create_movement_in_command_handler_success(
         reason="Purchase order #123",
     )
 
-    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher)
+    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher, Mock())
 
     result = handler.handle(command)
 
@@ -75,7 +75,7 @@ def test_create_movement_out_command_handler_success(
         reason="Sale #456",
     )
 
-    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher)
+    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher, Mock())
 
     result = handler.handle(command)
 
@@ -105,7 +105,7 @@ def test_create_movement_publishes_movement_created_event(
         date=datetime.now(),
     )
 
-    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher)
+    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher, Mock())
     handler.handle(command)
 
     event_publisher.publish.assert_called_once()
@@ -127,7 +127,7 @@ def test_create_movement_in_with_negative_quantity_raises(
         type=MovementType.IN.value,
     )
 
-    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher)
+    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher, Mock())
 
     with pytest.raises(InvalidMovementTypeError) as exc_info:
         handler.handle(command)
@@ -147,7 +147,7 @@ def test_create_movement_out_with_positive_quantity_raises(
         type=MovementType.OUT.value,
     )
 
-    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher)
+    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher, Mock())
 
     with pytest.raises(InvalidMovementTypeError) as exc_info:
         handler.handle(command)
@@ -165,7 +165,7 @@ def test_create_movement_zero_quantity_raises(mock_movement_repo, event_publishe
         type=MovementType.IN.value,
     )
 
-    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher)
+    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher, Mock())
 
     with pytest.raises(InvalidMovementTypeError) as exc_info:
         handler.handle(command)
@@ -193,7 +193,7 @@ def test_create_movement_with_date(mock_movement_repo, event_publisher):
         date=specific_date,
     )
 
-    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher)
+    handler = CreateMovementCommandHandler(mock_movement_repo, event_publisher, Mock())
 
     result = handler.handle(command)
 

@@ -5,7 +5,7 @@ from src.inventory.serial.infra.models import SerialNumberModel
 from src.shared.infra.mappers import Mapper
 
 
-@injectable
+@injectable(lifetime="singleton")
 class SerialNumberMapper(Mapper[SerialNumber, SerialNumberModel]):
     __entity__ = SerialNumber
     __exclude_fields__ = frozenset({"created_at"})

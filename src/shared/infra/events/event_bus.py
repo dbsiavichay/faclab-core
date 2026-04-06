@@ -1,5 +1,7 @@
+import inspect
 from collections import defaultdict
 from collections.abc import Callable
+from typing import Any
 
 import structlog
 from opentelemetry import trace
@@ -16,13 +18,19 @@ tracer = trace.get_tracer(__name__)
 
 class EventBus:
     _subscribers: dict[type[DomainEvent], list[Callable]] = defaultdict(list)
+    _accepts_session: dict[int, bool] = {}
 
     @classmethod
     def subscribe(cls, event_type: type[DomainEvent], handler: Callable) -> None:
         cls._subscribers[event_type].append(handler)
+        try:
+            sig = inspect.signature(handler)
+            cls._accepts_session[id(handler)] = "session" in sig.parameters
+        except (ValueError, TypeError):
+            cls._accepts_session[id(handler)] = False
 
     @classmethod
-    def publish(cls, event: DomainEvent) -> None:
+    def publish(cls, event: DomainEvent, session: Any = None) -> None:
         event_type = type(event)
         event_type_name = event_type.__name__
         handlers = cls._subscribers.get(event_type, [])
@@ -51,7 +59,10 @@ class EventBus:
                     },
                 ) as span:
                     try:
-                        handler(event)
+                        if cls._accepts_session.get(id(handler), False):
+                            handler(event, session=session)
+                        else:
+                            handler(event)
                         span.set_status(trace.StatusCode.OK)
                     except Exception as e:
                         logger.error(
@@ -69,7 +80,9 @@ class EventBus:
                         )
                         span.set_status(trace.StatusCode.ERROR, str(e))
                         span.record_exception(e)
+                        raise
 
     @classmethod
     def clear(cls) -> None:
         cls._subscribers.clear()
+        cls._accepts_session.clear()

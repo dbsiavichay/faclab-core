@@ -40,8 +40,8 @@ def clear_event_bus():
     EventBus.clear()
 
 
-@patch("src.wireup_container")
-def test_create_movement_triggers_stock_update_via_event(mock_stock_container):
+@patch("src.inventory.stock.infra.event_handlers.create_sync_scope")
+def test_create_movement_triggers_stock_update_via_event(mock_stock_scope):
     """
     Integration test: Creating a movement publishes MovementCreated,
     which triggers handle_movement_created, which updates stock.
@@ -59,7 +59,7 @@ def test_create_movement_triggers_stock_update_via_event(mock_stock_container):
     # Mock the scope context manager
     mock_scope = Mock()
     mock_scope.get.return_value = mock_stock_repo
-    mock_stock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_stock_scope.return_value.__enter__.return_value = mock_scope
 
     # Movement to create
     created_movement = Movement(
@@ -80,7 +80,9 @@ def test_create_movement_triggers_stock_update_via_event(mock_stock_container):
     EventBus.subscribe(StockCreated, stock_listener)
 
     # Create command handler
-    handler = CreateMovementCommandHandler(mock_movement_repo, EventBusPublisher())
+    handler = CreateMovementCommandHandler(
+        mock_movement_repo, EventBusPublisher(), Mock()
+    )
     command = CreateMovementCommand(
         product_id=10,
         quantity=10,
@@ -108,13 +110,15 @@ def test_create_movement_triggers_stock_update_via_event(mock_stock_container):
     assert stock_events[0].product_id == 10
 
 
-@patch("src.wireup_container")
-def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
+@patch("src.inventory.stock.infra.event_handlers.create_sync_scope")
+@patch("src.inventory.infra.event_handlers.create_sync_scope")
+def test_sale_confirmed_creates_movement_and_updates_stock(
+    mock_inv_scope, mock_stock_scope
+):
     """
     Integration test: SaleConfirmed → CreateMovement → MovementCreated → Stock updated
     """
     # Arrange
-    # Handlers are already registered by the fixture
     mock_movement_repo = Mock()
     mock_stock_repo = Mock()
 
@@ -137,9 +141,6 @@ def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
 
     # Mock command handler that publishes MovementCreated event like the real one
     def mock_handle(command):
-        # Simulate what the real handler does:
-        # 1. Create movement (mocked via repo)
-        # 2. Publish MovementCreated event
         EventBus.publish(
             MovementCreated(
                 aggregate_id=created_movement.id,
@@ -154,20 +155,20 @@ def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
     mock_command_handler = Mock()
     mock_command_handler.handle.side_effect = mock_handle
 
-    # Mock the scope context manager
-    # The scope.get() needs to return different things based on what's resolved:
-    # - CreateMovementCommandHandler for sales event handlers
-    # - Repository[Stock] for stock event handlers
-    def scope_get_side_effect(type_class):
+    # Mock the inventory scope (for SaleConfirmed handler)
+    def inv_scope_get(type_class):
         if type_class == CreateMovementCommandHandler:
             return mock_command_handler
-        elif type_class.__name__ == "Repository":  # Repository[Stock]
-            return mock_stock_repo
         raise ValueError(f"Unexpected resolve: {type_class}")
 
-    mock_scope = Mock()
-    mock_scope.get.side_effect = scope_get_side_effect
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_inv_scope_obj = Mock()
+    mock_inv_scope_obj.get.side_effect = inv_scope_get
+    mock_inv_scope.return_value.__enter__.return_value = mock_inv_scope_obj
+
+    # Mock the stock scope (for MovementCreated handler)
+    mock_stock_scope_obj = Mock()
+    mock_stock_scope_obj.get.return_value = mock_stock_repo
+    mock_stock_scope.return_value.__enter__.return_value = mock_stock_scope_obj
 
     # Track events
     stock_events = []
@@ -207,13 +208,13 @@ def test_sale_confirmed_creates_movement_and_updates_stock(mock_container):
     assert stock_events[0].new_quantity == 95
 
 
-@patch("src.wireup_container")
-def test_sale_cancelled_reverts_stock_via_event(mock_container):
+@patch("src.inventory.stock.infra.event_handlers.create_sync_scope")
+@patch("src.inventory.infra.event_handlers.create_sync_scope")
+def test_sale_cancelled_reverts_stock_via_event(mock_inv_scope, mock_stock_scope):
     """
     Integration test: SaleCancelled (was_confirmed=True) → CreateMovement IN → Stock restored
     """
     # Arrange
-    # Handlers are already registered by the fixture
     mock_movement_repo = Mock()
     mock_stock_repo = Mock()
 
@@ -229,17 +230,13 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
     reversal_movement = Movement(
         id=2,
         product_id=10,
-        quantity=5,  # Positive for IN
+        quantity=5,
         type=MovementType.IN,
         reason="Sale #123 cancelled - reversal",
     )
     mock_movement_repo.create.return_value = reversal_movement
 
-    # Mock command handler that publishes MovementCreated event like the real one
     def mock_handle(command):
-        # Simulate what the real handler does:
-        # 1. Create movement (mocked via repo)
-        # 2. Publish MovementCreated event
         EventBus.publish(
             MovementCreated(
                 aggregate_id=reversal_movement.id,
@@ -254,20 +251,20 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
     mock_command_handler = Mock()
     mock_command_handler.handle.side_effect = mock_handle
 
-    # Mock the scope context manager
-    # The scope.get() needs to return different things based on what's resolved:
-    # - CreateMovementCommandHandler for sales event handlers
-    # - Repository[Stock] for stock event handlers
-    def scope_get_side_effect(type_class):
+    # Mock the inventory scope
+    def inv_scope_get(type_class):
         if type_class == CreateMovementCommandHandler:
             return mock_command_handler
-        elif type_class.__name__ == "Repository":  # Repository[Stock]
-            return mock_stock_repo
         raise ValueError(f"Unexpected resolve: {type_class}")
 
-    mock_scope = Mock()
-    mock_scope.get.side_effect = scope_get_side_effect
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_inv_scope_obj = Mock()
+    mock_inv_scope_obj.get.side_effect = inv_scope_get
+    mock_inv_scope.return_value.__enter__.return_value = mock_inv_scope_obj
+
+    # Mock the stock scope
+    mock_stock_scope_obj = Mock()
+    mock_stock_scope_obj.get.return_value = mock_stock_repo
+    mock_stock_scope.return_value.__enter__.return_value = mock_stock_scope_obj
 
     # Track events
     stock_events = []
@@ -284,7 +281,7 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
         customer_id=1,
         items=[{"product_id": 10, "quantity": 5}],
         reason="Customer request",
-        was_confirmed=True,  # Stock needs to be restored
+        was_confirmed=True,
     )
 
     # Act
@@ -295,7 +292,7 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
     mock_command_handler.handle.assert_called_once()
     call_args = mock_command_handler.handle.call_args[0][0]
     assert call_args.product_id == 10
-    assert call_args.quantity == 5  # Positive for reversal
+    assert call_args.quantity == 5
     assert call_args.type == MovementType.IN.value
 
     # 2. Stock was restored
@@ -308,15 +305,13 @@ def test_sale_cancelled_reverts_stock_via_event(mock_container):
     assert stock_events[0].new_quantity == 100
 
 
-@patch("src.wireup_container")
-def test_sale_cancelled_draft_no_stock_change(mock_inventory_container):
+@patch("src.inventory.infra.event_handlers.create_sync_scope")
+def test_sale_cancelled_draft_no_stock_change(mock_inv_scope):
     """
     Integration test: SaleCancelled (was_confirmed=False) → No movement created
     """
     # Arrange
-    # Handlers are already registered by the fixture
     mock_command_handler = Mock()
-    mock_inventory_container.get.return_value = mock_command_handler
 
     # Sale cancelled event (was NOT confirmed)
     cancel_event = SaleCancelled(
@@ -325,7 +320,7 @@ def test_sale_cancelled_draft_no_stock_change(mock_inventory_container):
         customer_id=1,
         items=[{"product_id": 10, "quantity": 5}],
         reason="Customer request",
-        was_confirmed=False,  # No stock to restore
+        was_confirmed=False,
     )
 
     # Act
@@ -336,8 +331,8 @@ def test_sale_cancelled_draft_no_stock_change(mock_inventory_container):
     mock_command_handler.handle.assert_not_called()
 
 
-@patch("src.wireup_container")
-def test_multiple_movements_accumulate_stock(mock_stock_container):
+@patch("src.inventory.stock.infra.event_handlers.create_sync_scope")
+def test_multiple_movements_accumulate_stock(mock_stock_scope):
     """
     Integration test: Multiple movements update stock cumulatively
     """
@@ -367,9 +362,11 @@ def test_multiple_movements_accumulate_stock(mock_stock_container):
     # Mock the scope context manager
     mock_scope = Mock()
     mock_scope.get.return_value = mock_stock_repo
-    mock_stock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_stock_scope.return_value.__enter__.return_value = mock_scope
 
-    handler = CreateMovementCommandHandler(mock_movement_repo, EventBusPublisher())
+    handler = CreateMovementCommandHandler(
+        mock_movement_repo, EventBusPublisher(), Mock()
+    )
 
     # Movement 1: +10
     mock_movement_repo.create.return_value = Movement(

@@ -5,6 +5,6 @@ from src.pos.cash.infra.models import CashMovementModel
 from src.shared.infra.mappers import Mapper
 
 
-@injectable
+@injectable(lifetime="singleton")
 class CashMovementMapper(Mapper[CashMovement, CashMovementModel]):
     __entity__ = CashMovement

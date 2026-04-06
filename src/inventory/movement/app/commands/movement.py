@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from sqlalchemy.orm import Session
 from wireup import injectable
 
 from src.inventory.movement.domain.constants import MovementType
@@ -31,9 +32,15 @@ class CreateMovementCommandHandler(CommandHandler[CreateMovementCommand, dict]):
     Publica el evento MovementCreated que será consumido por el Stock event handler.
     """
 
-    def __init__(self, repo: Repository[Movement], event_publisher: EventPublisher):
+    def __init__(
+        self,
+        repo: Repository[Movement],
+        event_publisher: EventPublisher,
+        session: Session,
+    ):
         self.repo = repo
         self.event_publisher = event_publisher
+        self.session = session
 
     def _handle(self, command: CreateMovementCommand) -> dict:
         movement_type = MovementType(command.type)
@@ -61,7 +68,8 @@ class CreateMovementCommandHandler(CommandHandler[CreateMovementCommand, dict]):
                 location_id=movement.location_id,
                 reason=movement.reason,
                 date=movement.date,
-            )
+            ),
+            session=self.session,
         )
 
         return movement.dict()

@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, Mock, patch
 from src.purchasing.domain.events import PurchaseOrderReceived
 
 
-@patch("src.wireup_container")
-def test_handle_purchase_order_received_creates_movements(mock_container):
+@patch("src.purchasing.infra.event_handlers.create_sync_scope")
+def test_handle_purchase_order_received_creates_movements(mock_create_scope):
     """
     Verifies that handle_purchase_order_received creates one IN movement
     per item in the event payload.
@@ -21,7 +21,7 @@ def test_handle_purchase_order_received_creates_movements(mock_container):
     mock_handler = MagicMock()
     mock_scope = Mock()
     mock_scope.get.return_value = mock_handler
-    mock_container.enter_scope.return_value.__enter__.return_value = mock_scope
+    mock_create_scope.return_value.__enter__.return_value = mock_scope
 
     event = PurchaseOrderReceived(
         aggregate_id=1,

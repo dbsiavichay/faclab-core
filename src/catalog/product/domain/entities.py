@@ -24,7 +24,7 @@ class Product(Entity):
     sale_price: Decimal | None = None
     unit_of_measure_id: int | None = None
     is_active: bool = True
-    tax_rate: Decimal = Decimal("12.00")
+    tax_rate: Decimal = Decimal("15.00")
     is_service: bool = False
     min_stock: int = 0
     max_stock: int | None = None

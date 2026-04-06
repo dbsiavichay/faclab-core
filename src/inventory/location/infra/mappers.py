@@ -5,6 +5,6 @@ from src.inventory.location.infra.models import LocationModel
 from src.shared.infra.mappers import Mapper
 
 
-@injectable
+@injectable(lifetime="singleton")
 class LocationMapper(Mapper[Location, LocationModel]):
     __entity__ = Location
