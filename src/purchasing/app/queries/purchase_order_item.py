@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.purchasing.domain.entities import PurchaseOrderItem
+from src.purchasing.app.repositories import PurchaseOrderItemRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -16,7 +15,7 @@ class GetPurchaseOrderItemsByPOQuery(Query):
 class GetPurchaseOrderItemsByPOQueryHandler(
     QueryHandler[GetPurchaseOrderItemsByPOQuery, list[dict]]
 ):
-    def __init__(self, repo: Repository[PurchaseOrderItem]):
+    def __init__(self, repo: PurchaseOrderItemRepository):
         self.repo = repo
 
     def _handle(self, query: GetPurchaseOrderItemsByPOQuery) -> list[dict]:

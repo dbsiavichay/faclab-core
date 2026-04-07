@@ -4,11 +4,11 @@ from src.inventory.stock.app.queries.stock import (
     GetStockByProductQueryHandler,
 )
 from src.inventory.stock.infra.mappers import StockMapper
-from src.inventory.stock.infra.repositories import StockRepository
+from src.inventory.stock.infra.repositories import SqlAlchemyStockRepository
 
 INJECTABLES = [
     StockMapper,
-    StockRepository,
+    SqlAlchemyStockRepository,
     GetAllStocksQueryHandler,
     GetStockByIdQueryHandler,
     GetStockByProductQueryHandler,

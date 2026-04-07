@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.sales.domain.entities import Payment
+from src.sales.app.repositories import PaymentRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -18,7 +17,7 @@ class GetSalePaymentsQuery(Query):
 class GetSalePaymentsQueryHandler(QueryHandler[GetSalePaymentsQuery, list[dict]]):
     """Handler para obtener todos los pagos de una venta"""
 
-    def __init__(self, repo: Repository[Payment]):
+    def __init__(self, repo: PaymentRepository):
         self.repo = repo
 
     def _handle(self, query: GetSalePaymentsQuery) -> list[dict]:

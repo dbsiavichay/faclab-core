@@ -18,15 +18,15 @@ from src.inventory.adjustment.infra.mappers import (
     InventoryAdjustmentMapper,
 )
 from src.inventory.adjustment.infra.repositories import (
-    AdjustmentItemRepository,
-    InventoryAdjustmentRepository,
+    SqlAlchemyAdjustmentItemRepository,
+    SqlAlchemyInventoryAdjustmentRepository,
 )
 
 ADJUSTMENT_INJECTABLES = [
     InventoryAdjustmentMapper,
     AdjustmentItemMapper,
-    InventoryAdjustmentRepository,
-    AdjustmentItemRepository,
+    SqlAlchemyInventoryAdjustmentRepository,
+    SqlAlchemyAdjustmentItemRepository,
     CreateAdjustmentCommandHandler,
     UpdateAdjustmentCommandHandler,
     DeleteAdjustmentCommandHandler,

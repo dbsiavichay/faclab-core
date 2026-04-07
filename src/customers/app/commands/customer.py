@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from wireup import injectable
 
+from src.customers.app.repositories import CustomerRepository
 from src.customers.domain.entities import Customer, TaxType
 from src.customers.domain.events import (
     CustomerActivated,
@@ -12,7 +13,6 @@ from src.customers.domain.events import (
 )
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 from src.shared.domain.value_objects import Email, TaxId
 
@@ -35,7 +35,7 @@ class CreateCustomerCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateCustomerCommandHandler(CommandHandler[CreateCustomerCommand, dict]):
-    def __init__(self, repo: Repository[Customer], event_publisher: EventPublisher):
+    def __init__(self, repo: CustomerRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 
@@ -91,7 +91,7 @@ class UpdateCustomerCommand(Command):
 
 @injectable(lifetime="scoped")
 class UpdateCustomerCommandHandler(CommandHandler[UpdateCustomerCommand, dict]):
-    def __init__(self, repo: Repository[Customer], event_publisher: EventPublisher):
+    def __init__(self, repo: CustomerRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 
@@ -135,7 +135,7 @@ class DeleteCustomerCommand(Command):
 
 @injectable(lifetime="scoped")
 class DeleteCustomerCommandHandler(CommandHandler[DeleteCustomerCommand, None]):
-    def __init__(self, repo: Repository[Customer]):
+    def __init__(self, repo: CustomerRepository):
         self.repo = repo
 
     def _handle(self, command: DeleteCustomerCommand) -> None:
@@ -149,7 +149,7 @@ class ActivateCustomerCommand(Command):
 
 @injectable(lifetime="scoped")
 class ActivateCustomerCommandHandler(CommandHandler[ActivateCustomerCommand, dict]):
-    def __init__(self, repo: Repository[Customer], event_publisher: EventPublisher):
+    def __init__(self, repo: CustomerRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 
@@ -177,7 +177,7 @@ class DeactivateCustomerCommand(Command):
 
 @injectable(lifetime="scoped")
 class DeactivateCustomerCommandHandler(CommandHandler[DeactivateCustomerCommand, dict]):
-    def __init__(self, repo: Repository[Customer], event_publisher: EventPublisher):
+    def __init__(self, repo: CustomerRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 

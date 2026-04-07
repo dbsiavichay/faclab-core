@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.pos.shift.domain.entities import Shift
+from src.pos.shift.app.repositories import ShiftRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -19,7 +18,7 @@ class GetActiveShiftQuery(Query):
 class GetActiveShiftQueryHandler(QueryHandler[GetActiveShiftQuery, dict | None]):
     """Handler para obtener el turno activo"""
 
-    def __init__(self, repo: Repository[Shift]):
+    def __init__(self, repo: ShiftRepository):
         self.repo = repo
 
     def _handle(self, query: GetActiveShiftQuery) -> dict | None:
@@ -40,7 +39,7 @@ class GetShiftByIdQuery(Query):
 class GetShiftByIdQueryHandler(QueryHandler[GetShiftByIdQuery, dict]):
     """Handler para obtener un turno por ID"""
 
-    def __init__(self, repo: Repository[Shift]):
+    def __init__(self, repo: ShiftRepository):
         self.repo = repo
 
     def _handle(self, query: GetShiftByIdQuery) -> dict:
@@ -63,7 +62,7 @@ class GetAllShiftsQuery(Query):
 class GetAllShiftsQueryHandler(QueryHandler[GetAllShiftsQuery, dict]):
     """Handler para obtener todos los turnos"""
 
-    def __init__(self, repo: Repository[Shift]):
+    def __init__(self, repo: ShiftRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllShiftsQuery) -> dict:

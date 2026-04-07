@@ -2,6 +2,10 @@ from dataclasses import dataclass, replace
 
 from wireup import injectable
 
+from src.inventory.adjustment.app.repositories import (
+    AdjustmentItemRepository,
+    InventoryAdjustmentRepository,
+)
 from src.inventory.adjustment.domain.entities import (
     AdjustmentItem,
     AdjustmentReason,
@@ -14,10 +18,9 @@ from src.inventory.movement.app.commands.movement import (
     CreateMovementCommandHandler,
 )
 from src.inventory.movement.domain.constants import MovementType
-from src.inventory.stock.domain.entities import Stock
+from src.inventory.stock.app.repositories import StockRepository
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
 
 # ---------------------------------------------------------------------------
@@ -89,7 +92,7 @@ class RemoveAdjustmentItemCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateAdjustmentCommandHandler(CommandHandler[CreateAdjustmentCommand, dict]):
-    def __init__(self, repo: Repository[InventoryAdjustment]):
+    def __init__(self, repo: InventoryAdjustmentRepository):
         self.repo = repo
 
     def _handle(self, command: CreateAdjustmentCommand) -> dict:
@@ -105,7 +108,7 @@ class CreateAdjustmentCommandHandler(CommandHandler[CreateAdjustmentCommand, dic
 
 @injectable(lifetime="scoped")
 class UpdateAdjustmentCommandHandler(CommandHandler[UpdateAdjustmentCommand, dict]):
-    def __init__(self, repo: Repository[InventoryAdjustment]):
+    def __init__(self, repo: InventoryAdjustmentRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateAdjustmentCommand) -> dict:
@@ -128,7 +131,7 @@ class UpdateAdjustmentCommandHandler(CommandHandler[UpdateAdjustmentCommand, dic
 
 @injectable(lifetime="scoped")
 class DeleteAdjustmentCommandHandler(CommandHandler[DeleteAdjustmentCommand, None]):
-    def __init__(self, repo: Repository[InventoryAdjustment]):
+    def __init__(self, repo: InventoryAdjustmentRepository):
         self.repo = repo
 
     def _handle(self, command: DeleteAdjustmentCommand) -> None:
@@ -144,8 +147,8 @@ class DeleteAdjustmentCommandHandler(CommandHandler[DeleteAdjustmentCommand, Non
 class ConfirmAdjustmentCommandHandler(CommandHandler[ConfirmAdjustmentCommand, dict]):
     def __init__(
         self,
-        repo: Repository[InventoryAdjustment],
-        item_repo: Repository[AdjustmentItem],
+        repo: InventoryAdjustmentRepository,
+        item_repo: AdjustmentItemRepository,
         movement_handler: CreateMovementCommandHandler,
         event_publisher: EventPublisher,
     ):
@@ -196,7 +199,7 @@ class ConfirmAdjustmentCommandHandler(CommandHandler[ConfirmAdjustmentCommand, d
 
 @injectable(lifetime="scoped")
 class CancelAdjustmentCommandHandler(CommandHandler[CancelAdjustmentCommand, dict]):
-    def __init__(self, repo: Repository[InventoryAdjustment]):
+    def __init__(self, repo: InventoryAdjustmentRepository):
         self.repo = repo
 
     def _handle(self, command: CancelAdjustmentCommand) -> dict:
@@ -213,9 +216,9 @@ class CancelAdjustmentCommandHandler(CommandHandler[CancelAdjustmentCommand, dic
 class AddAdjustmentItemCommandHandler(CommandHandler[AddAdjustmentItemCommand, dict]):
     def __init__(
         self,
-        repo: Repository[InventoryAdjustment],
-        item_repo: Repository[AdjustmentItem],
-        stock_repo: Repository[Stock],
+        repo: InventoryAdjustmentRepository,
+        item_repo: AdjustmentItemRepository,
+        stock_repo: StockRepository,
     ):
         self.repo = repo
         self.item_repo = item_repo
@@ -250,7 +253,7 @@ class AddAdjustmentItemCommandHandler(CommandHandler[AddAdjustmentItemCommand, d
 class UpdateAdjustmentItemCommandHandler(
     CommandHandler[UpdateAdjustmentItemCommand, dict]
 ):
-    def __init__(self, item_repo: Repository[AdjustmentItem]):
+    def __init__(self, item_repo: AdjustmentItemRepository):
         self.item_repo = item_repo
 
     def _handle(self, command: UpdateAdjustmentItemCommand) -> dict:
@@ -273,7 +276,7 @@ class UpdateAdjustmentItemCommandHandler(
 class RemoveAdjustmentItemCommandHandler(
     CommandHandler[RemoveAdjustmentItemCommand, None]
 ):
-    def __init__(self, item_repo: Repository[AdjustmentItem]):
+    def __init__(self, item_repo: AdjustmentItemRepository):
         self.item_repo = item_repo
 
     def _handle(self, command: RemoveAdjustmentItemCommand) -> None:

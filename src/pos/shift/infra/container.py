@@ -6,11 +6,11 @@ from src.pos.shift.app.queries.get_shifts import (
     GetShiftByIdQueryHandler,
 )
 from src.pos.shift.infra.mappers import ShiftMapper
-from src.pos.shift.infra.repositories import ShiftRepository
+from src.pos.shift.infra.repositories import SqlAlchemyShiftRepository
 
 INJECTABLES = [
     ShiftMapper,
-    ShiftRepository,
+    SqlAlchemyShiftRepository,
     OpenShiftCommandHandler,
     CloseShiftCommandHandler,
     GetActiveShiftQueryHandler,

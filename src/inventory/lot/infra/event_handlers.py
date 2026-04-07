@@ -36,13 +36,16 @@ def handle_purchase_order_received_lots(
         try:
             from dataclasses import replace
 
+            from src.inventory.lot.app.repositories import (
+                LotRepository,
+                MovementLotItemRepository,
+            )
             from src.inventory.lot.domain.entities import Lot, MovementLotItem
-            from src.inventory.movement.domain.entities import Movement
-            from src.shared.app.repositories import Repository
+            from src.inventory.movement.app.repositories import MovementRepository
 
-            lot_repo = scope.get(Repository[Lot])
-            movement_lot_item_repo = scope.get(Repository[MovementLotItem])
-            movement_repo = scope.get(Repository[Movement])
+            lot_repo = scope.get(LotRepository)
+            movement_lot_item_repo = scope.get(MovementLotItemRepository)
+            movement_repo = scope.get(MovementRepository)
 
             used_movement_ids: set[int] = set()
 

@@ -3,14 +3,14 @@ from decimal import Decimal
 
 from wireup import injectable
 
-from src.catalog.product.domain.entities import Product
-from src.sales.domain.entities import Sale, SaleItem
+from src.catalog.product.app.repositories import ProductRepository
+from src.sales.app.repositories import SaleItemRepository, SaleRepository
+from src.sales.domain.entities import SaleItem
 from src.sales.domain.events import SaleItemAdded
 from src.sales.domain.exceptions import InvalidSaleStatusError
 from src.sales.domain.services import recalculate_sale_totals
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -31,9 +31,9 @@ class AddSaleItemCommandHandler(CommandHandler[AddSaleItemCommand, dict]):
 
     def __init__(
         self,
-        sale_repo: Repository[Sale],
-        sale_item_repo: Repository[SaleItem],
-        product_repo: Repository[Product],
+        sale_repo: SaleRepository,
+        sale_item_repo: SaleItemRepository,
+        product_repo: ProductRepository,
         event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo

@@ -3,17 +3,18 @@ from decimal import Decimal
 
 from wireup import injectable
 
+from src.pos.refund.app.repositories import RefundItemRepository, RefundRepository
 from src.pos.refund.domain.entities import Refund, RefundItem, RefundStatus
 from src.pos.refund.domain.exceptions import (
     ExceedsOriginalQuantityError,
     RefundItemNotInSaleError,
     SaleNotConfirmedError,
 )
-from src.pos.shift.domain.entities import Shift
+from src.pos.shift.app.repositories import ShiftRepository
 from src.pos.shift.domain.exceptions import NoOpenShiftError
-from src.sales.domain.entities import Sale, SaleItem, SaleStatus
+from src.sales.app.repositories import SaleItemRepository, SaleRepository
+from src.sales.domain.entities import SaleStatus
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -29,11 +30,11 @@ class CreateRefundCommand(Command):
 class CreateRefundCommandHandler(CommandHandler[CreateRefundCommand, dict]):
     def __init__(
         self,
-        sale_repo: Repository[Sale],
-        sale_item_repo: Repository[SaleItem],
-        refund_repo: Repository[Refund],
-        refund_item_repo: Repository[RefundItem],
-        shift_repo: Repository[Shift],
+        sale_repo: SaleRepository,
+        sale_item_repo: SaleItemRepository,
+        refund_repo: RefundRepository,
+        refund_item_repo: RefundItemRepository,
+        shift_repo: ShiftRepository,
     ):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo

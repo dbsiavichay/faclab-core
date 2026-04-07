@@ -19,15 +19,15 @@ from src.inventory.transfer.infra.mappers import (
     StockTransferMapper,
 )
 from src.inventory.transfer.infra.repositories import (
-    StockTransferItemRepository,
-    StockTransferRepository,
+    SqlAlchemyStockTransferItemRepository,
+    SqlAlchemyStockTransferRepository,
 )
 
 TRANSFER_INJECTABLES = [
     StockTransferMapper,
     StockTransferItemMapper,
-    StockTransferRepository,
-    StockTransferItemRepository,
+    SqlAlchemyStockTransferRepository,
+    SqlAlchemyStockTransferItemRepository,
     CreateStockTransferCommandHandler,
     UpdateStockTransferCommandHandler,
     DeleteStockTransferCommandHandler,

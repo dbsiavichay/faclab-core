@@ -3,14 +3,15 @@ from decimal import Decimal
 
 from wireup import injectable
 
+from src.pos.cash.app.repositories import CashMovementRepository
 from src.pos.cash.domain.entities import CashMovement, CashMovementType
 from src.pos.cash.domain.exceptions import (
     InvalidCashMovementAmountError,
     ShiftNotOpenForCashMovementError,
 )
-from src.pos.shift.domain.entities import Shift, ShiftStatus
+from src.pos.shift.app.repositories import ShiftRepository
+from src.pos.shift.domain.entities import ShiftStatus
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -29,8 +30,8 @@ class RegisterCashMovementCommandHandler(
 ):
     def __init__(
         self,
-        cash_repo: Repository[CashMovement],
-        shift_repo: Repository[Shift],
+        cash_repo: CashMovementRepository,
+        shift_repo: ShiftRepository,
     ):
         self.cash_repo = cash_repo
         self.shift_repo = shift_repo

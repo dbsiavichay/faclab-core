@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.inventory.location.app.repositories import LocationRepository
 from src.inventory.location.domain.entities import Location, LocationType
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -21,7 +21,7 @@ class UpdateLocationCommand(Command):
 
 @injectable(lifetime="scoped")
 class UpdateLocationCommandHandler(CommandHandler[UpdateLocationCommand, dict]):
-    def __init__(self, repo: Repository[Location]):
+    def __init__(self, repo: LocationRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateLocationCommand) -> dict:

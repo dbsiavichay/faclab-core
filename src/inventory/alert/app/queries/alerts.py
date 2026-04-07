@@ -3,18 +3,17 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.catalog.product.domain.entities import Product
+from src.catalog.product.app.repositories import ProductRepository
 from src.inventory.alert.domain.types import AlertType, StockAlert
-from src.inventory.lot.domain.entities import Lot
+from src.inventory.lot.app.repositories import LotRepository
 from src.inventory.lot.domain.specifications import ExpiringLots
-from src.inventory.stock.domain.entities import Stock
+from src.inventory.stock.app.repositories import StockRepository
 from src.inventory.stock.domain.specifications import (
     LowStockProducts,
     OutOfStockProducts,
     ReorderPointProducts,
 )
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -26,8 +25,8 @@ class GetLowStockAlertsQuery(Query):
 class GetLowStockAlertsQueryHandler(QueryHandler[GetLowStockAlertsQuery, list[dict]]):
     def __init__(
         self,
-        stock_repo: Repository[Stock],
-        product_repo: Repository[Product],
+        stock_repo: StockRepository,
+        product_repo: ProductRepository,
     ):
         self.stock_repo = stock_repo
         self.product_repo = product_repo
@@ -65,8 +64,8 @@ class GetOutOfStockAlertsQueryHandler(
 ):
     def __init__(
         self,
-        stock_repo: Repository[Stock],
-        product_repo: Repository[Product],
+        stock_repo: StockRepository,
+        product_repo: ProductRepository,
     ):
         self.stock_repo = stock_repo
         self.product_repo = product_repo
@@ -104,8 +103,8 @@ class GetReorderPointAlertsQueryHandler(
 ):
     def __init__(
         self,
-        stock_repo: Repository[Stock],
-        product_repo: Repository[Product],
+        stock_repo: StockRepository,
+        product_repo: ProductRepository,
     ):
         self.stock_repo = stock_repo
         self.product_repo = product_repo
@@ -143,8 +142,8 @@ class GetExpiringLotsAlertsQueryHandler(
 ):
     def __init__(
         self,
-        lot_repo: Repository[Lot],
-        product_repo: Repository[Product],
+        lot_repo: LotRepository,
+        product_repo: ProductRepository,
     ):
         self.lot_repo = lot_repo
         self.product_repo = product_repo

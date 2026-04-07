@@ -2,10 +2,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.sales.domain.entities import Sale
+from src.sales.app.repositories import SaleRepository
 from src.sales.domain.specifications import ParkedSalesSpecification
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -15,7 +14,7 @@ class GetParkedSalesQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetParkedSalesQueryHandler(QueryHandler[GetParkedSalesQuery, list[dict]]):
-    def __init__(self, repo: Repository[Sale]):
+    def __init__(self, repo: SaleRepository):
         self.repo = repo
 
     def _handle(self, query: GetParkedSalesQuery) -> list[dict]:

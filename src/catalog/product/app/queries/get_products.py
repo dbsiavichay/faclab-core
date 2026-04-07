@@ -2,13 +2,12 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.catalog.product.domain.entities import Product
+from src.catalog.product.app.repositories import ProductRepository
 from src.catalog.product.domain.specifications import (
     ProductBySearchTerm,
     ProductInCategory,
 )
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -21,7 +20,7 @@ class GetAllProductsQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllProductsQueryHandler(QueryHandler[GetAllProductsQuery, dict]):
-    def __init__(self, repo: Repository[Product]):
+    def __init__(self, repo: ProductRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllProductsQuery) -> dict:
@@ -40,7 +39,7 @@ class GetProductByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetProductByIdQueryHandler(QueryHandler[GetProductByIdQuery, dict]):
-    def __init__(self, repo: Repository[Product]):
+    def __init__(self, repo: ProductRepository):
         self.repo = repo
 
     def _handle(self, query: GetProductByIdQuery) -> dict:
@@ -58,7 +57,7 @@ class SearchProductsQuery(Query):
 
 @injectable(lifetime="scoped")
 class SearchProductsQueryHandler(QueryHandler[SearchProductsQuery, list[dict]]):
-    def __init__(self, repo: Repository[Product]):
+    def __init__(self, repo: ProductRepository):
         self.repo = repo
 
     def _handle(self, query: SearchProductsQuery) -> list[dict]:

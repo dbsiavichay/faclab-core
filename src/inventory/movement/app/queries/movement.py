@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.inventory.movement.domain.entities import Movement
+from src.inventory.movement.app.repositories import MovementRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -22,7 +21,7 @@ class GetAllMovementsQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllMovementsQueryHandler(QueryHandler[GetAllMovementsQuery, dict]):
-    def __init__(self, repo: Repository[Movement]):
+    def __init__(self, repo: MovementRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllMovementsQuery) -> dict:
@@ -44,7 +43,7 @@ class GetMovementByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetMovementByIdQueryHandler(QueryHandler[GetMovementByIdQuery, dict]):
-    def __init__(self, repo: Repository[Movement]):
+    def __init__(self, repo: MovementRepository):
         self.repo = repo
 
     def _handle(self, query: GetMovementByIdQuery) -> dict:

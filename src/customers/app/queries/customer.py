@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.customers.domain.entities import Customer
+from src.customers.app.repositories import CustomerRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -16,7 +15,7 @@ class GetAllCustomersQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllCustomersQueryHandler(QueryHandler[GetAllCustomersQuery, dict]):
-    def __init__(self, repo: Repository[Customer]):
+    def __init__(self, repo: CustomerRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllCustomersQuery) -> dict:
@@ -30,7 +29,7 @@ class GetCustomerByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetCustomerByIdQueryHandler(QueryHandler[GetCustomerByIdQuery, dict]):
-    def __init__(self, repo: Repository[Customer]):
+    def __init__(self, repo: CustomerRepository):
         self.repo = repo
 
     def _handle(self, query: GetCustomerByIdQuery) -> dict:
@@ -47,7 +46,7 @@ class GetCustomerByTaxIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetCustomerByTaxIdQueryHandler(QueryHandler[GetCustomerByTaxIdQuery, dict]):
-    def __init__(self, repo: Repository[Customer]):
+    def __init__(self, repo: CustomerRepository):
         self.repo = repo
 
     def _handle(self, query: GetCustomerByTaxIdQuery) -> dict:

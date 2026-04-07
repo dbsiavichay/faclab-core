@@ -3,11 +3,11 @@ from decimal import Decimal
 
 from wireup import injectable
 
+from src.catalog.product.app.repositories import ProductRepository
 from src.catalog.product.domain.entities import Product
 from src.catalog.product.domain.events import ProductCreated
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -30,7 +30,7 @@ class CreateProductCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateProductCommandHandler(CommandHandler[CreateProductCommand, dict]):
-    def __init__(self, repo: Repository[Product], event_publisher: EventPublisher):
+    def __init__(self, repo: ProductRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 

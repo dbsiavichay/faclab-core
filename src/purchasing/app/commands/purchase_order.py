@@ -3,6 +3,7 @@ from datetime import datetime
 
 from wireup import injectable
 
+from src.purchasing.app.repositories import PurchaseOrderRepository
 from src.purchasing.domain.entities import PurchaseOrder, PurchaseOrderStatus
 from src.purchasing.domain.events import (
     PurchaseOrderCancelled,
@@ -11,7 +12,6 @@ from src.purchasing.domain.events import (
 )
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
 
 
@@ -28,7 +28,7 @@ class CreatePurchaseOrderCommandHandler(
 ):
     def __init__(
         self,
-        repo: Repository[PurchaseOrder],
+        repo: PurchaseOrderRepository,
         event_publisher: EventPublisher,
     ):
         self.repo = repo
@@ -70,7 +70,7 @@ class UpdatePurchaseOrderCommand(Command):
 class UpdatePurchaseOrderCommandHandler(
     CommandHandler[UpdatePurchaseOrderCommand, dict]
 ):
-    def __init__(self, repo: Repository[PurchaseOrder]):
+    def __init__(self, repo: PurchaseOrderRepository):
         self.repo = repo
 
     def _handle(self, command: UpdatePurchaseOrderCommand) -> dict:
@@ -101,7 +101,7 @@ class DeletePurchaseOrderCommand(Command):
 class DeletePurchaseOrderCommandHandler(
     CommandHandler[DeletePurchaseOrderCommand, None]
 ):
-    def __init__(self, repo: Repository[PurchaseOrder]):
+    def __init__(self, repo: PurchaseOrderRepository):
         self.repo = repo
 
     def _handle(self, command: DeletePurchaseOrderCommand) -> None:
@@ -122,9 +122,7 @@ class SendPurchaseOrderCommand(Command):
 
 @injectable(lifetime="scoped")
 class SendPurchaseOrderCommandHandler(CommandHandler[SendPurchaseOrderCommand, dict]):
-    def __init__(
-        self, repo: Repository[PurchaseOrder], event_publisher: EventPublisher
-    ):
+    def __init__(self, repo: PurchaseOrderRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 
@@ -155,9 +153,7 @@ class CancelPurchaseOrderCommand(Command):
 class CancelPurchaseOrderCommandHandler(
     CommandHandler[CancelPurchaseOrderCommand, dict]
 ):
-    def __init__(
-        self, repo: Repository[PurchaseOrder], event_publisher: EventPublisher
-    ):
+    def __init__(self, repo: PurchaseOrderRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 

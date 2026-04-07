@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.inventory.serial.app.repositories import SerialNumberRepository
 from src.inventory.serial.domain.entities import SerialNumber, SerialStatus
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
 
 
@@ -26,7 +26,7 @@ class UpdateSerialStatusCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateSerialNumberCommandHandler(CommandHandler[CreateSerialNumberCommand, dict]):
-    def __init__(self, repo: Repository[SerialNumber]):
+    def __init__(self, repo: SerialNumberRepository):
         self.repo = repo
 
     def _handle(self, command: CreateSerialNumberCommand) -> dict:
@@ -51,7 +51,7 @@ class CreateSerialNumberCommandHandler(CommandHandler[CreateSerialNumberCommand,
 
 @injectable(lifetime="scoped")
 class UpdateSerialStatusCommandHandler(CommandHandler[UpdateSerialStatusCommand, dict]):
-    def __init__(self, repo: Repository[SerialNumber]):
+    def __init__(self, repo: SerialNumberRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateSerialStatusCommand) -> dict:

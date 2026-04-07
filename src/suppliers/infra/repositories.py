@@ -1,8 +1,12 @@
 from sqlalchemy.orm import Session
 from wireup import injectable
 
-from src.shared.app.repositories import Repository
 from src.shared.infra.repositories import SqlAlchemyRepository
+from src.suppliers.app.repositories import (
+    SupplierContactRepository,
+    SupplierProductRepository,
+    SupplierRepository,
+)
 from src.suppliers.domain.entities import Supplier, SupplierContact, SupplierProduct
 from src.suppliers.infra.mappers import (
     SupplierContactMapper,
@@ -16,24 +20,28 @@ from src.suppliers.infra.models import (
 )
 
 
-@injectable(lifetime="scoped", as_type=Repository[Supplier])
-class SupplierRepository(SqlAlchemyRepository[Supplier]):
+@injectable(lifetime="scoped", as_type=SupplierRepository)
+class SqlAlchemySupplierRepository(SqlAlchemyRepository[Supplier], SupplierRepository):
     __model__ = SupplierModel
 
     def __init__(self, session: Session, mapper: SupplierMapper):
         super().__init__(session, mapper)
 
 
-@injectable(lifetime="scoped", as_type=Repository[SupplierContact])
-class SupplierContactRepository(SqlAlchemyRepository[SupplierContact]):
+@injectable(lifetime="scoped", as_type=SupplierContactRepository)
+class SqlAlchemySupplierContactRepository(
+    SqlAlchemyRepository[SupplierContact], SupplierContactRepository
+):
     __model__ = SupplierContactModel
 
     def __init__(self, session: Session, mapper: SupplierContactMapper):
         super().__init__(session, mapper)
 
 
-@injectable(lifetime="scoped", as_type=Repository[SupplierProduct])
-class SupplierProductRepository(SqlAlchemyRepository[SupplierProduct]):
+@injectable(lifetime="scoped", as_type=SupplierProductRepository)
+class SqlAlchemySupplierProductRepository(
+    SqlAlchemyRepository[SupplierProduct], SupplierProductRepository
+):
     __model__ = SupplierProductModel
 
     def __init__(self, session: Session, mapper: SupplierProductMapper):

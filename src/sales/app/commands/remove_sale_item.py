@@ -2,13 +2,12 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.sales.domain.entities import Sale, SaleItem
+from src.sales.app.repositories import SaleItemRepository, SaleRepository
 from src.sales.domain.events import SaleItemRemoved
 from src.sales.domain.exceptions import InvalidSaleStatusError
 from src.sales.domain.services import recalculate_sale_totals
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
 
 
@@ -26,8 +25,8 @@ class RemoveSaleItemCommandHandler(CommandHandler[RemoveSaleItemCommand, dict]):
 
     def __init__(
         self,
-        sale_repo: Repository[Sale],
-        sale_item_repo: Repository[SaleItem],
+        sale_repo: SaleRepository,
+        sale_item_repo: SaleItemRepository,
         event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo

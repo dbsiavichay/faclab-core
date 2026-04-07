@@ -3,11 +3,11 @@ from decimal import Decimal
 
 from wireup import injectable
 
-from src.sales.domain.entities import Payment, PaymentMethod, Sale
+from src.sales.app.repositories import PaymentRepository, SaleRepository
+from src.sales.domain.entities import Payment, PaymentMethod
 from src.sales.domain.events import PaymentReceived
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError, ValidationError
 
 
@@ -28,8 +28,8 @@ class RegisterPaymentCommandHandler(CommandHandler[RegisterPaymentCommand, dict]
 
     def __init__(
         self,
-        sale_repo: Repository[Sale],
-        payment_repo: Repository[Payment],
+        sale_repo: SaleRepository,
+        payment_repo: PaymentRepository,
         event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo

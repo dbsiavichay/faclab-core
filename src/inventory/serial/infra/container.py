@@ -8,11 +8,11 @@ from src.inventory.serial.app.queries.serial import (
     GetSerialsQueryHandler,
 )
 from src.inventory.serial.infra.mappers import SerialNumberMapper
-from src.inventory.serial.infra.repositories import SerialNumberRepository
+from src.inventory.serial.infra.repositories import SqlAlchemySerialNumberRepository
 
 SERIAL_INJECTABLES = [
     SerialNumberMapper,
-    SerialNumberRepository,
+    SqlAlchemySerialNumberRepository,
     CreateSerialNumberCommandHandler,
     UpdateSerialStatusCommandHandler,
     GetSerialsQueryHandler,

@@ -2,13 +2,15 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.inventory.adjustment.domain.entities import AdjustmentItem, InventoryAdjustment
+from src.inventory.adjustment.app.repositories import (
+    AdjustmentItemRepository,
+    InventoryAdjustmentRepository,
+)
 from src.inventory.adjustment.domain.specifications import (
     AdjustmentsByStatus,
     AdjustmentsByWarehouse,
 )
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -22,7 +24,7 @@ class GetAllAdjustmentsQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllAdjustmentsQueryHandler(QueryHandler[GetAllAdjustmentsQuery, dict]):
-    def __init__(self, repo: Repository[InventoryAdjustment]):
+    def __init__(self, repo: InventoryAdjustmentRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllAdjustmentsQuery) -> dict:
@@ -52,7 +54,7 @@ class GetAdjustmentByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAdjustmentByIdQueryHandler(QueryHandler[GetAdjustmentByIdQuery, dict]):
-    def __init__(self, repo: Repository[InventoryAdjustment]):
+    def __init__(self, repo: InventoryAdjustmentRepository):
         self.repo = repo
 
     def _handle(self, query: GetAdjustmentByIdQuery) -> dict:
@@ -69,7 +71,7 @@ class GetAdjustmentItemsQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAdjustmentItemsQueryHandler(QueryHandler[GetAdjustmentItemsQuery, list[dict]]):
-    def __init__(self, item_repo: Repository[AdjustmentItem]):
+    def __init__(self, item_repo: AdjustmentItemRepository):
         self.item_repo = item_repo
 
     def _handle(self, query: GetAdjustmentItemsQuery) -> list[dict]:

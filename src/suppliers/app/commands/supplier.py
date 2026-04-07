@@ -5,9 +5,9 @@ from wireup import injectable
 from src.customers.domain.entities import TaxType
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 from src.shared.domain.value_objects import Email, TaxId
+from src.suppliers.app.repositories import SupplierRepository
 from src.suppliers.domain.entities import Supplier
 from src.suppliers.domain.events import (
     SupplierActivated,
@@ -34,7 +34,7 @@ class CreateSupplierCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateSupplierCommandHandler(CommandHandler[CreateSupplierCommand, dict]):
-    def __init__(self, repo: Repository[Supplier], event_publisher: EventPublisher):
+    def __init__(self, repo: SupplierRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 
@@ -90,7 +90,7 @@ class UpdateSupplierCommand(Command):
 
 @injectable(lifetime="scoped")
 class UpdateSupplierCommandHandler(CommandHandler[UpdateSupplierCommand, dict]):
-    def __init__(self, repo: Repository[Supplier]):
+    def __init__(self, repo: SupplierRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateSupplierCommand) -> dict:
@@ -125,7 +125,7 @@ class DeleteSupplierCommand(Command):
 
 @injectable(lifetime="scoped")
 class DeleteSupplierCommandHandler(CommandHandler[DeleteSupplierCommand, None]):
-    def __init__(self, repo: Repository[Supplier]):
+    def __init__(self, repo: SupplierRepository):
         self.repo = repo
 
     def _handle(self, command: DeleteSupplierCommand) -> None:
@@ -139,7 +139,7 @@ class ActivateSupplierCommand(Command):
 
 @injectable(lifetime="scoped")
 class ActivateSupplierCommandHandler(CommandHandler[ActivateSupplierCommand, dict]):
-    def __init__(self, repo: Repository[Supplier], event_publisher: EventPublisher):
+    def __init__(self, repo: SupplierRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 
@@ -168,7 +168,7 @@ class DeactivateSupplierCommand(Command):
 
 @injectable(lifetime="scoped")
 class DeactivateSupplierCommandHandler(CommandHandler[DeactivateSupplierCommand, dict]):
-    def __init__(self, repo: Repository[Supplier], event_publisher: EventPublisher):
+    def __init__(self, repo: SupplierRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 

@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.purchasing.domain.entities import PurchaseOrder
+from src.purchasing.app.repositories import PurchaseOrderRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -18,7 +17,7 @@ class GetAllPurchaseOrdersQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllPurchaseOrdersQueryHandler(QueryHandler[GetAllPurchaseOrdersQuery, dict]):
-    def __init__(self, repo: Repository[PurchaseOrder]):
+    def __init__(self, repo: PurchaseOrderRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllPurchaseOrdersQuery) -> dict:
@@ -37,7 +36,7 @@ class GetPurchaseOrderByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetPurchaseOrderByIdQueryHandler(QueryHandler[GetPurchaseOrderByIdQuery, dict]):
-    def __init__(self, repo: Repository[PurchaseOrder]):
+    def __init__(self, repo: PurchaseOrderRepository):
         self.repo = repo
 
     def _handle(self, query: GetPurchaseOrderByIdQuery) -> dict:

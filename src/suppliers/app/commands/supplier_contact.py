@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
+from src.suppliers.app.repositories import SupplierContactRepository
 from src.suppliers.domain.entities import SupplierContact
 
 
@@ -20,7 +20,7 @@ class CreateSupplierContactCommand(Command):
 class CreateSupplierContactCommandHandler(
     CommandHandler[CreateSupplierContactCommand, dict]
 ):
-    def __init__(self, repo: Repository[SupplierContact]):
+    def __init__(self, repo: SupplierContactRepository):
         self.repo = repo
 
     def _handle(self, command: CreateSupplierContactCommand) -> dict:
@@ -49,7 +49,7 @@ class UpdateSupplierContactCommand(Command):
 class UpdateSupplierContactCommandHandler(
     CommandHandler[UpdateSupplierContactCommand, dict]
 ):
-    def __init__(self, repo: Repository[SupplierContact]):
+    def __init__(self, repo: SupplierContactRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateSupplierContactCommand) -> dict:
@@ -74,7 +74,7 @@ class DeleteSupplierContactCommand(Command):
 class DeleteSupplierContactCommandHandler(
     CommandHandler[DeleteSupplierContactCommand, None]
 ):
-    def __init__(self, repo: Repository[SupplierContact]):
+    def __init__(self, repo: SupplierContactRepository):
         self.repo = repo
 
     def _handle(self, command: DeleteSupplierContactCommand) -> None:

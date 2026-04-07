@@ -4,11 +4,11 @@ from src.inventory.movement.app.queries.movement import (
     GetMovementByIdQueryHandler,
 )
 from src.inventory.movement.infra.mappers import MovementMapper
-from src.inventory.movement.infra.repositories import MovementRepository
+from src.inventory.movement.infra.repositories import SqlAlchemyMovementRepository
 
 INJECTABLES = [
     MovementMapper,
-    MovementRepository,
+    SqlAlchemyMovementRepository,
     CreateMovementCommandHandler,
     GetAllMovementsQueryHandler,
     GetMovementByIdQueryHandler,

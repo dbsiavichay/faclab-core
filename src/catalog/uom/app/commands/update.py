@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.catalog.uom.app.repositories import UnitOfMeasureRepository
 from src.catalog.uom.domain.entities import UnitOfMeasure
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -21,7 +21,7 @@ class UpdateUnitOfMeasureCommand(Command):
 class UpdateUnitOfMeasureCommandHandler(
     CommandHandler[UpdateUnitOfMeasureCommand, dict]
 ):
-    def __init__(self, repo: Repository[UnitOfMeasure]):
+    def __init__(self, repo: UnitOfMeasureRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateUnitOfMeasureCommand) -> dict:

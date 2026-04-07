@@ -2,9 +2,12 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.pos.refund.domain.entities import Refund, RefundItem, RefundPayment
+from src.pos.refund.app.repositories import (
+    RefundItemRepository,
+    RefundPaymentRepository,
+    RefundRepository,
+)
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -17,9 +20,9 @@ class GetRefundByIdQuery(Query):
 class GetRefundByIdQueryHandler(QueryHandler[GetRefundByIdQuery, dict]):
     def __init__(
         self,
-        refund_repo: Repository[Refund],
-        refund_item_repo: Repository[RefundItem],
-        refund_payment_repo: Repository[RefundPayment],
+        refund_repo: RefundRepository,
+        refund_item_repo: RefundItemRepository,
+        refund_payment_repo: RefundPaymentRepository,
     ):
         self.refund_repo = refund_repo
         self.refund_item_repo = refund_item_repo
@@ -49,7 +52,7 @@ class GetRefundsQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetRefundsQueryHandler(QueryHandler[GetRefundsQuery, dict]):
-    def __init__(self, refund_repo: Repository[Refund]):
+    def __init__(self, refund_repo: RefundRepository):
         self.refund_repo = refund_repo
 
     def _handle(self, query: GetRefundsQuery) -> dict:

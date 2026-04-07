@@ -2,17 +2,22 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.inventory.movement.app.repositories import MovementRepository
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
-from src.inventory.stock.domain.entities import Stock
-from src.pos.shift.domain.entities import Shift, ShiftStatus
+from src.inventory.stock.app.repositories import StockRepository
+from src.pos.shift.app.repositories import ShiftRepository
+from src.pos.shift.domain.entities import ShiftStatus
 from src.pos.shift.domain.exceptions import NoOpenShiftError
-from src.sales.domain.entities import Payment, Sale, SaleItem
+from src.sales.app.repositories import (
+    PaymentRepository,
+    SaleItemRepository,
+    SaleRepository,
+)
 from src.sales.domain.events import SaleConfirmed
 from src.sales.domain.exceptions import InsufficientStockError, SaleHasNoItemsError
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -25,12 +30,12 @@ class POSConfirmSaleCommand(Command):
 class POSConfirmSaleCommandHandler(CommandHandler[POSConfirmSaleCommand, dict]):
     def __init__(
         self,
-        sale_repo: Repository[Sale],
-        sale_item_repo: Repository[SaleItem],
-        movement_repo: Repository[Movement],
-        stock_repo: Repository[Stock],
-        shift_repo: Repository[Shift],
-        payment_repo: Repository[Payment],
+        sale_repo: SaleRepository,
+        sale_item_repo: SaleItemRepository,
+        movement_repo: MovementRepository,
+        stock_repo: StockRepository,
+        shift_repo: ShiftRepository,
+        payment_repo: PaymentRepository,
         event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo

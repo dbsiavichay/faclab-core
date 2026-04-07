@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.inventory.warehouse.app.repositories import WarehouseRepository
 from src.inventory.warehouse.domain.entities import Warehouse
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -23,7 +23,7 @@ class CreateWarehouseCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateWarehouseCommandHandler(CommandHandler[CreateWarehouseCommand, dict]):
-    def __init__(self, repo: Repository[Warehouse]):
+    def __init__(self, repo: WarehouseRepository):
         self.repo = repo
 
     def _handle(self, command: CreateWarehouseCommand) -> dict:

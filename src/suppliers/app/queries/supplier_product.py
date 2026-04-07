@@ -3,9 +3,8 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
-from src.suppliers.domain.entities import SupplierProduct
+from src.suppliers.app.repositories import SupplierProductRepository
 
 
 @dataclass
@@ -17,7 +16,7 @@ class GetSupplierProductByIdQuery(Query):
 class GetSupplierProductByIdQueryHandler(
     QueryHandler[GetSupplierProductByIdQuery, dict]
 ):
-    def __init__(self, repo: Repository[SupplierProduct]):
+    def __init__(self, repo: SupplierProductRepository):
         self.repo = repo
 
     def _handle(self, query: GetSupplierProductByIdQuery) -> dict:
@@ -36,7 +35,7 @@ class GetSupplierProductsBySupplierIdQuery(Query):
 class GetSupplierProductsBySupplierIdQueryHandler(
     QueryHandler[GetSupplierProductsBySupplierIdQuery, list[dict]]
 ):
-    def __init__(self, repo: Repository[SupplierProduct]):
+    def __init__(self, repo: SupplierProductRepository):
         self.repo = repo
 
     def _handle(self, query: GetSupplierProductsBySupplierIdQuery) -> list[dict]:
@@ -53,7 +52,7 @@ class GetProductSuppliersByProductIdQuery(Query):
 class GetProductSuppliersByProductIdQueryHandler(
     QueryHandler[GetProductSuppliersByProductIdQuery, list[dict]]
 ):
-    def __init__(self, repo: Repository[SupplierProduct]):
+    def __init__(self, repo: SupplierProductRepository):
         self.repo = repo
 
     def _handle(self, query: GetProductSuppliersByProductIdQuery) -> list[dict]:

@@ -11,18 +11,18 @@ from src.sales.app.queries.get_sales import (
 )
 from src.sales.infra.mappers import PaymentMapper, SaleItemMapper, SaleMapper
 from src.sales.infra.repositories import (
-    PaymentRepository,
-    SaleItemRepository,
-    SaleRepository,
+    SqlAlchemyPaymentRepository,
+    SqlAlchemySaleItemRepository,
+    SqlAlchemySaleRepository,
 )
 
 INJECTABLES = [
     SaleMapper,
     SaleItemMapper,
     PaymentMapper,
-    SaleRepository,
-    SaleItemRepository,
-    PaymentRepository,
+    SqlAlchemySaleRepository,
+    SqlAlchemySaleItemRepository,
+    SqlAlchemyPaymentRepository,
     CreateSaleCommandHandler,
     AddSaleItemCommandHandler,
     RemoveSaleItemCommandHandler,

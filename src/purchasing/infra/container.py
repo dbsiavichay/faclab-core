@@ -30,10 +30,10 @@ from src.purchasing.infra.mappers import (
     PurchaseReceiptMapper,
 )
 from src.purchasing.infra.repositories import (
-    PurchaseOrderItemRepository,
-    PurchaseOrderRepository,
-    PurchaseReceiptItemRepository,
-    PurchaseReceiptRepository,
+    SqlAlchemyPurchaseOrderItemRepository,
+    SqlAlchemyPurchaseOrderRepository,
+    SqlAlchemyPurchaseReceiptItemRepository,
+    SqlAlchemyPurchaseReceiptRepository,
 )
 
 INJECTABLES = [
@@ -41,10 +41,10 @@ INJECTABLES = [
     PurchaseOrderItemMapper,
     PurchaseReceiptMapper,
     PurchaseReceiptItemMapper,
-    PurchaseOrderRepository,
-    PurchaseOrderItemRepository,
-    PurchaseReceiptRepository,
-    PurchaseReceiptItemRepository,
+    SqlAlchemyPurchaseOrderRepository,
+    SqlAlchemyPurchaseOrderItemRepository,
+    SqlAlchemyPurchaseReceiptRepository,
+    SqlAlchemyPurchaseReceiptItemRepository,
     CreatePurchaseOrderCommandHandler,
     UpdatePurchaseOrderCommandHandler,
     DeletePurchaseOrderCommandHandler,

@@ -1,15 +1,17 @@
 from sqlalchemy.orm import Session
 from wireup import injectable
 
+from src.inventory.serial.app.repositories import SerialNumberRepository
 from src.inventory.serial.domain.entities import SerialNumber
 from src.inventory.serial.infra.mappers import SerialNumberMapper
 from src.inventory.serial.infra.models import SerialNumberModel
-from src.shared.app.repositories import Repository
 from src.shared.infra.repositories import SqlAlchemyRepository
 
 
-@injectable(lifetime="scoped", as_type=Repository[SerialNumber])
-class SerialNumberRepository(SqlAlchemyRepository[SerialNumber]):
+@injectable(lifetime="scoped", as_type=SerialNumberRepository)
+class SqlAlchemySerialNumberRepository(
+    SqlAlchemyRepository[SerialNumber], SerialNumberRepository
+):
     __model__ = SerialNumberModel
 
     def __init__(self, session: Session, mapper: SerialNumberMapper):

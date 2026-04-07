@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.inventory.serial.domain.entities import SerialNumber
+from src.inventory.serial.app.repositories import SerialNumberRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -28,7 +27,7 @@ class GetSerialByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetSerialsQueryHandler(QueryHandler[GetSerialsQuery, dict]):
-    def __init__(self, repo: Repository[SerialNumber]):
+    def __init__(self, repo: SerialNumberRepository):
         self.repo = repo
 
     def _handle(self, query: GetSerialsQuery) -> dict:
@@ -42,7 +41,7 @@ class GetSerialsQueryHandler(QueryHandler[GetSerialsQuery, dict]):
 
 @injectable(lifetime="scoped")
 class GetSerialByNumberQueryHandler(QueryHandler[GetSerialByNumberQuery, dict]):
-    def __init__(self, repo: Repository[SerialNumber]):
+    def __init__(self, repo: SerialNumberRepository):
         self.repo = repo
 
     def _handle(self, query: GetSerialByNumberQuery) -> dict:
@@ -54,7 +53,7 @@ class GetSerialByNumberQueryHandler(QueryHandler[GetSerialByNumberQuery, dict]):
 
 @injectable(lifetime="scoped")
 class GetSerialByIdQueryHandler(QueryHandler[GetSerialByIdQuery, dict]):
-    def __init__(self, repo: Repository[SerialNumber]):
+    def __init__(self, repo: SerialNumberRepository):
         self.repo = repo
 
     def _handle(self, query: GetSerialByIdQuery) -> dict:

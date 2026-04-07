@@ -4,7 +4,7 @@ from decimal import Decimal
 from wireup import injectable
 
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
+from src.suppliers.app.repositories import SupplierProductRepository
 from src.suppliers.domain.entities import SupplierProduct
 
 
@@ -23,7 +23,7 @@ class CreateSupplierProductCommand(Command):
 class CreateSupplierProductCommandHandler(
     CommandHandler[CreateSupplierProductCommand, dict]
 ):
-    def __init__(self, repo: Repository[SupplierProduct]):
+    def __init__(self, repo: SupplierProductRepository):
         self.repo = repo
 
     def _handle(self, command: CreateSupplierProductCommand) -> dict:
@@ -56,7 +56,7 @@ class UpdateSupplierProductCommand(Command):
 class UpdateSupplierProductCommandHandler(
     CommandHandler[UpdateSupplierProductCommand, dict]
 ):
-    def __init__(self, repo: Repository[SupplierProduct]):
+    def __init__(self, repo: SupplierProductRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateSupplierProductCommand) -> dict:
@@ -83,7 +83,7 @@ class DeleteSupplierProductCommand(Command):
 class DeleteSupplierProductCommandHandler(
     CommandHandler[DeleteSupplierProductCommand, None]
 ):
-    def __init__(self, repo: Repository[SupplierProduct]):
+    def __init__(self, repo: SupplierProductRepository):
         self.repo = repo
 
     def _handle(self, command: DeleteSupplierProductCommand) -> None:

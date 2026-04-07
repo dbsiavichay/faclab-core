@@ -21,15 +21,15 @@ from src.customers.app.queries.customer_contact import (
 )
 from src.customers.infra.mappers import CustomerContactMapper, CustomerMapper
 from src.customers.infra.repositories import (
-    CustomerContactRepository,
-    CustomerRepository,
+    SqlAlchemyCustomerContactRepository,
+    SqlAlchemyCustomerRepository,
 )
 
 INJECTABLES = [
     CustomerMapper,
     CustomerContactMapper,
-    CustomerRepository,
-    CustomerContactRepository,
+    SqlAlchemyCustomerRepository,
+    SqlAlchemyCustomerContactRepository,
     CreateCustomerCommandHandler,
     UpdateCustomerCommandHandler,
     DeleteCustomerCommandHandler,
