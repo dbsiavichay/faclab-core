@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.customers.app.repositories import CustomerContactRepository
 from src.customers.domain.entities import CustomerContact
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -20,7 +20,7 @@ class CreateCustomerContactCommand(Command):
 class CreateCustomerContactCommandHandler(
     CommandHandler[CreateCustomerContactCommand, dict]
 ):
-    def __init__(self, repo: Repository[CustomerContact]):
+    def __init__(self, repo: CustomerContactRepository):
         self.repo = repo
 
     def _handle(self, command: CreateCustomerContactCommand) -> dict:
@@ -49,7 +49,7 @@ class UpdateCustomerContactCommand(Command):
 class UpdateCustomerContactCommandHandler(
     CommandHandler[UpdateCustomerContactCommand, dict]
 ):
-    def __init__(self, repo: Repository[CustomerContact]):
+    def __init__(self, repo: CustomerContactRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateCustomerContactCommand) -> dict:
@@ -74,7 +74,7 @@ class DeleteCustomerContactCommand(Command):
 class DeleteCustomerContactCommandHandler(
     CommandHandler[DeleteCustomerContactCommand, None]
 ):
-    def __init__(self, repo: Repository[CustomerContact]):
+    def __init__(self, repo: CustomerContactRepository):
         self.repo = repo
 
     def _handle(self, command: DeleteCustomerContactCommand) -> None:

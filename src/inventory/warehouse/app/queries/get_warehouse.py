@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.inventory.warehouse.domain.entities import Warehouse
+from src.inventory.warehouse.app.repositories import WarehouseRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -15,7 +14,7 @@ class GetAllWarehousesQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllWarehousesQueryHandler(QueryHandler[GetAllWarehousesQuery, list[dict]]):
-    def __init__(self, repo: Repository[Warehouse]):
+    def __init__(self, repo: WarehouseRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllWarehousesQuery) -> list[dict]:
@@ -33,7 +32,7 @@ class GetWarehouseByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetWarehouseByIdQueryHandler(QueryHandler[GetWarehouseByIdQuery, dict]):
-    def __init__(self, repo: Repository[Warehouse]):
+    def __init__(self, repo: WarehouseRepository):
         self.repo = repo
 
     def _handle(self, query: GetWarehouseByIdQuery) -> dict:

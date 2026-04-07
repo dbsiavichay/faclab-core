@@ -27,16 +27,15 @@ def _get_producer() -> KafkaEventProducer | None:
 
 
 def _build_enriched_payload(event: SaleConfirmed, session: Any = None) -> dict:
-    from src.catalog.product.domain.entities import Product
-    from src.customers.domain.entities import Customer
-    from src.shared.app.repositories import Repository
+    from src.catalog.product.app.repositories import ProductRepository
+    from src.customers.app.repositories import CustomerRepository
 
     customer_data = None
     enriched_items = []
 
     with create_sync_scope(session) as scope:
         if event.customer_id:
-            customer_repo = scope.get(Repository[Customer])
+            customer_repo = scope.get(CustomerRepository)
             customer = customer_repo.get_by_id(event.customer_id)
             if customer:
                 customer_data = {
@@ -49,7 +48,7 @@ def _build_enriched_payload(event: SaleConfirmed, session: Any = None) -> dict:
                     "address": customer.address,
                 }
 
-        product_repo = scope.get(Repository[Product])
+        product_repo = scope.get(ProductRepository)
         product_ids = {item["product_id"] for item in event.items}
         products = {
             p.id: p for p in (product_repo.get_by_id(pid) for pid in product_ids) if p

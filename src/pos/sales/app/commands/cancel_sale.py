@@ -2,14 +2,15 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.inventory.movement.app.repositories import MovementRepository
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
-from src.inventory.stock.domain.entities import Stock
-from src.sales.domain.entities import Sale, SaleItem, SaleStatus
+from src.inventory.stock.app.repositories import StockRepository
+from src.sales.app.repositories import SaleItemRepository, SaleRepository
+from src.sales.domain.entities import SaleStatus
 from src.sales.domain.events import SaleCancelled
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -23,10 +24,10 @@ class POSCancelSaleCommand(Command):
 class POSCancelSaleCommandHandler(CommandHandler[POSCancelSaleCommand, dict]):
     def __init__(
         self,
-        sale_repo: Repository[Sale],
-        sale_item_repo: Repository[SaleItem],
-        movement_repo: Repository[Movement],
-        stock_repo: Repository[Stock],
+        sale_repo: SaleRepository,
+        sale_item_repo: SaleItemRepository,
+        movement_repo: MovementRepository,
+        stock_repo: StockRepository,
         event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo

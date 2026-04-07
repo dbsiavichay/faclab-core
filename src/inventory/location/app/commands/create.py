@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.inventory.location.app.repositories import LocationRepository
 from src.inventory.location.domain.entities import Location, LocationType
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -19,7 +19,7 @@ class CreateLocationCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateLocationCommandHandler(CommandHandler[CreateLocationCommand, dict]):
-    def __init__(self, repo: Repository[Location]):
+    def __init__(self, repo: LocationRepository):
         self.repo = repo
 
     def _handle(self, command: CreateLocationCommand) -> dict:

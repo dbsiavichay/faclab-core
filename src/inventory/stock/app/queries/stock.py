@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.inventory.stock.domain.entities import Stock
+from src.inventory.stock.app.repositories import StockRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -20,7 +19,7 @@ class GetAllStocksQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllStocksQueryHandler(QueryHandler[GetAllStocksQuery, dict]):
-    def __init__(self, repo: Repository[Stock]):
+    def __init__(self, repo: StockRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllStocksQuery) -> dict:
@@ -43,7 +42,7 @@ class GetStockByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetStockByIdQueryHandler(QueryHandler[GetStockByIdQuery, dict]):
-    def __init__(self, repo: Repository[Stock]):
+    def __init__(self, repo: StockRepository):
         self.repo = repo
 
     def _handle(self, query: GetStockByIdQuery) -> dict:
@@ -62,7 +61,7 @@ class GetStockByProductQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetStockByProductQueryHandler(QueryHandler[GetStockByProductQuery, dict]):
-    def __init__(self, repo: Repository[Stock]):
+    def __init__(self, repo: StockRepository):
         self.repo = repo
 
     def _handle(self, query: GetStockByProductQuery) -> dict:

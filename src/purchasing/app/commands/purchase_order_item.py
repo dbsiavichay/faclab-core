@@ -3,13 +3,16 @@ from decimal import Decimal
 
 from wireup import injectable
 
+from src.purchasing.app.repositories import (
+    PurchaseOrderItemRepository,
+    PurchaseOrderRepository,
+)
 from src.purchasing.domain.entities import (
     PurchaseOrder,
     PurchaseOrderItem,
     PurchaseOrderStatus,
 )
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
 
 
@@ -36,8 +39,8 @@ class AddPurchaseOrderItemCommandHandler(
 ):
     def __init__(
         self,
-        item_repo: Repository[PurchaseOrderItem],
-        po_repo: Repository[PurchaseOrder],
+        item_repo: PurchaseOrderItemRepository,
+        po_repo: PurchaseOrderRepository,
     ):
         self.item_repo = item_repo
         self.po_repo = po_repo
@@ -83,8 +86,8 @@ class UpdatePurchaseOrderItemCommandHandler(
 ):
     def __init__(
         self,
-        item_repo: Repository[PurchaseOrderItem],
-        po_repo: Repository[PurchaseOrder],
+        item_repo: PurchaseOrderItemRepository,
+        po_repo: PurchaseOrderRepository,
     ):
         self.item_repo = item_repo
         self.po_repo = po_repo
@@ -129,8 +132,8 @@ class RemovePurchaseOrderItemCommandHandler(
 ):
     def __init__(
         self,
-        item_repo: Repository[PurchaseOrderItem],
-        po_repo: Repository[PurchaseOrder],
+        item_repo: PurchaseOrderItemRepository,
+        po_repo: PurchaseOrderRepository,
     ):
         self.item_repo = item_repo
         self.po_repo = po_repo

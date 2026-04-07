@@ -2,13 +2,13 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.pos.shift.domain.entities import Shift
+from src.pos.shift.app.repositories import ShiftRepository
 from src.pos.shift.domain.exceptions import NoOpenShiftError
+from src.sales.app.repositories import SaleRepository
 from src.sales.domain.entities import Sale
 from src.sales.domain.events import SaleCreated
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError
 
 
@@ -28,8 +28,8 @@ class POSCreateSaleCommandHandler(CommandHandler[POSCreateSaleCommand, dict]):
 
     def __init__(
         self,
-        sale_repo: Repository[Sale],
-        shift_repo: Repository[Shift],
+        sale_repo: SaleRepository,
+        shift_repo: ShiftRepository,
         event_publisher: EventPublisher,
     ):
         self.sale_repo = sale_repo

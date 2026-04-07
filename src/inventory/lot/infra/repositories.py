@@ -1,15 +1,15 @@
 from sqlalchemy.orm import Session
 from wireup import injectable
 
+from src.inventory.lot.app.repositories import LotRepository, MovementLotItemRepository
 from src.inventory.lot.domain.entities import Lot, MovementLotItem
 from src.inventory.lot.infra.mappers import LotMapper, MovementLotItemMapper
 from src.inventory.lot.infra.models import LotModel, MovementLotItemModel
-from src.shared.app.repositories import Repository
 from src.shared.infra.repositories import SqlAlchemyRepository
 
 
-@injectable(lifetime="scoped", as_type=Repository[Lot])
-class LotRepository(SqlAlchemyRepository[Lot]):
+@injectable(lifetime="scoped", as_type=LotRepository)
+class SqlAlchemyLotRepository(SqlAlchemyRepository[Lot], LotRepository):
     __model__ = LotModel
 
     def __init__(self, session: Session, mapper: LotMapper):
@@ -21,8 +21,10 @@ class LotRepository(SqlAlchemyRepository[Lot]):
         return self.first(product_id=product_id, lot_number=lot_number)
 
 
-@injectable(lifetime="scoped", as_type=Repository[MovementLotItem])
-class MovementLotItemRepository(SqlAlchemyRepository[MovementLotItem]):
+@injectable(lifetime="scoped", as_type=MovementLotItemRepository)
+class SqlAlchemyMovementLotItemRepository(
+    SqlAlchemyRepository[MovementLotItem], MovementLotItemRepository
+):
     __model__ = MovementLotItemModel
 
     def __init__(self, session: Session, mapper: MovementLotItemMapper):

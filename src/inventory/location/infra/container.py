@@ -6,11 +6,11 @@ from src.inventory.location.app.queries.get_location import (
     GetLocationByIdQueryHandler,
 )
 from src.inventory.location.infra.mappers import LocationMapper
-from src.inventory.location.infra.repositories import LocationRepository
+from src.inventory.location.infra.repositories import SqlAlchemyLocationRepository
 
 INJECTABLES = [
     LocationMapper,
-    LocationRepository,
+    SqlAlchemyLocationRepository,
     CreateLocationCommandHandler,
     UpdateLocationCommandHandler,
     DeleteLocationCommandHandler,

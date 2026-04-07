@@ -2,13 +2,15 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.inventory.transfer.domain.entities import StockTransfer, StockTransferItem
+from src.inventory.transfer.app.repositories import (
+    StockTransferItemRepository,
+    StockTransferRepository,
+)
 from src.inventory.transfer.domain.specifications import (
     TransfersBySourceLocation,
     TransfersByStatus,
 )
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -22,7 +24,7 @@ class GetAllTransfersQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllTransfersQueryHandler(QueryHandler[GetAllTransfersQuery, dict]):
-    def __init__(self, repo: Repository[StockTransfer]):
+    def __init__(self, repo: StockTransferRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllTransfersQuery) -> dict:
@@ -52,7 +54,7 @@ class GetTransferByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetTransferByIdQueryHandler(QueryHandler[GetTransferByIdQuery, dict]):
-    def __init__(self, repo: Repository[StockTransfer]):
+    def __init__(self, repo: StockTransferRepository):
         self.repo = repo
 
     def _handle(self, query: GetTransferByIdQuery) -> dict:
@@ -69,7 +71,7 @@ class GetTransferItemsQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetTransferItemsQueryHandler(QueryHandler[GetTransferItemsQuery, list[dict]]):
-    def __init__(self, item_repo: Repository[StockTransferItem]):
+    def __init__(self, item_repo: StockTransferItemRepository):
         self.item_repo = item_repo
 
     def _handle(self, query: GetTransferItemsQuery) -> list[dict]:

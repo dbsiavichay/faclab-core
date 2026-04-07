@@ -4,11 +4,11 @@ from src.pos.cash.app.commands.register_cash_movement import (
 from src.pos.cash.app.queries.get_cash_movements import GetCashMovementsQueryHandler
 from src.pos.cash.app.queries.get_cash_summary import GetCashSummaryQueryHandler
 from src.pos.cash.infra.mappers import CashMovementMapper
-from src.pos.cash.infra.repositories import CashMovementRepository
+from src.pos.cash.infra.repositories import SqlAlchemyCashMovementRepository
 
 POS_CASH_INJECTABLES = [
     CashMovementMapper,
-    CashMovementRepository,
+    SqlAlchemyCashMovementRepository,
     RegisterCashMovementCommandHandler,
     GetCashMovementsQueryHandler,
     GetCashSummaryQueryHandler,

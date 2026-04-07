@@ -6,11 +6,11 @@ from src.inventory.warehouse.app.queries.get_warehouse import (
     GetWarehouseByIdQueryHandler,
 )
 from src.inventory.warehouse.infra.mappers import WarehouseMapper
-from src.inventory.warehouse.infra.repositories import WarehouseRepository
+from src.inventory.warehouse.infra.repositories import SqlAlchemyWarehouseRepository
 
 INJECTABLES = [
     WarehouseMapper,
-    WarehouseRepository,
+    SqlAlchemyWarehouseRepository,
     CreateWarehouseCommandHandler,
     UpdateWarehouseCommandHandler,
     DeleteWarehouseCommandHandler,

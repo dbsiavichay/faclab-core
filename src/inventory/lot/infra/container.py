@@ -8,15 +8,15 @@ from src.inventory.lot.app.queries.lot import (
 )
 from src.inventory.lot.infra.mappers import LotMapper, MovementLotItemMapper
 from src.inventory.lot.infra.repositories import (
-    LotRepository,
-    MovementLotItemRepository,
+    SqlAlchemyLotRepository,
+    SqlAlchemyMovementLotItemRepository,
 )
 
 LOT_INJECTABLES = [
     LotMapper,
     MovementLotItemMapper,
-    LotRepository,
-    MovementLotItemRepository,
+    SqlAlchemyLotRepository,
+    SqlAlchemyMovementLotItemRepository,
     CreateLotCommandHandler,
     UpdateLotCommandHandler,
     GetAllLotsQueryHandler,

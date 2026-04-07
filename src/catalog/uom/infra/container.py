@@ -6,11 +6,11 @@ from src.catalog.uom.app.queries.get_uom import (
     GetUnitOfMeasureByIdQueryHandler,
 )
 from src.catalog.uom.infra.mappers import UnitOfMeasureMapper
-from src.catalog.uom.infra.repositories import UnitOfMeasureRepository
+from src.catalog.uom.infra.repositories import SqlAlchemyUnitOfMeasureRepository
 
 INJECTABLES = [
     UnitOfMeasureMapper,
-    UnitOfMeasureRepository,
+    SqlAlchemyUnitOfMeasureRepository,
     CreateUnitOfMeasureCommandHandler,
     UpdateUnitOfMeasureCommandHandler,
     DeleteUnitOfMeasureCommandHandler,

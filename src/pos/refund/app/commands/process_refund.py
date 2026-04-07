@@ -3,15 +3,20 @@ from decimal import Decimal
 
 from wireup import injectable
 
+from src.inventory.movement.app.repositories import MovementRepository
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
-from src.inventory.stock.domain.entities import Stock
-from src.pos.refund.domain.entities import Refund, RefundItem, RefundPayment
+from src.inventory.stock.app.repositories import StockRepository
+from src.pos.refund.app.repositories import (
+    RefundItemRepository,
+    RefundPaymentRepository,
+    RefundRepository,
+)
+from src.pos.refund.domain.entities import RefundPayment
 from src.pos.refund.domain.events import RefundCompleted
 from src.sales.domain.entities import PaymentMethod
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError, ValidationError
 
 
@@ -25,11 +30,11 @@ class ProcessRefundCommand(Command):
 class ProcessRefundCommandHandler(CommandHandler[ProcessRefundCommand, dict]):
     def __init__(
         self,
-        refund_repo: Repository[Refund],
-        refund_item_repo: Repository[RefundItem],
-        refund_payment_repo: Repository[RefundPayment],
-        movement_repo: Repository[Movement],
-        stock_repo: Repository[Stock],
+        refund_repo: RefundRepository,
+        refund_item_repo: RefundItemRepository,
+        refund_payment_repo: RefundPaymentRepository,
+        movement_repo: MovementRepository,
+        stock_repo: StockRepository,
         event_publisher: EventPublisher,
     ):
         self.refund_repo = refund_repo

@@ -3,12 +3,12 @@ from decimal import Decimal
 
 from wireup import injectable
 
+from src.pos.shift.app.repositories import ShiftRepository
 from src.pos.shift.domain.entities import Shift
 from src.pos.shift.domain.events import ShiftOpened
 from src.pos.shift.domain.exceptions import ShiftAlreadyOpenError
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -24,7 +24,7 @@ class OpenShiftCommand(Command):
 class OpenShiftCommandHandler(CommandHandler[OpenShiftCommand, dict]):
     """Handler para abrir un nuevo turno"""
 
-    def __init__(self, repo: Repository[Shift], event_publisher: EventPublisher):
+    def __init__(self, repo: ShiftRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 

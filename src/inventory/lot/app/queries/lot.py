@@ -2,10 +2,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.inventory.lot.domain.entities import Lot
+from src.inventory.lot.app.repositories import LotRepository
 from src.inventory.lot.domain.specifications import ExpiringLots, LotsByProduct
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -24,7 +23,7 @@ class GetLotByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllLotsQueryHandler(QueryHandler[GetAllLotsQuery, dict]):
-    def __init__(self, repo: Repository[Lot]):
+    def __init__(self, repo: LotRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllLotsQuery) -> dict:
@@ -44,7 +43,7 @@ class GetAllLotsQueryHandler(QueryHandler[GetAllLotsQuery, dict]):
 
 @injectable(lifetime="scoped")
 class GetLotByIdQueryHandler(QueryHandler[GetLotByIdQuery, dict]):
-    def __init__(self, repo: Repository[Lot]):
+    def __init__(self, repo: LotRepository):
         self.repo = repo
 
     def _handle(self, query: GetLotByIdQuery) -> dict:

@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.catalog.uom.domain.entities import UnitOfMeasure
+from src.catalog.uom.app.repositories import UnitOfMeasureRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -17,7 +16,7 @@ class GetAllUnitsOfMeasureQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetAllUnitsOfMeasureQueryHandler(QueryHandler[GetAllUnitsOfMeasureQuery, dict]):
-    def __init__(self, repo: Repository[UnitOfMeasure]):
+    def __init__(self, repo: UnitOfMeasureRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllUnitsOfMeasureQuery) -> dict:
@@ -44,7 +43,7 @@ class GetUnitOfMeasureByIdQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetUnitOfMeasureByIdQueryHandler(QueryHandler[GetUnitOfMeasureByIdQuery, dict]):
-    def __init__(self, repo: Repository[UnitOfMeasure]):
+    def __init__(self, repo: UnitOfMeasureRepository):
         self.repo = repo
 
     def _handle(self, query: GetUnitOfMeasureByIdQuery) -> dict:

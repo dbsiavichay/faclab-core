@@ -8,9 +8,9 @@ from typing import Any
 import structlog
 
 from src.inventory.movement.domain.events import MovementCreated
+from src.inventory.stock.app.repositories import StockRepository
 from src.inventory.stock.domain.entities import Stock
 from src.inventory.stock.domain.events import StockCreated, StockUpdated
-from src.shared.app.repositories import Repository
 from src.shared.infra.events.decorators import event_handler
 from src.shared.infra.events.event_bus import EventBus
 from src.shared.infra.events.scope import create_sync_scope
@@ -35,7 +35,7 @@ def handle_movement_created(event: MovementCreated, session: Any = None) -> None
 
     with create_sync_scope(session) as scope:
         try:
-            stock_repo = scope.get(Repository[Stock])
+            stock_repo = scope.get(StockRepository)
 
             # Find stock by (product_id, location_id)
             if event.location_id is not None:

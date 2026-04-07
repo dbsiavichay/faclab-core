@@ -34,12 +34,12 @@ def handle_purchase_order_received_serials(
 
     with create_sync_scope(session) as scope:
         try:
-            from src.inventory.lot.domain.entities import Lot
+            from src.inventory.lot.app.repositories import LotRepository
+            from src.inventory.serial.app.repositories import SerialNumberRepository
             from src.inventory.serial.domain.entities import SerialNumber, SerialStatus
-            from src.shared.app.repositories import Repository
 
-            serial_repo = scope.get(Repository[SerialNumber])
-            lot_repo = scope.get(Repository[Lot])
+            serial_repo = scope.get(SerialNumberRepository)
+            lot_repo = scope.get(LotRepository)
 
             for item in items_with_serials:
                 product_id = item["product_id"]

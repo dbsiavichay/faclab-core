@@ -4,8 +4,13 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from wireup import injectable
 
+from src.purchasing.app.repositories import (
+    PurchaseOrderItemRepository,
+    PurchaseOrderRepository,
+    PurchaseReceiptItemRepository,
+    PurchaseReceiptRepository,
+)
 from src.purchasing.domain.entities import (
-    PurchaseOrder,
     PurchaseOrderItem,
     PurchaseOrderStatus,
     PurchaseReceipt,
@@ -14,7 +19,6 @@ from src.purchasing.domain.entities import (
 from src.purchasing.domain.events import PurchaseOrderReceived
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
 
 
@@ -45,10 +49,10 @@ class CreatePurchaseReceiptCommandHandler(
 ):
     def __init__(
         self,
-        po_repo: Repository[PurchaseOrder],
-        item_repo: Repository[PurchaseOrderItem],
-        receipt_repo: Repository[PurchaseReceipt],
-        receipt_item_repo: Repository[PurchaseReceiptItem],
+        po_repo: PurchaseOrderRepository,
+        item_repo: PurchaseOrderItemRepository,
+        receipt_repo: PurchaseReceiptRepository,
+        receipt_item_repo: PurchaseReceiptItemRepository,
         event_publisher: EventPublisher,
         session: Session,
     ):

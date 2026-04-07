@@ -20,13 +20,16 @@ from src.catalog.product.app.queries.get_products import (
     SearchProductsQueryHandler,
 )
 from src.catalog.product.infra.mappers import CategoryMapper, ProductMapper
-from src.catalog.product.infra.repositories import CategoryRepository, ProductRepository
+from src.catalog.product.infra.repositories import (
+    SqlAlchemyCategoryRepository,
+    SqlAlchemyProductRepository,
+)
 
 INJECTABLES = [
     CategoryMapper,
     ProductMapper,
-    CategoryRepository,
-    ProductRepository,
+    SqlAlchemyCategoryRepository,
+    SqlAlchemyProductRepository,
     CreateCategoryCommandHandler,
     UpdateCategoryCommandHandler,
     DeleteCategoryCommandHandler,

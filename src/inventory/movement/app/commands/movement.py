@@ -4,12 +4,12 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from wireup import injectable
 
+from src.inventory.movement.app.repositories import MovementRepository
 from src.inventory.movement.domain.constants import MovementType
 from src.inventory.movement.domain.entities import Movement
 from src.inventory.movement.domain.events import MovementCreated
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 
 
 @dataclass
@@ -34,7 +34,7 @@ class CreateMovementCommandHandler(CommandHandler[CreateMovementCommand, dict]):
 
     def __init__(
         self,
-        repo: Repository[Movement],
+        repo: MovementRepository,
         event_publisher: EventPublisher,
         session: Session,
     ):

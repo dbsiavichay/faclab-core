@@ -34,18 +34,18 @@ from src.suppliers.infra.mappers import (
     SupplierProductMapper,
 )
 from src.suppliers.infra.repositories import (
-    SupplierContactRepository,
-    SupplierProductRepository,
-    SupplierRepository,
+    SqlAlchemySupplierContactRepository,
+    SqlAlchemySupplierProductRepository,
+    SqlAlchemySupplierRepository,
 )
 
 INJECTABLES = [
     SupplierMapper,
     SupplierContactMapper,
     SupplierProductMapper,
-    SupplierRepository,
-    SupplierContactRepository,
-    SupplierProductRepository,
+    SqlAlchemySupplierRepository,
+    SqlAlchemySupplierContactRepository,
+    SqlAlchemySupplierProductRepository,
     CreateSupplierCommandHandler,
     UpdateSupplierCommandHandler,
     DeleteSupplierCommandHandler,

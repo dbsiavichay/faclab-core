@@ -11,18 +11,18 @@ from src.pos.refund.infra.mappers import (
     RefundPaymentMapper,
 )
 from src.pos.refund.infra.repositories import (
-    RefundItemRepository,
-    RefundPaymentRepository,
-    RefundRepository,
+    SqlAlchemyRefundItemRepository,
+    SqlAlchemyRefundPaymentRepository,
+    SqlAlchemyRefundRepository,
 )
 
 POS_REFUND_INJECTABLES = [
     RefundMapper,
     RefundItemMapper,
     RefundPaymentMapper,
-    RefundRepository,
-    RefundItemRepository,
-    RefundPaymentRepository,
+    SqlAlchemyRefundRepository,
+    SqlAlchemyRefundItemRepository,
+    SqlAlchemyRefundPaymentRepository,
     CreateRefundCommandHandler,
     ProcessRefundCommandHandler,
     CancelRefundCommandHandler,

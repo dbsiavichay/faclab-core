@@ -3,9 +3,9 @@ from datetime import date
 
 from wireup import injectable
 
+from src.inventory.lot.app.repositories import LotRepository
 from src.inventory.lot.domain.entities import Lot
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
 
 
@@ -30,7 +30,7 @@ class UpdateLotCommand(Command):
 
 @injectable(lifetime="scoped")
 class CreateLotCommandHandler(CommandHandler[CreateLotCommand, dict]):
-    def __init__(self, repo: Repository[Lot]):
+    def __init__(self, repo: LotRepository):
         self.repo = repo
 
     def _handle(self, command: CreateLotCommand) -> dict:
@@ -57,7 +57,7 @@ class CreateLotCommandHandler(CommandHandler[CreateLotCommand, dict]):
 
 @injectable(lifetime="scoped")
 class UpdateLotCommandHandler(CommandHandler[UpdateLotCommand, dict]):
-    def __init__(self, repo: Repository[Lot]):
+    def __init__(self, repo: LotRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateLotCommand) -> dict:

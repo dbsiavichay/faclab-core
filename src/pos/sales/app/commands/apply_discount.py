@@ -3,11 +3,10 @@ from decimal import Decimal
 
 from wireup import injectable
 
-from src.sales.domain.entities import Sale, SaleItem
+from src.sales.app.repositories import SaleItemRepository, SaleRepository
 from src.sales.domain.exceptions import InvalidSaleStatusError
 from src.sales.domain.services import recalculate_sale_totals
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError, ValidationError
 
 
@@ -26,8 +25,8 @@ class ApplySaleDiscountCommandHandler(CommandHandler[ApplySaleDiscountCommand, d
 
     def __init__(
         self,
-        sale_repo: Repository[Sale],
-        sale_item_repo: Repository[SaleItem],
+        sale_repo: SaleRepository,
+        sale_item_repo: SaleItemRepository,
     ):
         self.sale_repo = sale_repo
         self.sale_item_repo = sale_item_repo

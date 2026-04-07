@@ -7,7 +7,11 @@ from src.inventory.movement.app.commands.movement import (
     CreateMovementCommandHandler,
 )
 from src.inventory.movement.domain.constants import MovementType
-from src.inventory.stock.domain.entities import Stock
+from src.inventory.stock.app.repositories import StockRepository
+from src.inventory.transfer.app.repositories import (
+    StockTransferItemRepository,
+    StockTransferRepository,
+)
 from src.inventory.transfer.domain.entities import (
     StockTransfer,
     StockTransferItem,
@@ -20,7 +24,6 @@ from src.inventory.transfer.domain.events import (
 )
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError, NotFoundError
 
 # ---------------------------------------------------------------------------
@@ -98,7 +101,7 @@ class RemoveTransferItemCommand(Command):
 class CreateStockTransferCommandHandler(
     CommandHandler[CreateStockTransferCommand, dict]
 ):
-    def __init__(self, repo: Repository[StockTransfer]):
+    def __init__(self, repo: StockTransferRepository):
         self.repo = repo
 
     def _handle(self, command: CreateStockTransferCommand) -> dict:
@@ -118,7 +121,7 @@ class CreateStockTransferCommandHandler(
 class UpdateStockTransferCommandHandler(
     CommandHandler[UpdateStockTransferCommand, dict]
 ):
-    def __init__(self, repo: Repository[StockTransfer]):
+    def __init__(self, repo: StockTransferRepository):
         self.repo = repo
 
     def _handle(self, command: UpdateStockTransferCommand) -> dict:
@@ -143,7 +146,7 @@ class UpdateStockTransferCommandHandler(
 class DeleteStockTransferCommandHandler(
     CommandHandler[DeleteStockTransferCommand, None]
 ):
-    def __init__(self, repo: Repository[StockTransfer]):
+    def __init__(self, repo: StockTransferRepository):
         self.repo = repo
 
     def _handle(self, command: DeleteStockTransferCommand) -> None:
@@ -161,9 +164,9 @@ class ConfirmStockTransferCommandHandler(
 ):
     def __init__(
         self,
-        repo: Repository[StockTransfer],
-        item_repo: Repository[StockTransferItem],
-        stock_repo: Repository[Stock],
+        repo: StockTransferRepository,
+        item_repo: StockTransferItemRepository,
+        stock_repo: StockRepository,
         event_publisher: EventPublisher,
     ):
         self.repo = repo
@@ -216,9 +219,9 @@ class ReceiveStockTransferCommandHandler(
 ):
     def __init__(
         self,
-        repo: Repository[StockTransfer],
-        item_repo: Repository[StockTransferItem],
-        stock_repo: Repository[Stock],
+        repo: StockTransferRepository,
+        item_repo: StockTransferItemRepository,
+        stock_repo: StockRepository,
         movement_handler: CreateMovementCommandHandler,
         event_publisher: EventPublisher,
     ):
@@ -298,9 +301,9 @@ class CancelStockTransferCommandHandler(
 ):
     def __init__(
         self,
-        repo: Repository[StockTransfer],
-        item_repo: Repository[StockTransferItem],
-        stock_repo: Repository[Stock],
+        repo: StockTransferRepository,
+        item_repo: StockTransferItemRepository,
+        stock_repo: StockRepository,
         event_publisher: EventPublisher,
     ):
         self.repo = repo
@@ -345,8 +348,8 @@ class CancelStockTransferCommandHandler(
 class AddTransferItemCommandHandler(CommandHandler[AddTransferItemCommand, dict]):
     def __init__(
         self,
-        repo: Repository[StockTransfer],
-        item_repo: Repository[StockTransferItem],
+        repo: StockTransferRepository,
+        item_repo: StockTransferItemRepository,
     ):
         self.repo = repo
         self.item_repo = item_repo
@@ -375,7 +378,7 @@ class AddTransferItemCommandHandler(CommandHandler[AddTransferItemCommand, dict]
 
 @injectable(lifetime="scoped")
 class UpdateTransferItemCommandHandler(CommandHandler[UpdateTransferItemCommand, dict]):
-    def __init__(self, item_repo: Repository[StockTransferItem]):
+    def __init__(self, item_repo: StockTransferItemRepository):
         self.item_repo = item_repo
 
     def _handle(self, command: UpdateTransferItemCommand) -> dict:
@@ -398,7 +401,7 @@ class UpdateTransferItemCommandHandler(CommandHandler[UpdateTransferItemCommand,
 
 @injectable(lifetime="scoped")
 class RemoveTransferItemCommandHandler(CommandHandler[RemoveTransferItemCommand, None]):
-    def __init__(self, item_repo: Repository[StockTransferItem]):
+    def __init__(self, item_repo: StockTransferItemRepository):
         self.item_repo = item_repo
 
     def _handle(self, command: RemoveTransferItemCommand) -> None:

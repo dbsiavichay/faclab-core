@@ -2,11 +2,11 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from src.sales.app.repositories import SaleRepository
 from src.sales.domain.entities import Sale
 from src.sales.domain.events import SaleCreated
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import DomainError
 
 
@@ -25,7 +25,7 @@ class CreateSaleCommand(Command):
 class CreateSaleCommandHandler(CommandHandler[CreateSaleCommand, dict]):
     """Handler para crear una nueva venta en estado DRAFT"""
 
-    def __init__(self, repo: Repository[Sale], event_publisher: EventPublisher):
+    def __init__(self, repo: SaleRepository, event_publisher: EventPublisher):
         self.repo = repo
         self.event_publisher = event_publisher
 

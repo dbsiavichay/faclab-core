@@ -5,11 +5,10 @@ from sqlalchemy.orm import Session
 from wireup import injectable
 
 from src.pos.cash.app.queries.get_cash_summary import compute_cash_summary
-from src.pos.shift.domain.entities import Shift
+from src.pos.shift.app.repositories import ShiftRepository
 from src.pos.shift.domain.events import ShiftClosed
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -28,7 +27,7 @@ class CloseShiftCommandHandler(CommandHandler[CloseShiftCommand, dict]):
 
     def __init__(
         self,
-        repo: Repository[Shift],
+        repo: ShiftRepository,
         event_publisher: EventPublisher,
         session: Session,
     ):

@@ -18,16 +18,15 @@ def _make_event(**overrides) -> PurchaseOrderReceived:
 
 
 def _make_scope(serial_repo, lot_repo):
-    from src.inventory.lot.domain.entities import Lot
-    from src.inventory.serial.domain.entities import SerialNumber
-    from src.shared.app.repositories import Repository
+    from src.inventory.lot.app.repositories import LotRepository
+    from src.inventory.serial.app.repositories import SerialNumberRepository
 
     mock_scope = Mock()
 
     def _get(cls):
-        if cls is Repository[SerialNumber]:
+        if cls is SerialNumberRepository:
             return serial_repo
-        if cls is Repository[Lot]:
+        if cls is LotRepository:
             return lot_repo
         return MagicMock()
 

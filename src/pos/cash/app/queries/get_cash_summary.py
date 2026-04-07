@@ -7,10 +7,9 @@ from wireup import injectable
 
 from src.pos.cash.infra.models import CashMovementModel
 from src.pos.refund.infra.models import RefundModel, RefundPaymentModel
-from src.pos.shift.domain.entities import Shift
+from src.pos.shift.app.repositories import ShiftRepository
 from src.sales.infra.models import PaymentModel, SaleModel
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -68,7 +67,7 @@ class GetCashSummaryQuery(Query):
 
 @injectable(lifetime="scoped")
 class GetCashSummaryQueryHandler(QueryHandler[GetCashSummaryQuery, dict]):
-    def __init__(self, session: Session, shift_repo: Repository[Shift]):
+    def __init__(self, session: Session, shift_repo: ShiftRepository):
         self.session = session
         self.shift_repo = shift_repo
 

@@ -3,9 +3,8 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
-from src.suppliers.domain.entities import SupplierContact
+from src.suppliers.app.repositories import SupplierContactRepository
 
 
 @dataclass
@@ -17,7 +16,7 @@ class GetSupplierContactByIdQuery(Query):
 class GetSupplierContactByIdQueryHandler(
     QueryHandler[GetSupplierContactByIdQuery, dict]
 ):
-    def __init__(self, repo: Repository[SupplierContact]):
+    def __init__(self, repo: SupplierContactRepository):
         self.repo = repo
 
     def _handle(self, query: GetSupplierContactByIdQuery) -> dict:
@@ -36,7 +35,7 @@ class GetContactsBySupplierIdQuery(Query):
 class GetContactsBySupplierIdQueryHandler(
     QueryHandler[GetContactsBySupplierIdQuery, list[dict]]
 ):
-    def __init__(self, repo: Repository[SupplierContact]):
+    def __init__(self, repo: SupplierContactRepository):
         self.repo = repo
 
     def _handle(self, query: GetContactsBySupplierIdQuery) -> list[dict]:

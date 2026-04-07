@@ -29,18 +29,20 @@ def _make_lot(**overrides) -> Lot:
 
 
 def _make_scope(lot_repo, movement_lot_item_repo, movement_repo):
-    from src.inventory.lot.domain.entities import Lot, MovementLotItem
-    from src.inventory.movement.domain.entities import Movement
-    from src.shared.app.repositories import Repository
+    from src.inventory.lot.app.repositories import (
+        LotRepository,
+        MovementLotItemRepository,
+    )
+    from src.inventory.movement.app.repositories import MovementRepository
 
     mock_scope = Mock()
 
     def _get(cls):
-        if cls is Repository[Lot]:
+        if cls is LotRepository:
             return lot_repo
-        if cls is Repository[MovementLotItem]:
+        if cls is MovementLotItemRepository:
             return movement_lot_item_repo
-        if cls is Repository[Movement]:
+        if cls is MovementRepository:
             return movement_repo
         return MagicMock()
 

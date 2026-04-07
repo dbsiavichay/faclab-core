@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.sales.domain.entities import Sale
+from src.sales.app.repositories import SaleRepository
 from src.shared.app.commands import Command, CommandHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -16,7 +15,7 @@ class ParkSaleCommand(Command):
 
 @injectable(lifetime="scoped")
 class POSParkSaleCommandHandler(CommandHandler[ParkSaleCommand, dict]):
-    def __init__(self, sale_repo: Repository[Sale]):
+    def __init__(self, sale_repo: SaleRepository):
         self.sale_repo = sale_repo
 
     def _handle(self, command: ParkSaleCommand) -> dict:

@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from src.sales.domain.entities import Sale
+from src.sales.app.repositories import SaleRepository
 from src.shared.app.queries import Query, QueryHandler
-from src.shared.app.repositories import Repository
 from src.shared.domain.exceptions import NotFoundError
 
 
@@ -22,7 +21,7 @@ class GetAllSalesQuery(Query):
 class GetAllSalesQueryHandler(QueryHandler[GetAllSalesQuery, dict]):
     """Handler para obtener todas las ventas"""
 
-    def __init__(self, repo: Repository[Sale]):
+    def __init__(self, repo: SaleRepository):
         self.repo = repo
 
     def _handle(self, query: GetAllSalesQuery) -> dict:
@@ -46,7 +45,7 @@ class GetSaleByIdQuery(Query):
 class GetSaleByIdQueryHandler(QueryHandler[GetSaleByIdQuery, dict]):
     """Handler para obtener una venta por ID"""
 
-    def __init__(self, repo: Repository[Sale]):
+    def __init__(self, repo: SaleRepository):
         self.repo = repo
 
     def _handle(self, query: GetSaleByIdQuery) -> dict:
