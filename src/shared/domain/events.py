@@ -1,7 +1,7 @@
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -9,7 +9,7 @@ from typing import Any
 class DomainEvent(ABC):
     aggregate_id: int
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    occurred_at: datetime = field(default_factory=datetime.now)
+    occurred_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
 
     @abstractmethod
     def _payload(self) -> dict[str, Any]:
