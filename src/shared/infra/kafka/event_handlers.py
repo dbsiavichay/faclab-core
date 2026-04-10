@@ -74,7 +74,7 @@ def _build_enriched_payload(event: SaleConfirmed, session: Any = None) -> dict:
         "event_id": event.event_id,
         "event_type": "SaleConfirmed",
         "aggregate_id": event.aggregate_id,
-        "occurred_at": event.occurred_at.isoformat(),
+        "occurred_at": event.occurred_at.isoformat().replace("+00:00", "Z"),
         "payload": {
             "sale_id": event.sale_id,
             "source": event.source,
