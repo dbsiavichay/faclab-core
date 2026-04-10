@@ -7,6 +7,7 @@ from decimal import Decimal
 import structlog
 from aiokafka import AIOKafkaProducer
 from opentelemetry import trace
+from opentelemetry.propagate import inject
 
 from src.shared.domain.events import DomainEvent
 from src.shared.infra.telemetry_instruments import (
@@ -16,6 +17,20 @@ from src.shared.infra.telemetry_instruments import (
 
 logger = structlog.get_logger(__name__)
 tracer = trace.get_tracer(__name__)
+
+
+class _KafkaHeaderSetter:
+    def set(self, carrier: list, key: str, value: str) -> None:
+        carrier.append((key, value.encode("utf-8")))
+
+
+_header_setter = _KafkaHeaderSetter()
+
+
+def _inject_trace_context() -> list[tuple[str, bytes]]:
+    headers: list[tuple[str, bytes]] = []
+    inject(carrier=headers, setter=_header_setter)
+    return headers
 
 
 def _json_serializer(obj):
@@ -73,8 +88,9 @@ class KafkaEventProducer:
             f"kafka.send.{topic}",
             attributes={"kafka.topic": topic, "event.type": type(event).__name__},
         ):
+            headers = _inject_trace_context()
             future = asyncio.run_coroutine_threadsafe(
-                self._producer.send_and_wait(topic, event.to_dict()),
+                self._producer.send_and_wait(topic, event.to_dict(), headers=headers),
                 self._loop,
             )
             try:
@@ -104,8 +120,9 @@ class KafkaEventProducer:
             f"kafka.send.{topic}",
             attributes={"kafka.topic": topic, "event.type": event_type},
         ):
+            headers = _inject_trace_context()
             future = asyncio.run_coroutine_threadsafe(
-                self._producer.send_and_wait(topic, data),
+                self._producer.send_and_wait(topic, data, headers=headers),
                 self._loop,
             )
             try:
