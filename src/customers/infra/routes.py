@@ -44,6 +44,10 @@ from src.customers.infra.validators import (
 )
 from src.shared.infra.dependencies import get_meta
 from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_DELETE,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
     DataResponse,
     ListResponse,
     Meta,
@@ -62,47 +66,58 @@ class CustomerRouter:
             "",
             response_model=DataResponse[CustomerResponse],
             summary="Create customer",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[CustomerResponse],
             summary="Update customer",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete customer")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete customer", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[CustomerResponse],
             summary="Get all customers",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[CustomerResponse],
             summary="Get customer by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
         self.router.get(
             "/search/by-tax-id",
             response_model=DataResponse[CustomerResponse],
             summary="Get customer by tax ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_tax_id)
         self.router.post(
             "/{id}/activate",
             response_model=DataResponse[CustomerResponse],
             summary="Activate customer",
+            responses=RESPONSES_COMMAND,
         )(self.activate)
         self.router.post(
             "/{id}/deactivate",
             response_model=DataResponse[CustomerResponse],
             summary="Deactivate customer",
+            responses=RESPONSES_COMMAND,
         )(self.deactivate)
         self.router.post(
             "/{customer_id}/contacts",
             response_model=DataResponse[CustomerContactResponse],
             summary="Create customer contact",
+            responses=RESPONSES_COMMAND,
         )(self.create_contact)
         self.router.get(
             "/{customer_id}/contacts",
             response_model=ListResponse[CustomerContactResponse],
             summary="Get customer contacts",
+            responses=RESPONSES_LIST,
         )(self.get_customer_contacts)
 
     def create(
@@ -239,12 +254,16 @@ class CustomerContactRouter:
             "/{id}",
             response_model=DataResponse[CustomerContactResponse],
             summary="Update customer contact",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete customer contact")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete customer contact", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "/{id}",
             response_model=DataResponse[CustomerContactResponse],
             summary="Get customer contact by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
 
     def update(

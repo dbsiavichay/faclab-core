@@ -87,7 +87,15 @@ from src.sales.infra.validators import (
     SaleResponse,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, ListResponse, Meta
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_DELETE,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    ListResponse,
+    Meta,
+)
 
 
 class POSSaleRouter:
@@ -101,87 +109,105 @@ class POSSaleRouter:
             response_model=DataResponse[SaleResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Create sale",
+            responses=RESPONSES_COMMAND,
         )(self.create_sale)
         self.router.post(
             "/quick",
             response_model=DataResponse[SaleDetailResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Quick sale (checkout in one request)",
+            responses=RESPONSES_COMMAND,
         )(self.quick_sale)
         self.router.get(
             "/parked",
             response_model=ListResponse[SaleResponse],
             summary="List parked sales",
+            responses=RESPONSES_LIST,
         )(self.get_parked_sales)
         self.router.get(
             "/{sale_id}",
             response_model=DataResponse[SaleResponse],
             summary="Get sale",
+            responses=RESPONSES_QUERY,
         )(self.get_sale)
         self.router.post(
             "/{sale_id}/items",
             response_model=DataResponse[SaleItemResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Add item to sale",
+            responses=RESPONSES_COMMAND,
         )(self.add_sale_item)
         self.router.get(
             "/{sale_id}/items",
             response_model=ListResponse[SaleItemResponse],
             summary="List sale items",
+            responses=RESPONSES_LIST,
         )(self.get_sale_items)
         self.router.put(
             "/{sale_id}/items/{item_id}",
             response_model=DataResponse[SaleItemResponse],
             summary="Update sale item",
+            responses=RESPONSES_COMMAND,
         )(self.update_sale_item)
         self.router.delete(
-            "/{sale_id}/items/{item_id}", summary="Remove item from sale"
+            "/{sale_id}/items/{item_id}",
+            summary="Remove item from sale",
+            responses=RESPONSES_DELETE,
         )(self.remove_sale_item)
         self.router.post(
             "/{sale_id}/confirm",
             response_model=DataResponse[SaleResponse],
             summary="Confirm sale",
+            responses=RESPONSES_COMMAND,
         )(self.confirm_sale)
         self.router.post(
             "/{sale_id}/cancel",
             response_model=DataResponse[SaleResponse],
             summary="Cancel sale",
+            responses=RESPONSES_COMMAND,
         )(self.cancel_sale)
         self.router.post(
             "/{sale_id}/park",
             response_model=DataResponse[SaleResponse],
             summary="Park sale",
+            responses=RESPONSES_COMMAND,
         )(self.park_sale)
         self.router.post(
             "/{sale_id}/resume",
             response_model=DataResponse[SaleResponse],
             summary="Resume parked sale",
+            responses=RESPONSES_COMMAND,
         )(self.resume_sale)
         self.router.post(
             "/{sale_id}/discount",
             response_model=DataResponse[SaleResponse],
             summary="Apply discount to sale",
+            responses=RESPONSES_COMMAND,
         )(self.apply_discount)
         self.router.post(
             "/{sale_id}/payments",
             response_model=DataResponse[PaymentResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Register payment",
+            responses=RESPONSES_COMMAND,
         )(self.register_payment)
         self.router.get(
             "/{sale_id}/payments",
             response_model=ListResponse[PaymentResponse],
             summary="List sale payments",
+            responses=RESPONSES_LIST,
         )(self.get_sale_payments)
         self.router.put(
             "/{sale_id}/items/{item_id}/price",
             response_model=DataResponse[SaleItemResponse],
             summary="Override item price",
+            responses=RESPONSES_COMMAND,
         )(self.override_item_price)
         self.router.get(
             "/{sale_id}/receipt",
             response_model=DataResponse[ReceiptResponse],
             summary="Generate receipt",
+            responses=RESPONSES_QUERY,
         )(self.generate_receipt)
 
     def create_sale(
@@ -190,6 +216,11 @@ class POSSaleRouter:
         sale: POSSaleRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleResponse]:
+        """Create a new POS sale in DRAFT status.
+
+        The sale must have items added and payments registered before it can be confirmed.
+        Optionally associate a customer or mark it as a final-consumer sale.
+        """
         result = handler.handle(
             POSCreateSaleCommand(**sale.model_dump(exclude_none=True))
         )
@@ -201,6 +232,11 @@ class POSSaleRouter:
         sale: QuickSaleRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleDetailResponse]:
+        """Complete a sale in a single request — creates the sale, adds items, registers payments, and confirms.
+
+        This is the fastest checkout flow: supply line items and payments, and the sale
+        is created and confirmed atomically. Inventory movements are generated immediately.
+        """
         result = handler.handle(
             QuickSaleCommand(
                 items=[item.model_dump() for item in sale.items],
@@ -218,6 +254,7 @@ class POSSaleRouter:
         sale_id: int,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleResponse]:
+        """Retrieve a sale by its ID, including current status and totals."""
         result = handler.handle(GetSaleByIdQuery(sale_id=sale_id))
         return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
 
@@ -228,6 +265,7 @@ class POSSaleRouter:
         item: SaleItemRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleItemResponse]:
+        """Add a line item to a DRAFT sale. The sale totals are recalculated automatically."""
         result = handler.handle(
             AddSaleItemCommand(sale_id=sale_id, **item.model_dump(exclude_none=True))
         )
@@ -239,6 +277,7 @@ class POSSaleRouter:
         sale_id: int,
         meta: Meta = Depends(get_meta),
     ) -> ListResponse[SaleItemResponse]:
+        """List all line items for a sale."""
         result = handler.handle(GetSaleItemsQuery(sale_id=sale_id))
         return ListResponse(
             data=[SaleItemResponse.model_validate(r) for r in result], meta=meta
@@ -252,6 +291,7 @@ class POSSaleRouter:
         item: SaleItemUpdateRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleItemResponse]:
+        """Update quantity or discount of a line item in a DRAFT sale."""
         result = handler.handle(
             UpdateSaleItemCommand(
                 sale_id=sale_id,
@@ -267,6 +307,7 @@ class POSSaleRouter:
         sale_id: int,
         item_id: int,
     ) -> dict:
+        """Remove a line item from a DRAFT sale."""
         return handler.handle(
             RemoveSaleItemCommand(sale_id=sale_id, sale_item_id=item_id)
         )
@@ -277,6 +318,11 @@ class POSSaleRouter:
         sale_id: int,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleResponse]:
+        """Confirm a sale and trigger inventory movements.
+
+        The sale must have at least one item and payments covering the total amount.
+        Once confirmed, inventory OUT movements are created for each line item.
+        """
         result = handler.handle(POSConfirmSaleCommand(sale_id=sale_id))
         return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
 
@@ -287,6 +333,7 @@ class POSSaleRouter:
         cancel_input: CancelSaleRequest | None = None,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleResponse]:
+        """Cancel a sale. If the sale was confirmed, inventory movements are reversed."""
         reason = cancel_input.reason if cancel_input else None
         result = handler.handle(POSCancelSaleCommand(sale_id=sale_id, reason=reason))
         return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
@@ -298,6 +345,10 @@ class POSSaleRouter:
         discount_input: ApplyDiscountRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleResponse]:
+        """Apply a percentage or fixed-amount discount to a DRAFT sale.
+
+        The discount is applied to the sale subtotal before tax calculation.
+        """
         result = handler.handle(
             ApplySaleDiscountCommand(sale_id=sale_id, **discount_input.model_dump())
         )
@@ -310,6 +361,7 @@ class POSSaleRouter:
         payment: PaymentRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[PaymentResponse]:
+        """Register a payment against a sale. Multiple payments with different methods are supported."""
         result = handler.handle(
             RegisterPaymentCommand(
                 sale_id=sale_id, **payment.model_dump(exclude_none=True)
@@ -323,6 +375,7 @@ class POSSaleRouter:
         sale_id: int,
         meta: Meta = Depends(get_meta),
     ) -> ListResponse[PaymentResponse]:
+        """List all payments registered for a sale."""
         result = handler.handle(GetSalePaymentsQuery(sale_id=sale_id))
         return ListResponse(
             data=[PaymentResponse.model_validate(r) for r in result], meta=meta
@@ -335,6 +388,7 @@ class POSSaleRouter:
         park_input: ParkSaleRequest | None = None,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleResponse]:
+        """Park (hold) a DRAFT sale for later. Parked sales appear in the parked-sales list."""
         reason = park_input.reason if park_input else None
         result = handler.handle(ParkSaleCommand(sale_id=sale_id, reason=reason))
         return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
@@ -345,6 +399,7 @@ class POSSaleRouter:
         sale_id: int,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleResponse]:
+        """Resume a previously parked sale, returning it to DRAFT status."""
         result = handler.handle(ResumeSaleCommand(sale_id=sale_id))
         return DataResponse(data=SaleResponse.model_validate(result), meta=meta)
 
@@ -353,6 +408,7 @@ class POSSaleRouter:
         handler: Injected[GetParkedSalesQueryHandler],
         meta: Meta = Depends(get_meta),
     ) -> ListResponse[SaleResponse]:
+        """List all currently parked sales awaiting resumption."""
         result = handler.handle(GetParkedSalesQuery())
         return ListResponse(
             data=[SaleResponse.model_validate(r) for r in result], meta=meta
@@ -366,6 +422,7 @@ class POSSaleRouter:
         body: OverridePriceRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[SaleItemResponse]:
+        """Override the unit price of a sale item. A reason is required for audit purposes."""
         result = handler.handle(
             OverrideItemPriceCommand(
                 sale_id=sale_id,
@@ -382,5 +439,6 @@ class POSSaleRouter:
         sale_id: int,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[ReceiptResponse]:
+        """Generate a printable receipt for a confirmed sale, including items, tax breakdown, and payments."""
         result = handler.handle(GenerateReceiptQuery(sale_id=sale_id))
         return DataResponse(data=ReceiptResponse.model_validate(result), meta=meta)

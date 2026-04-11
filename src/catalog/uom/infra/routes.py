@@ -25,7 +25,15 @@ from src.catalog.uom.infra.validators import (
     UnitOfMeasureResponse,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_DELETE,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class UnitOfMeasureRouter:
@@ -38,22 +46,28 @@ class UnitOfMeasureRouter:
             "",
             response_model=DataResponse[UnitOfMeasureResponse],
             summary="Create unit of measure",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[UnitOfMeasureResponse],
             summary="Update unit of measure",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete unit of measure")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete unit of measure", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[UnitOfMeasureResponse],
             summary="Get all units of measure",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[UnitOfMeasureResponse],
             summary="Get unit of measure by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
 
     def create(
@@ -62,6 +76,7 @@ class UnitOfMeasureRouter:
         handler: Injected[CreateUnitOfMeasureCommandHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[UnitOfMeasureResponse]:
+        """Create a new unit of measure (e.g. kg, unit, box)."""
         result = handler.handle(
             CreateUnitOfMeasureCommand(**body.model_dump(by_alias=False))
         )
@@ -76,6 +91,7 @@ class UnitOfMeasureRouter:
         handler: Injected[UpdateUnitOfMeasureCommandHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[UnitOfMeasureResponse]:
+        """Update a unit of measure."""
         result = handler.handle(
             UpdateUnitOfMeasureCommand(uom_id=id, **body.model_dump(by_alias=False))
         )
@@ -86,6 +102,7 @@ class UnitOfMeasureRouter:
     def delete(
         self, id: int, handler: Injected[DeleteUnitOfMeasureCommandHandler]
     ) -> None:
+        """Delete a unit of measure. Fails if products reference it."""
         handler.handle(DeleteUnitOfMeasureCommand(uom_id=id))
 
     def get_all(
@@ -94,6 +111,7 @@ class UnitOfMeasureRouter:
         query_params: UnitOfMeasureQueryParams = Depends(),
         meta: Meta = Depends(get_meta),
     ) -> PaginatedDataResponse[UnitOfMeasureResponse]:
+        """List all units of measure. Supports pagination."""
         result = handler.handle(
             GetAllUnitsOfMeasureQuery(**query_params.model_dump(exclude_none=True))
         )
@@ -112,6 +130,7 @@ class UnitOfMeasureRouter:
         handler: Injected[GetUnitOfMeasureByIdQueryHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[UnitOfMeasureResponse]:
+        """Retrieve a unit of measure by its ID."""
         result = handler.handle(GetUnitOfMeasureByIdQuery(uom_id=id))
         return DataResponse(
             data=UnitOfMeasureResponse.model_validate(result), meta=meta

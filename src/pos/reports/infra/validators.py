@@ -13,57 +13,63 @@ from src.shared.infra.validators import DecimalNumber
 class PaymentMethodDetail(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    payment_method: str
-    count: int
-    total: DecimalNumber
+    payment_method: str = Field(description="Payment method name")
+    count: int = Field(description="Number of transactions using this method")
+    total: DecimalNumber = Field(description="Total amount for this method")
 
 
 class ItemSoldDetail(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    product_name: str
-    sku: str
-    quantity: int
-    total: DecimalNumber
+    product_name: str = Field(description="Product name")
+    sku: str = Field(description="Product SKU")
+    quantity: int = Field(description="Total quantity sold")
+    total: DecimalNumber = Field(description="Total revenue for this product")
 
 
 class ShiftInfo(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    id: int
-    cashier_name: str
-    opened_at: str | None = None
-    status: str
+    id: int = Field(description="Shift ID")
+    cashier_name: str = Field(description="Cashier name")
+    opened_at: str | None = Field(
+        None, description="Shift opening timestamp (ISO 8601)"
+    )
+    status: str = Field(description="Shift status (OPEN or CLOSED)")
 
 
 class SalesSummary(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    count: int
-    subtotal: DecimalNumber
-    tax: DecimalNumber
-    discount: DecimalNumber
-    total: DecimalNumber
+    count: int = Field(description="Number of confirmed sales")
+    subtotal: DecimalNumber = Field(description="Total before tax and discounts")
+    tax: DecimalNumber = Field(description="Total tax amount")
+    discount: DecimalNumber = Field(description="Total discount amount")
+    total: DecimalNumber = Field(description="Net total (subtotal + tax - discount)")
 
 
 class RefundSummary(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    count: int
-    total: DecimalNumber
+    count: int = Field(description="Number of completed refunds")
+    total: DecimalNumber = Field(description="Total refund amount")
 
 
 class CashReconciliation(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    opening_balance: DecimalNumber
-    cash_sales: DecimalNumber
-    cash_refunds: DecimalNumber
-    cash_in: DecimalNumber
-    cash_out: DecimalNumber
-    expected_balance: DecimalNumber
-    closing_balance: DecimalNumber | None = None
-    discrepancy: DecimalNumber | None = None
+    opening_balance: DecimalNumber = Field(description="Opening balance")
+    cash_sales: DecimalNumber = Field(description="Cash received from sales")
+    cash_refunds: DecimalNumber = Field(description="Cash returned in refunds")
+    cash_in: DecimalNumber = Field(description="Manual cash-in movements")
+    cash_out: DecimalNumber = Field(description="Manual cash-out movements")
+    expected_balance: DecimalNumber = Field(description="Expected cash in drawer")
+    closing_balance: DecimalNumber | None = Field(
+        None, description="Actual closing balance counted"
+    )
+    discrepancy: DecimalNumber | None = Field(
+        None, description="Difference between expected and actual closing balance"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -72,18 +78,24 @@ class CashReconciliation(BaseModel):
 
 
 class XReportResponse(BaseModel):
+    """Mid-shift sales summary (non-closing). Useful for cashier progress checks."""
+
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    shift: ShiftInfo
-    sales_summary: SalesSummary
-    payments_by_method: list[PaymentMethodDetail]
-    items_sold: list[ItemSoldDetail]
+    shift: ShiftInfo = Field(description="Shift information")
+    sales_summary: SalesSummary = Field(description="Sales totals for the shift")
+    payments_by_method: list[PaymentMethodDetail] = Field(
+        description="Breakdown by payment method"
+    )
+    items_sold: list[ItemSoldDetail] = Field(
+        description="Top products sold during the shift"
+    )
 
 
 class XReportQueryParams(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    shift_id: int = Field(..., ge=1)
+    shift_id: int = Field(..., ge=1, description="Shift ID to generate the report for")
 
 
 # ---------------------------------------------------------------------------
@@ -92,20 +104,28 @@ class XReportQueryParams(BaseModel):
 
 
 class ZReportResponse(BaseModel):
+    """End-of-shift closing report. Includes cash reconciliation and refund data."""
+
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    shift: ShiftInfo
-    sales_summary: SalesSummary
-    payments_by_method: list[PaymentMethodDetail]
-    items_sold: list[ItemSoldDetail]
-    refund_summary: RefundSummary
-    cash_reconciliation: CashReconciliation
+    shift: ShiftInfo = Field(description="Shift information")
+    sales_summary: SalesSummary = Field(description="Sales totals for the shift")
+    payments_by_method: list[PaymentMethodDetail] = Field(
+        description="Breakdown by payment method"
+    )
+    items_sold: list[ItemSoldDetail] = Field(
+        description="Products sold during the shift"
+    )
+    refund_summary: RefundSummary = Field(description="Refund totals for the shift")
+    cash_reconciliation: CashReconciliation = Field(
+        description="Cash drawer reconciliation"
+    )
 
 
 class ZReportQueryParams(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    shift_id: int = Field(..., ge=1)
+    shift_id: int = Field(..., ge=1, description="Shift ID to generate the report for")
 
 
 # ---------------------------------------------------------------------------
@@ -114,20 +134,27 @@ class ZReportQueryParams(BaseModel):
 
 
 class DailySummaryResponse(BaseModel):
+    """Daily sales overview across all shifts."""
+
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    date: str
-    total_sales: int
-    total_amount: DecimalNumber
-    payments_by_method: list[PaymentMethodDetail]
-    top_products: list[ItemSoldDetail]
-    refund_summary: RefundSummary
+    date: str = Field(description="Report date (YYYY-MM-DD)")
+    total_sales: int = Field(description="Number of confirmed sales")
+    total_amount: DecimalNumber = Field(description="Total sales amount")
+    payments_by_method: list[PaymentMethodDetail] = Field(
+        description="Breakdown by payment method"
+    )
+    top_products: list[ItemSoldDetail] = Field(description="Top selling products")
+    refund_summary: RefundSummary = Field(description="Refund totals for the day")
 
 
 class DailySummaryQueryParams(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    date: dt.date = Field(default_factory=dt.date.today)
+    date: dt.date = Field(
+        default_factory=dt.date.today,
+        description="Date for the report (defaults to today)",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -136,15 +163,19 @@ class DailySummaryQueryParams(BaseModel):
 
 
 class PaymentMethodSummaryResponse(BaseModel):
+    """Sales totals grouped by payment method."""
+
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    payment_method: str
-    sales_count: int
-    total_amount: DecimalNumber
+    payment_method: str = Field(description="Payment method name")
+    sales_count: int = Field(description="Number of sales using this method")
+    total_amount: DecimalNumber = Field(
+        description="Total amount collected via this method"
+    )
 
 
 class ByPaymentMethodQueryParams(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    from_date: dt.date | None = None
-    to_date: dt.date | None = None
+    from_date: dt.date | None = Field(None, description="Start date (inclusive)")
+    to_date: dt.date | None = Field(None, description="End date (inclusive)")

@@ -13,27 +13,33 @@ from src.shared.infra.validators import DecimalNumber, QueryParams
 class ValuationItemResponse(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    product_id: int
-    product_name: str
-    sku: str
-    quantity: int
-    average_cost: DecimalNumber
-    total_value: DecimalNumber
+    product_id: int = Field(description="Product ID")
+    product_name: str = Field(description="Product name")
+    sku: str = Field(description="Product SKU")
+    quantity: int = Field(description="Current stock quantity")
+    average_cost: DecimalNumber = Field(description="Weighted average cost per unit")
+    total_value: DecimalNumber = Field(
+        description="Total inventory value (quantity x average cost)"
+    )
 
 
 class InventoryValuationResponse(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    total_value: DecimalNumber
-    as_of_date: date
-    items: list[ValuationItemResponse]
+    total_value: DecimalNumber = Field(description="Grand total inventory value")
+    as_of_date: date = Field(description="Valuation date")
+    items: list[ValuationItemResponse] = Field(
+        description="Per-product valuation breakdown"
+    )
 
 
 class ValuationQueryParams(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    warehouse_id: int | None = Field(None, ge=1)
-    as_of_date: date | None = None
+    warehouse_id: int | None = Field(None, ge=1, description="Filter by warehouse ID")
+    as_of_date: date | None = Field(
+        None, description="Valuation date (defaults to today)"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -44,22 +50,31 @@ class ValuationQueryParams(BaseModel):
 class ProductRotationResponse(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    product_id: int
-    product_name: str
-    sku: str
-    total_in: int
-    total_out: int
-    current_stock: int
-    turnover_rate: DecimalNumber
-    days_of_stock: int | None = None
+    product_id: int = Field(description="Product ID")
+    product_name: str = Field(description="Product name")
+    sku: str = Field(description="Product SKU")
+    total_in: int = Field(description="Total units received in the period")
+    total_out: int = Field(description="Total units sold/consumed in the period")
+    current_stock: int = Field(description="Current stock quantity")
+    turnover_rate: DecimalNumber = Field(
+        description="Inventory turnover rate for the period"
+    )
+    days_of_stock: int | None = Field(
+        None, description="Estimated days of stock remaining"
+    )
 
 
 class RotationQueryParams(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    from_date: date = Field(default_factory=lambda: date.today().replace(day=1))
-    to_date: date = Field(default_factory=date.today)
-    warehouse_id: int | None = Field(None, ge=1)
+    from_date: date = Field(
+        default_factory=lambda: date.today().replace(day=1),
+        description="Start date (defaults to first day of current month)",
+    )
+    to_date: date = Field(
+        default_factory=date.today, description="End date (defaults to today)"
+    )
+    warehouse_id: int | None = Field(None, ge=1, description="Filter by warehouse ID")
 
 
 # ---------------------------------------------------------------------------
@@ -70,28 +85,36 @@ class RotationQueryParams(BaseModel):
 class MovementHistoryItemResponse(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    id: int
-    product_id: int
-    product_name: str
-    sku: str
-    quantity: int
-    type: str
-    location_id: int | None = None
-    source_location_id: int | None = None
-    reference_type: str | None = None
-    reference_id: int | None = None
-    reason: str | None = None
-    date: datetime | None = None
-    created_at: datetime | None = None
+    id: int = Field(description="Movement ID")
+    product_id: int = Field(description="Product ID")
+    product_name: str = Field(description="Product name")
+    sku: str = Field(description="Product SKU")
+    quantity: int = Field(
+        description="Movement quantity (positive = IN, negative = OUT)"
+    )
+    type: str = Field(description="Movement type (IN or OUT)")
+    location_id: int | None = Field(None, description="Storage location ID")
+    source_location_id: int | None = Field(
+        None, description="Source location for transfers"
+    )
+    reference_type: str | None = Field(
+        None, description="Source entity type (e.g. sale, purchase_order)"
+    )
+    reference_id: int | None = Field(None, description="Source entity ID")
+    reason: str | None = Field(None, description="Reason for the movement")
+    date: datetime | None = Field(None, description="Movement date")
+    created_at: datetime | None = Field(None, description="Record creation timestamp")
 
 
 class MovementHistoryQueryParams(QueryParams):
-    limit: int | None = Field(50, ge=1, le=500)
-    product_id: int | None = Field(None, ge=1)
-    type: str | None = None
-    from_date: date | None = None
-    to_date: date | None = None
-    warehouse_id: int | None = Field(None, ge=1)
+    limit: int | None = Field(
+        50, ge=1, le=500, description="Maximum records to return (1-500)"
+    )
+    product_id: int | None = Field(None, ge=1, description="Filter by product ID")
+    type: str | None = Field(None, description="Filter by movement type (IN or OUT)")
+    from_date: date | None = Field(None, description="Start date (inclusive)")
+    to_date: date | None = Field(None, description="End date (inclusive)")
+    warehouse_id: int | None = Field(None, ge=1, description="Filter by warehouse ID")
 
 
 # ---------------------------------------------------------------------------
@@ -102,17 +125,19 @@ class MovementHistoryQueryParams(QueryParams):
 class WarehouseSummaryResponse(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    warehouse_id: int
-    warehouse_name: str
-    warehouse_code: str
-    total_products: int
-    total_quantity: int
-    reserved_quantity: int
-    available_quantity: int
-    total_value: DecimalNumber
+    warehouse_id: int = Field(description="Warehouse ID")
+    warehouse_name: str = Field(description="Warehouse name")
+    warehouse_code: str = Field(description="Warehouse code")
+    total_products: int = Field(description="Number of distinct products stored")
+    total_quantity: int = Field(description="Total stock quantity across all products")
+    reserved_quantity: int = Field(description="Total reserved quantity")
+    available_quantity: int = Field(description="Available quantity (total - reserved)")
+    total_value: DecimalNumber = Field(description="Total inventory value")
 
 
 class SummaryQueryParams(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    warehouse_id: int | None = Field(None, ge=1)
+    warehouse_id: int | None = Field(
+        None, ge=1, description="Filter by warehouse ID (omit for all warehouses)"
+    )

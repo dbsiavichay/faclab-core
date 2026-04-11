@@ -22,7 +22,13 @@ from src.pos.reports.infra.validators import (
     ZReportResponse,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, ListResponse, Meta
+from src.shared.infra.validators import (
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    ListResponse,
+    Meta,
+)
 
 
 class POSReportRouter:
@@ -35,21 +41,25 @@ class POSReportRouter:
             "/x-report",
             response_model=DataResponse[XReportResponse],
             summary="X-Report (shift sales summary)",
+            responses=RESPONSES_QUERY,
         )(self.x_report)
         self.router.get(
             "/z-report",
             response_model=DataResponse[ZReportResponse],
             summary="Z-Report (shift closing report)",
+            responses=RESPONSES_QUERY,
         )(self.z_report)
         self.router.get(
             "/daily",
             response_model=DataResponse[DailySummaryResponse],
             summary="Daily sales summary",
+            responses=RESPONSES_QUERY,
         )(self.daily_summary)
         self.router.get(
             "/by-payment-method",
             response_model=ListResponse[PaymentMethodSummaryResponse],
             summary="Sales by payment method",
+            responses=RESPONSES_LIST,
         )(self.by_payment_method)
 
     def x_report(
@@ -58,6 +68,7 @@ class POSReportRouter:
         query_params: XReportQueryParams = Depends(),
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[XReportResponse]:
+        """Generate an X-Report — a mid-shift read-only sales summary. Does not close the shift."""
         result = handler.handle(GetXReportQuery(shift_id=query_params.shift_id))
         return DataResponse(data=XReportResponse.model_validate(result), meta=meta)
 
@@ -67,6 +78,7 @@ class POSReportRouter:
         query_params: ZReportQueryParams = Depends(),
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[ZReportResponse]:
+        """Generate a Z-Report — an end-of-shift closing report with sales totals, payments, and cash balance."""
         result = handler.handle(GetZReportQuery(shift_id=query_params.shift_id))
         return DataResponse(data=ZReportResponse.model_validate(result), meta=meta)
 
@@ -76,6 +88,7 @@ class POSReportRouter:
         query_params: DailySummaryQueryParams = Depends(),
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[DailySummaryResponse]:
+        """Get an aggregated daily sales summary including totals, sale count, and average ticket."""
         result = handler.handle(GetDailySummaryQuery(date=query_params.date))
         return DataResponse(data=DailySummaryResponse.model_validate(result), meta=meta)
 
@@ -85,6 +98,7 @@ class POSReportRouter:
         query_params: ByPaymentMethodQueryParams = Depends(),
         meta: Meta = Depends(get_meta),
     ) -> ListResponse[PaymentMethodSummaryResponse]:
+        """Get sales totals grouped by payment method for a date range."""
         result = handler.handle(
             GetSalesByPaymentMethodQuery(
                 from_date=query_params.from_date,

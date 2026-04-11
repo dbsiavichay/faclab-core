@@ -21,7 +21,15 @@ from src.inventory.location.app.queries.get_location import (
 )
 from src.inventory.location.infra.validators import LocationRequest, LocationResponse
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, ListResponse, Meta
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_DELETE,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    ListResponse,
+    Meta,
+)
 
 
 class LocationRouter:
@@ -34,22 +42,28 @@ class LocationRouter:
             "",
             response_model=DataResponse[LocationResponse],
             summary="Create location",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[LocationResponse],
             summary="Update location",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete location")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete location", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "",
             response_model=ListResponse[LocationResponse],
             summary="Get all locations",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[LocationResponse],
             summary="Get location by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
 
     def create(
@@ -58,6 +72,7 @@ class LocationRouter:
         handler: Injected[CreateLocationCommandHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[LocationResponse]:
+        """Create a storage location within a warehouse."""
         result = handler.handle(
             CreateLocationCommand(**body.model_dump(by_alias=False))
         )
@@ -70,12 +85,14 @@ class LocationRouter:
         handler: Injected[UpdateLocationCommandHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[LocationResponse]:
+        """Update a storage location."""
         result = handler.handle(
             UpdateLocationCommand(location_id=id, **body.model_dump(by_alias=False))
         )
         return DataResponse(data=LocationResponse.model_validate(result), meta=meta)
 
     def delete(self, id: int, handler: Injected[DeleteLocationCommandHandler]) -> None:
+        """Delete a storage location. Fails if stock exists at this location."""
         handler.handle(DeleteLocationCommand(location_id=id))
 
     def get_all(
@@ -85,6 +102,7 @@ class LocationRouter:
         is_active: bool | None = None,
         meta: Meta = Depends(get_meta),
     ) -> ListResponse[LocationResponse]:
+        """List all storage locations. Optionally filter by warehouse or active status."""
         result = handler.handle(
             GetAllLocationsQuery(warehouse_id=warehouse_id, is_active=is_active)
         )
@@ -98,5 +116,6 @@ class LocationRouter:
         handler: Injected[GetLocationByIdQueryHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[LocationResponse]:
+        """Retrieve a storage location by its ID."""
         result = handler.handle(GetLocationByIdQuery(location_id=id))
         return DataResponse(data=LocationResponse.model_validate(result), meta=meta)

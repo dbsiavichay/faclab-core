@@ -46,7 +46,15 @@ from src.catalog.product.infra.validators import (
     ProductResponse,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_DELETE,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class CategoryRouter:
@@ -57,23 +65,31 @@ class CategoryRouter:
     def _setup_routes(self):
         """Sets up all the routes for the router."""
         self.router.post(
-            "", response_model=DataResponse[CategoryResponse], summary="Save category"
+            "",
+            response_model=DataResponse[CategoryResponse],
+            summary="Save category",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[CategoryResponse],
             summary="Update category",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete category")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete category", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[CategoryResponse],
             summary="Get all categories",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[CategoryResponse],
             summary="Get category by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
 
     def create(
@@ -145,23 +161,31 @@ class ProductRouter:
     def _setup_routes(self):
         """Sets up all the routes for the router."""
         self.router.post(
-            "", response_model=DataResponse[ProductResponse], summary="Save product"
+            "",
+            response_model=DataResponse[ProductResponse],
+            summary="Save product",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[ProductResponse],
             summary="Update product",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete product")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete product", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[ProductResponse],
             summary="Get all products",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[ProductResponse],
             summary="Get product by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
 
     def create(

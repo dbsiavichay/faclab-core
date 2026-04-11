@@ -27,7 +27,14 @@ from src.customers.app.queries.customer import (
 from src.customers.infra.validators import CustomerResponse
 from src.pos.infra.validators import QuickCustomerRequest
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, ListResponse, Meta
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    ListResponse,
+    Meta,
+)
 
 
 class POSProductRouter:
@@ -40,16 +47,19 @@ class POSProductRouter:
             "",
             response_model=ListResponse[ProductResponse],
             summary="List products",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/search",
             response_model=ListResponse[ProductResponse],
             summary="Search products by SKU, barcode or name",
+            responses=RESPONSES_LIST,
         )(self.search)
         self.router.get(
             "/{id}",
             response_model=DataResponse[ProductResponse],
             summary="Get product",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
 
     def get_all(
@@ -57,6 +67,7 @@ class POSProductRouter:
         handler: Injected[GetAllProductsQueryHandler],
         meta: Meta = Depends(get_meta),
     ) -> ListResponse[ProductResponse]:
+        """List all active products available for POS sale."""
         result = handler.handle(GetAllProductsQuery())
         return ListResponse(
             data=[ProductResponse.model_validate(p) for p in result["items"]], meta=meta
@@ -69,6 +80,7 @@ class POSProductRouter:
         limit: int = Query(20, ge=1, le=100),
         meta: Meta = Depends(get_meta),
     ) -> ListResponse[ProductResponse]:
+        """Search products by SKU, barcode, or name fragment. Returns up to `limit` matches."""
         result = handler.handle(SearchProductsQuery(search_term=term, limit=limit))
         return ListResponse(
             data=[ProductResponse.model_validate(p) for p in result["items"]], meta=meta
@@ -80,6 +92,7 @@ class POSProductRouter:
         handler: Injected[GetProductByIdQueryHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[ProductResponse]:
+        """Retrieve a product by its ID, including pricing and tax information."""
         result = handler.handle(GetProductByIdQuery(product_id=id))
         return DataResponse(data=ProductResponse.model_validate(result), meta=meta)
 
@@ -95,21 +108,25 @@ class POSCustomerRouter:
             response_model=DataResponse[CustomerResponse],
             summary="Quick create customer",
             status_code=201,
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.get(
             "",
             response_model=ListResponse[CustomerResponse],
             summary="List customers",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/search/by-tax-id",
             response_model=DataResponse[CustomerResponse],
             summary="Search customer by tax ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_tax_id)
         self.router.get(
             "/{id}",
             response_model=DataResponse[CustomerResponse],
             summary="Get customer",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
 
     def create(
@@ -118,6 +135,7 @@ class POSCustomerRouter:
         handler: Injected[CreateCustomerCommandHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[CustomerResponse]:
+        """Quickly create a customer with minimal information (name + tax ID) during checkout."""
         command = CreateCustomerCommand(
             name=data.name,
             tax_id=data.tax_id,
@@ -131,6 +149,7 @@ class POSCustomerRouter:
         handler: Injected[GetAllCustomersQueryHandler],
         meta: Meta = Depends(get_meta),
     ) -> ListResponse[CustomerResponse]:
+        """List all customers for POS lookup."""
         result = handler.handle(GetAllCustomersQuery())
         return ListResponse(
             data=[CustomerResponse.model_validate(c) for c in result], meta=meta
@@ -142,6 +161,7 @@ class POSCustomerRouter:
         handler: Injected[GetCustomerByIdQueryHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[CustomerResponse]:
+        """Retrieve a customer by their ID."""
         result = handler.handle(GetCustomerByIdQuery(id=id))
         return DataResponse(data=CustomerResponse.model_validate(result), meta=meta)
 
@@ -151,5 +171,6 @@ class POSCustomerRouter:
         tax_id: str = Query(..., alias="taxId", description="Tax ID to search for"),
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[CustomerResponse]:
+        """Look up a customer by their tax ID (RUC / CI)."""
         result = handler.handle(GetCustomerByTaxIdQuery(tax_id=tax_id))
         return DataResponse(data=CustomerResponse.model_validate(result), meta=meta)

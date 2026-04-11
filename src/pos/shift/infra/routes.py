@@ -26,7 +26,14 @@ from src.pos.shift.infra.validators import (
     ShiftResponse,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class POSShiftRouter:
@@ -40,26 +47,31 @@ class POSShiftRouter:
             response_model=DataResponse[ShiftResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Open shift",
+            responses=RESPONSES_COMMAND,
         )(self.open_shift)
         self.router.post(
             "/{shift_id}/close",
             response_model=DataResponse[ShiftResponse],
             summary="Close shift",
+            responses=RESPONSES_COMMAND,
         )(self.close_shift)
         self.router.get(
             "/active",
             response_model=DataResponse[ShiftResponse | None],
             summary="Get active shift",
+            responses=RESPONSES_QUERY,
         )(self.get_active_shift)
         self.router.get(
             "/{shift_id}",
             response_model=DataResponse[ShiftResponse],
             summary="Get shift by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_shift)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[ShiftResponse],
             summary="List all shifts",
+            responses=RESPONSES_LIST,
         )(self.get_all_shifts)
 
     def open_shift(
@@ -68,6 +80,7 @@ class POSShiftRouter:
         data: OpenShiftRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[ShiftResponse]:
+        """Open a new cashier shift. Only one shift can be active at a time."""
         result = handler.handle(
             OpenShiftCommand(
                 cashier_name=data.cashier_name,
@@ -84,6 +97,10 @@ class POSShiftRouter:
         data: CloseShiftRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[ShiftResponse]:
+        """Close an open shift by recording the actual closing cash balance.
+
+        The system calculates the expected balance and the discrepancy automatically.
+        """
         result = handler.handle(
             CloseShiftCommand(
                 shift_id=shift_id,
@@ -98,6 +115,7 @@ class POSShiftRouter:
         handler: Injected[GetActiveShiftQueryHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[ShiftResponse | None]:
+        """Get the currently active (open) shift, or null if no shift is open."""
         result = handler.handle(GetActiveShiftQuery())
         data = ShiftResponse.model_validate(result) if result is not None else None
         return DataResponse(data=data, meta=meta)
@@ -108,6 +126,7 @@ class POSShiftRouter:
         shift_id: int,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[ShiftResponse]:
+        """Retrieve a shift by its ID."""
         result = handler.handle(GetShiftByIdQuery(shift_id=shift_id))
         return DataResponse(data=ShiftResponse.model_validate(result), meta=meta)
 
@@ -117,6 +136,7 @@ class POSShiftRouter:
         query_params: ShiftQueryParams = Depends(),
         meta: Meta = Depends(get_meta),
     ) -> PaginatedDataResponse[ShiftResponse]:
+        """List all shifts with optional filtering by status. Supports pagination."""
         result = handler.handle(
             GetAllShiftsQuery(**query_params.model_dump(exclude_none=True))
         )

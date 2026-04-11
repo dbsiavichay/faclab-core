@@ -15,7 +15,13 @@ from src.inventory.movement.infra.validators import (
     MovementResponse,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_LIST,
+    DataResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class MovementRouter:
@@ -29,11 +35,13 @@ class MovementRouter:
             "",
             response_model=DataResponse[MovementResponse],
             summary="Save movement",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[MovementResponse],
             summary="Get all movements",
+            responses=RESPONSES_LIST,
         )(self.get_all)
 
     def create(
@@ -42,7 +50,7 @@ class MovementRouter:
         handler: Injected[CreateMovementCommandHandler],
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[MovementResponse]:
-        """Save a new movement."""
+        """Create a manual inventory movement (IN or OUT). Stock is updated automatically."""
         result = handler.handle(
             CreateMovementCommand(**new_movement.model_dump(exclude_none=True))
         )
@@ -54,7 +62,7 @@ class MovementRouter:
         query_params: MovementQueryParams = Depends(),
         meta: Meta = Depends(get_meta),
     ) -> PaginatedDataResponse[MovementResponse]:
-        """Get all movements."""
+        """List all inventory movements with optional filtering. Supports pagination."""
         result = handler.handle(
             GetAllMovementsQuery(**query_params.model_dump(exclude_none=True))
         )

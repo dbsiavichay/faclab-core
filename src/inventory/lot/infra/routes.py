@@ -20,7 +20,14 @@ from src.inventory.lot.infra.validators import (
     LotUpdateRequest,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class LotRouter:
@@ -33,21 +40,25 @@ class LotRouter:
             "",
             response_model=DataResponse[LotResponse],
             summary="Create lot",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[LotResponse],
             summary="Update lot",
+            responses=RESPONSES_COMMAND,
         )(self.update)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[LotResponse],
             summary="Get lots",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[LotResponse],
             summary="Get lot by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
 
     def create(

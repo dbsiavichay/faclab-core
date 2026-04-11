@@ -1,48 +1,49 @@
-"""Pydantic schemas para validacion y serializacion de Shifts"""
+"""Pydantic schemas for Shift validation and serialization."""
 
 from datetime import datetime
 from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
+from src.pos.shift.domain.entities import ShiftStatus
 from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
 class OpenShiftRequest(BaseModel):
-    """Schema para abrir un turno"""
+    """Open a new cashier shift."""
 
     cashier_name: str = Field(
         ...,
         max_length=128,
-        description="Nombre del cajero",
+        description="Cashier name",
         validation_alias=AliasChoices("cashierName", "cashier_name"),
         serialization_alias="cashierName",
     )
     opening_balance: Decimal = Field(
         ...,
         ge=0,
-        description="Balance de apertura",
+        description="Opening cash balance",
         validation_alias=AliasChoices("openingBalance", "opening_balance"),
         serialization_alias="openingBalance",
     )
-    notes: str | None = Field(None, max_length=512, description="Notas adicionales")
+    notes: str | None = Field(None, max_length=512, description="Additional notes")
 
 
 class CloseShiftRequest(BaseModel):
-    """Schema para cerrar un turno"""
+    """Close the current shift."""
 
     closing_balance: Decimal = Field(
         ...,
         ge=0,
-        description="Balance de cierre",
+        description="Actual closing cash balance (counted)",
         validation_alias=AliasChoices("closingBalance", "closing_balance"),
         serialization_alias="closingBalance",
     )
-    notes: str | None = Field(None, max_length=512, description="Notas adicionales")
+    notes: str | None = Field(None, max_length=512, description="Additional notes")
 
 
 class ShiftResponse(BaseModel):
-    """Schema para respuesta de un turno"""
+    """Shift details."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -81,9 +82,9 @@ class ShiftResponse(BaseModel):
         None,
         validation_alias=AliasChoices("discrepancy"),
     )
-    status: str
+    status: ShiftStatus = Field(description="Current shift status")
     notes: str | None = None
 
 
 class ShiftQueryParams(QueryParams):
-    status: str | None = None
+    status: ShiftStatus | None = Field(None, description="Filter by shift status")

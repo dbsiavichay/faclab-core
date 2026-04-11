@@ -17,7 +17,7 @@ from src.inventory.alert.infra.validators import (
     StockAlertResponse,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import ListResponse, Meta
+from src.shared.infra.validators import RESPONSES_LIST, ListResponse, Meta
 
 
 class AlertRouter:
@@ -30,21 +30,25 @@ class AlertRouter:
             "/low-stock",
             response_model=ListResponse[StockAlertResponse],
             summary="Get low stock alerts",
+            responses=RESPONSES_LIST,
         )(self.low_stock)
         self.router.get(
             "/out-of-stock",
             response_model=ListResponse[StockAlertResponse],
             summary="Get out of stock alerts",
+            responses=RESPONSES_LIST,
         )(self.out_of_stock)
         self.router.get(
             "/reorder-point",
             response_model=ListResponse[StockAlertResponse],
             summary="Get reorder point alerts",
+            responses=RESPONSES_LIST,
         )(self.reorder_point)
         self.router.get(
             "/expiring-lots",
             response_model=ListResponse[StockAlertResponse],
             summary="Get expiring lots alerts",
+            responses=RESPONSES_LIST,
         )(self.expiring_lots)
 
     def low_stock(

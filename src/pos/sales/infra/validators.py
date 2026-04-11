@@ -1,41 +1,43 @@
-"""Pydantic schemas para validacion POS Sales"""
+"""Pydantic schemas for POS Sales validation and serialization."""
 
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
+from src.sales.domain.entities import PaymentMethod, SaleStatus
 from src.shared.infra.validators import DecimalNumber
 
 
 class ParkSaleRequest(BaseModel):
-    """Schema para aparcar una venta"""
+    """Park (hold) a sale for later."""
 
     reason: str | None = Field(
-        None, max_length=512, description="Razon para aparcar la venta"
+        None, max_length=512, description="Reason for parking the sale"
     )
 
 
 class ApplyDiscountRequest(BaseModel):
-    """Schema para aplicar descuento a una venta"""
+    """Apply a discount to an entire sale."""
 
-    discount_type: str = Field(
+    discount_type: Literal["PERCENTAGE", "AMOUNT"] = Field(
         ...,
-        description="Tipo de descuento: PERCENTAGE o AMOUNT",
+        description="Discount type: PERCENTAGE (percentage off) or AMOUNT (fixed amount off)",
         validation_alias=AliasChoices("discountType", "discount_type"),
         serialization_alias="discountType",
     )
     discount_value: Decimal = Field(
         ...,
         ge=0,
-        description="Valor del descuento",
+        description="Discount value (percentage or fixed amount depending on discountType)",
         validation_alias=AliasChoices("discountValue", "discount_value"),
         serialization_alias="discountValue",
     )
 
 
 class OverridePriceRequest(BaseModel):
-    """Schema para sobreescribir el precio de un item"""
+    """Override the price of a sale item (requires a reason)."""
 
     new_price: Decimal = Field(
         ...,
@@ -47,97 +49,95 @@ class OverridePriceRequest(BaseModel):
 
 
 class POSSaleRequest(BaseModel):
-    """Schema para crear una venta desde POS"""
+    """Create a new POS sale in DRAFT status."""
 
     customer_id: int | None = Field(
         None,
         gt=0,
-        description="ID del cliente (opcional si es consumidor final)",
+        description="Customer ID (optional for final consumers)",
         validation_alias=AliasChoices("customerId", "customer_id"),
         serialization_alias="customerId",
     )
     is_final_consumer: bool = Field(
         False,
-        description="Indica si es consumidor final",
+        description="Whether this is a final consumer (anonymous) sale",
         validation_alias=AliasChoices("isFinalConsumer", "is_final_consumer"),
         serialization_alias="isFinalConsumer",
     )
-    notes: str | None = Field(None, max_length=512, description="Notas adicionales")
+    notes: str | None = Field(None, max_length=512, description="Additional notes")
     created_by: str | None = Field(
         None,
         max_length=64,
-        description="Usuario que crea",
+        description="User who created the sale",
         validation_alias=AliasChoices("createdBy", "created_by"),
         serialization_alias="createdBy",
     )
 
 
 class QuickSaleItemInput(BaseModel):
-    """Schema para un item de venta rapida"""
+    """Line item for a quick sale."""
 
     product_id: int = Field(
         ...,
         gt=0,
-        description="ID del producto",
+        description="Product ID",
         validation_alias=AliasChoices("productId", "product_id"),
         serialization_alias="productId",
     )
-    quantity: int = Field(..., gt=0, description="Cantidad")
+    quantity: int = Field(..., gt=0, description="Quantity to sell")
     unit_price: Decimal | None = Field(
         None,
         gt=0,
-        description="Precio unitario (si no se envia, usa el precio del producto)",
+        description="Unit price override (uses product sale price if omitted)",
         validation_alias=AliasChoices("unitPrice", "unit_price"),
         serialization_alias="unitPrice",
     )
     discount: Decimal = Field(
-        Decimal("0"), ge=0, le=100, description="Porcentaje de descuento"
+        Decimal("0"), ge=0, le=100, description="Discount percentage (0-100)"
     )
 
 
 class QuickSalePaymentInput(BaseModel):
-    """Schema para un pago de venta rapida"""
+    """Payment for a quick sale."""
 
-    amount: Decimal = Field(..., gt=0, description="Monto del pago")
-    payment_method: str = Field(
+    amount: Decimal = Field(..., gt=0, description="Payment amount")
+    payment_method: PaymentMethod = Field(
         ...,
-        description="Metodo de pago",
+        description="Payment method",
         validation_alias=AliasChoices("paymentMethod", "payment_method"),
         serialization_alias="paymentMethod",
     )
-    reference: str | None = Field(
-        None, max_length=128, description="Referencia del pago"
-    )
+    reference: str | None = Field(None, max_length=128, description="Payment reference")
 
 
 class QuickSaleRequest(BaseModel):
-    """Schema para venta rapida (checkout completo en un request)"""
+    """Complete checkout in a single request — creates sale, adds items, registers payments, and confirms."""
 
     customer_id: int | None = Field(
         None,
         gt=0,
-        description="ID del cliente (si no se envia, es consumidor final)",
+        description="Customer ID (final consumer if omitted)",
         validation_alias=AliasChoices("customerId", "customer_id"),
         serialization_alias="customerId",
     )
     items: list[QuickSaleItemInput] = Field(
-        ..., min_length=1, description="Items de la venta"
+        ..., min_length=1, description="Line items for the sale"
     )
     payments: list[QuickSalePaymentInput] = Field(
-        ..., min_length=1, description="Pagos de la venta"
+        ..., min_length=1, description="Payments (total must cover the sale amount)"
     )
-    notes: str | None = Field(None, max_length=512, description="Notas adicionales")
+    notes: str | None = Field(None, max_length=512, description="Additional notes")
     created_by: str | None = Field(
         None,
         max_length=64,
-        description="Usuario que crea",
+        description="User who created the sale",
         validation_alias=AliasChoices("createdBy", "created_by"),
         serialization_alias="createdBy",
     )
 
 
 class ReceiptItemResponse(BaseModel):
-    """Schema para un item del recibo"""
+    """Line item in a receipt."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -182,7 +182,7 @@ class ReceiptItemResponse(BaseModel):
 
 
 class TaxBreakdownResponse(BaseModel):
-    """Schema para desglose de impuestos"""
+    """Tax breakdown by rate."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -204,7 +204,7 @@ class TaxBreakdownResponse(BaseModel):
 
 
 class ReceiptPaymentResponse(BaseModel):
-    """Schema para un pago del recibo"""
+    """Payment entry in a receipt."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -214,7 +214,7 @@ class ReceiptPaymentResponse(BaseModel):
 
 
 class CustomerReceiptResponse(BaseModel):
-    """Schema para datos del cliente en el recibo"""
+    """Customer info on a receipt."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -228,7 +228,7 @@ class CustomerReceiptResponse(BaseModel):
 
 
 class ReceiptResponse(BaseModel):
-    """Schema para respuesta del recibo completo"""
+    """Full receipt for a confirmed sale, including items, tax breakdown, and payments."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -242,7 +242,7 @@ class ReceiptResponse(BaseModel):
         validation_alias=AliasChoices("saleDate", "sale_date"),
         serialization_alias="saleDate",
     )
-    status: str
+    status: SaleStatus = Field(description="Current sale status")
     cashier: str | None = None
     customer: CustomerReceiptResponse | None = None
     is_final_consumer: bool = Field(
@@ -258,8 +258,9 @@ class ReceiptResponse(BaseModel):
     )
     subtotal: DecimalNumber
     discount: DecimalNumber
-    discount_type: str | None = Field(
+    discount_type: Literal["PERCENTAGE", "AMOUNT"] | None = Field(
         None,
+        description="Discount type applied to the sale",
         validation_alias=AliasChoices("discountType", "discount_type"),
         serialization_alias="discountType",
     )

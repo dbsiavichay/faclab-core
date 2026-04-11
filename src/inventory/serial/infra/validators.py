@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, Field
 
+from src.inventory.serial.domain.entities import SerialStatus
 from src.shared.infra.validators import QueryParams
 
 
@@ -39,9 +39,7 @@ class SerialNumberRequest(BaseModel):
 
 
 class SerialStatusUpdateRequest(BaseModel):
-    status: Literal["available", "reserved", "sold", "returned", "scrapped"] = Field(
-        ..., description="New status for the serial number"
-    )
+    status: SerialStatus = Field(..., description="New status for the serial number")
 
 
 class SerialNumberResponse(BaseModel):
@@ -55,7 +53,7 @@ class SerialNumberResponse(BaseModel):
         validation_alias=AliasChoices("serialNumber", "serial_number"),
         serialization_alias="serialNumber",
     )
-    status: str
+    status: SerialStatus = Field(description="Current serial number status")
     lot_id: int | None = Field(
         None,
         validation_alias=AliasChoices("lotId", "lot_id"),
@@ -86,5 +84,5 @@ class SerialNumberResponse(BaseModel):
 
 # Query Params
 class SerialQueryParams(QueryParams):
-    product_id: int | None = Field(None, ge=1)
-    status: str | None = None
+    product_id: int | None = Field(None, ge=1, description="Filter by product ID")
+    status: SerialStatus | None = Field(None, description="Filter by serial status")

@@ -20,7 +20,14 @@ from src.inventory.serial.infra.validators import (
     SerialStatusUpdateRequest,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class SerialRouter:
@@ -33,21 +40,25 @@ class SerialRouter:
             "",
             response_model=DataResponse[SerialNumberResponse],
             summary="Create serial number",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[SerialNumberResponse],
             summary="Get serial numbers",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[SerialNumberResponse],
             summary="Get serial number by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
         self.router.put(
             "/{id}/status",
             response_model=DataResponse[SerialNumberResponse],
             summary="Update serial number status",
+            responses=RESPONSES_COMMAND,
         )(self.update_status)
 
     def create(

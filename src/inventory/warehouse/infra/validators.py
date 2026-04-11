@@ -1,33 +1,33 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 
 class WarehouseRequest(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    name: str
-    code: str
-    address: str | None = None
-    city: str | None = None
-    country: str | None = None
-    is_active: bool = True
-    is_default: bool = False
-    manager: str | None = None
-    phone: str | None = None
-    email: str | None = None
+    name: str = Field(description="Warehouse name")
+    code: str = Field(description="Unique warehouse code (e.g. WH-001)")
+    address: str | None = Field(None, description="Street address")
+    city: str | None = Field(None, description="City")
+    country: str | None = Field(None, description="Country")
+    is_active: bool = Field(True, description="Whether the warehouse is active")
+    is_default: bool = Field(False, description="Whether this is the default warehouse")
+    manager: str | None = Field(None, description="Name of the warehouse manager")
+    phone: str | None = Field(None, description="Contact phone number")
+    email: str | None = Field(None, description="Contact email address")
 
 
 class WarehouseResponse(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    id: int
-    name: str
-    code: str
-    address: str | None = None
-    city: str | None = None
-    country: str | None = None
-    is_active: bool
-    is_default: bool
-    manager: str | None = None
-    phone: str | None = None
-    email: str | None = None
+    id: int = Field(description="Warehouse ID")
+    name: str = Field(description="Warehouse name")
+    code: str = Field(description="Unique warehouse code")
+    address: str | None = Field(None, description="Street address")
+    city: str | None = Field(None, description="City")
+    country: str | None = Field(None, description="Country")
+    is_active: bool = Field(description="Whether the warehouse is active")
+    is_default: bool = Field(description="Whether this is the default warehouse")
+    manager: str | None = Field(None, description="Name of the warehouse manager")
+    phone: str | None = Field(None, description="Contact phone number")
+    email: str | None = Field(None, description="Contact email address")
