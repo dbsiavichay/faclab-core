@@ -38,6 +38,10 @@ from src.inventory.adjustment.infra.validators import (
 )
 from src.shared.infra.dependencies import get_meta
 from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_DELETE,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
     DataResponse,
     ListResponse,
     Meta,
@@ -55,44 +59,55 @@ class AdjustmentRouter:
             "",
             response_model=PaginatedDataResponse[AdjustmentResponse],
             summary="Get all adjustments",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.post(
             "",
             response_model=DataResponse[AdjustmentResponse],
             summary="Create adjustment",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.get(
             "/{id}",
             response_model=DataResponse[AdjustmentResponse],
             summary="Get adjustment by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
         self.router.put(
             "/{id}",
             response_model=DataResponse[AdjustmentResponse],
             summary="Update adjustment",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", status_code=204, summary="Delete adjustment")(
-            self.delete
-        )
+        self.router.delete(
+            "/{id}",
+            status_code=204,
+            summary="Delete adjustment",
+            responses=RESPONSES_DELETE,
+        )(self.delete)
         self.router.post(
             "/{id}/confirm",
             response_model=DataResponse[AdjustmentResponse],
             summary="Confirm adjustment",
+            responses=RESPONSES_COMMAND,
         )(self.confirm)
         self.router.post(
             "/{id}/cancel",
             response_model=DataResponse[AdjustmentResponse],
             summary="Cancel adjustment",
+            responses=RESPONSES_COMMAND,
         )(self.cancel)
         self.router.post(
             "/{id}/items",
             response_model=DataResponse[AdjustmentItemResponse],
             summary="Add item to adjustment",
+            responses=RESPONSES_COMMAND,
         )(self.add_item)
         self.router.get(
             "/{id}/items",
             response_model=ListResponse[AdjustmentItemResponse],
             summary="Get adjustment items",
+            responses=RESPONSES_LIST,
         )(self.get_items)
 
     def get_all(
@@ -223,10 +238,14 @@ class AdjustmentItemRouter:
             "/{id}",
             response_model=DataResponse[AdjustmentItemResponse],
             summary="Update adjustment item",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", status_code=204, summary="Remove adjustment item")(
-            self.remove
-        )
+        self.router.delete(
+            "/{id}",
+            status_code=204,
+            summary="Remove adjustment item",
+            responses=RESPONSES_DELETE,
+        )(self.remove)
 
     def update(
         self,

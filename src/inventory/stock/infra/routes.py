@@ -7,7 +7,7 @@ from src.inventory.stock.app.queries.stock import (
 )
 from src.inventory.stock.infra.validators import StockQueryParams, StockResponse
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import Meta, PaginatedDataResponse
+from src.shared.infra.validators import RESPONSES_LIST, Meta, PaginatedDataResponse
 
 
 class StockRouter:
@@ -21,6 +21,7 @@ class StockRouter:
             "",
             response_model=PaginatedDataResponse[StockResponse],
             summary="Get all stocks",
+            responses=RESPONSES_LIST,
         )(self.get_all)
 
     def get_all(
@@ -29,7 +30,7 @@ class StockRouter:
         query_params: StockQueryParams = Depends(),
         meta: Meta = Depends(get_meta),
     ) -> PaginatedDataResponse[StockResponse]:
-        """Gets all products stock."""
+        """List current stock levels per product and location. Supports filtering and pagination."""
         result = handler.handle(
             GetAllStocksQuery(**query_params.model_dump(exclude_none=True))
         )

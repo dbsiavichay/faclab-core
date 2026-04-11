@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
+from src.pos.refund.domain.entities import RefundStatus
+from src.sales.domain.entities import PaymentMethod
 from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
@@ -10,52 +12,52 @@ class CreateRefundItemInput(BaseModel):
     sale_item_id: int = Field(
         ...,
         gt=0,
-        description="ID del item de venta original",
+        description="Original sale item ID to refund",
         validation_alias=AliasChoices("saleItemId", "sale_item_id"),
         serialization_alias="saleItemId",
     )
-    quantity: int = Field(..., gt=0, description="Cantidad a devolver")
+    quantity: int = Field(..., gt=0, description="Quantity to refund")
 
 
 class CreateRefundRequest(BaseModel):
     original_sale_id: int = Field(
         ...,
         gt=0,
-        description="ID de la venta original",
+        description="Original sale ID to refund against",
         validation_alias=AliasChoices("originalSaleId", "original_sale_id"),
         serialization_alias="originalSaleId",
     )
     items: list[CreateRefundItemInput] = Field(
-        ..., min_length=1, description="Items a devolver"
+        ..., min_length=1, description="Items to refund (partial or total)"
     )
     reason: str | None = Field(
-        None, max_length=512, description="Razon de la devolucion"
+        None, max_length=512, description="Reason for the refund"
     )
     refunded_by: str | None = Field(
         None,
         max_length=64,
-        description="Usuario que realiza la devolucion",
+        description="User who processed the refund",
         validation_alias=AliasChoices("refundedBy", "refunded_by"),
         serialization_alias="refundedBy",
     )
 
 
 class ProcessRefundPaymentInput(BaseModel):
-    amount: Decimal = Field(..., gt=0, description="Monto del reembolso")
-    payment_method: str = Field(
+    amount: Decimal = Field(..., gt=0, description="Refund payment amount")
+    payment_method: PaymentMethod = Field(
         ...,
-        description="Metodo de pago",
+        description="Payment method for the refund",
         validation_alias=AliasChoices("paymentMethod", "payment_method"),
         serialization_alias="paymentMethod",
     )
-    reference: str | None = Field(
-        None, max_length=128, description="Referencia del pago"
-    )
+    reference: str | None = Field(None, max_length=128, description="Payment reference")
 
 
 class ProcessRefundRequest(BaseModel):
     payments: list[ProcessRefundPaymentInput] = Field(
-        ..., min_length=1, description="Pagos del reembolso"
+        ...,
+        min_length=1,
+        description="Refund payments (total must cover the refund amount)",
     )
 
 
@@ -108,8 +110,9 @@ class RefundPaymentResponse(BaseModel):
         serialization_alias="refundId",
     )
     amount: DecimalNumber
-    payment_method: str = Field(
+    payment_method: PaymentMethod = Field(
         ...,
+        description="Payment method used for the refund",
         validation_alias=AliasChoices("paymentMethod", "payment_method"),
         serialization_alias="paymentMethod",
     )
@@ -144,7 +147,7 @@ class RefundResponse(BaseModel):
     tax: DecimalNumber
     total: DecimalNumber
     reason: str | None
-    status: str
+    status: RefundStatus = Field(description="Current refund status")
     refunded_by: str | None = Field(
         None,
         validation_alias=AliasChoices("refundedBy", "refunded_by"),
@@ -165,5 +168,5 @@ class RefundDetailResponse(RefundResponse):
 
 
 class RefundQueryParams(QueryParams):
-    sale_id: int | None = Field(None, ge=1)
-    status: str | None = None
+    sale_id: int | None = Field(None, ge=1, description="Filter by original sale ID")
+    status: RefundStatus | None = Field(None, description="Filter by refund status")

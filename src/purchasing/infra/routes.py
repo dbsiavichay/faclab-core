@@ -52,6 +52,10 @@ from src.purchasing.infra.validators import (
 )
 from src.shared.infra.dependencies import get_meta
 from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_DELETE,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
     DataResponse,
     ListResponse,
     Meta,
@@ -69,47 +73,58 @@ class PurchaseOrderRouter:
             "",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Create purchase order",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Update purchase order",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete purchase order")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete purchase order", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[PurchaseOrderResponse],
             summary="Get all purchase orders",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Get purchase order by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
         self.router.post(
             "/{id}/send",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Send purchase order to supplier",
+            responses=RESPONSES_COMMAND,
         )(self.send)
         self.router.post(
             "/{id}/cancel",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Cancel purchase order",
+            responses=RESPONSES_COMMAND,
         )(self.cancel)
         self.router.post(
             "/{id}/receive",
             response_model=DataResponse[PurchaseReceiptResponse],
             summary="Receive goods for purchase order",
+            responses=RESPONSES_COMMAND,
         )(self.receive)
         self.router.get(
             "/{id}/items",
             response_model=ListResponse[PurchaseOrderItemResponse],
             summary="Get items for a purchase order",
+            responses=RESPONSES_LIST,
         )(self.get_items)
         self.router.get(
             "/{id}/receipts",
             response_model=ListResponse[PurchaseReceiptResponse],
             summary="Get receipts for a purchase order",
+            responses=RESPONSES_LIST,
         )(self.get_receipts)
 
     def create(
@@ -271,13 +286,17 @@ class POItemRouter:
             "",
             response_model=DataResponse[PurchaseOrderItemResponse],
             summary="Add item to purchase order",
+            responses=RESPONSES_COMMAND,
         )(self.add)
         self.router.put(
             "/{id}",
             response_model=DataResponse[PurchaseOrderItemResponse],
             summary="Update purchase order item",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Remove purchase order item")(self.remove)
+        self.router.delete(
+            "/{id}", summary="Remove purchase order item", responses=RESPONSES_DELETE
+        )(self.remove)
 
     def add(
         self,

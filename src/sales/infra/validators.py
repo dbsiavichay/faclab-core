@@ -1,97 +1,97 @@
-"""Pydantic schemas para validación y serialización de Sales"""
+"""Pydantic schemas for Sales validation and serialization."""
 
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
+from src.sales.domain.entities import PaymentMethod, PaymentStatus, SaleStatus
 from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
 class SaleItemRequest(BaseModel):
-    """Schema para input de un item de venta"""
+    """Add a line item to a sale."""
 
     product_id: int = Field(
         ...,
         gt=0,
-        description="ID del producto",
+        description="Product ID",
         validation_alias=AliasChoices("productId", "product_id"),
         serialization_alias="productId",
     )
-    quantity: int = Field(..., gt=0, description="Cantidad del producto")
+    quantity: int = Field(..., gt=0, description="Quantity to sell")
     unit_price: Decimal = Field(
         ...,
         gt=0,
-        description="Precio unitario",
+        description="Unit price",
         validation_alias=AliasChoices("unitPrice", "unit_price"),
         serialization_alias="unitPrice",
     )
     discount: Decimal = Field(
-        Decimal("0"), ge=0, le=100, description="Porcentaje de descuento"
+        Decimal("0"), ge=0, le=100, description="Discount percentage (0-100)"
     )
 
 
 class SaleItemUpdateRequest(BaseModel):
-    """Schema para actualizar un item de venta"""
+    """Update an existing sale line item."""
 
-    quantity: int | None = Field(None, gt=0, description="Nueva cantidad")
+    quantity: int | None = Field(None, gt=0, description="New quantity")
     discount: Decimal | None = Field(
-        None, ge=0, le=100, description="Nuevo porcentaje de descuento"
+        None, ge=0, le=100, description="New discount percentage (0-100)"
     )
 
 
 class SaleRequest(BaseModel):
-    """Schema para crear una venta"""
+    """Create a new sale in DRAFT status."""
 
     customer_id: int | None = Field(
         None,
         gt=0,
-        description="ID del cliente",
+        description="Customer ID (optional for final consumers)",
         validation_alias=AliasChoices("customerId", "customer_id"),
         serialization_alias="customerId",
     )
     is_final_consumer: bool = Field(
         False,
-        description="Indica si es consumidor final",
+        description="Whether this is a final consumer (anonymous) sale",
         validation_alias=AliasChoices("isFinalConsumer", "is_final_consumer"),
         serialization_alias="isFinalConsumer",
     )
-    notes: str | None = Field(None, max_length=512, description="Notas adicionales")
+    notes: str | None = Field(None, max_length=512, description="Additional notes")
     created_by: str | None = Field(
         None,
         max_length=64,
-        description="Usuario que crea",
+        description="User who created the sale",
         validation_alias=AliasChoices("createdBy", "created_by"),
         serialization_alias="createdBy",
     )
 
 
 class PaymentRequest(BaseModel):
-    """Schema para registrar un pago"""
+    """Register a payment against a sale."""
 
-    amount: Decimal = Field(..., gt=0, description="Monto del pago")
-    payment_method: str = Field(
+    amount: Decimal = Field(..., gt=0, description="Payment amount")
+    payment_method: PaymentMethod = Field(
         ...,
-        description="Método de pago",
+        description="Payment method",
         validation_alias=AliasChoices("paymentMethod", "payment_method"),
         serialization_alias="paymentMethod",
     )
     reference: str | None = Field(
-        None, max_length=128, description="Referencia del pago"
+        None, max_length=128, description="Payment reference (e.g. transaction ID)"
     )
-    notes: str | None = Field(None, max_length=512, description="Notas del pago")
+    notes: str | None = Field(None, max_length=512, description="Payment notes")
 
 
 class CancelSaleRequest(BaseModel):
-    """Schema para cancelar una venta"""
+    """Cancel a sale."""
 
-    reason: str | None = Field(
-        None, max_length=512, description="Razón de la cancelación"
-    )
+    reason: str | None = Field(None, max_length=512, description="Cancellation reason")
 
 
 class SaleItemResponse(BaseModel):
-    """Schema para respuesta de un item de venta"""
+    """Sale line item details."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -137,7 +137,7 @@ class SaleItemResponse(BaseModel):
 
 
 class PaymentResponse(BaseModel):
-    """Schema para respuesta de un pago"""
+    """Payment record details."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -148,8 +148,9 @@ class PaymentResponse(BaseModel):
         serialization_alias="saleId",
     )
     amount: DecimalNumber
-    payment_method: str = Field(
+    payment_method: PaymentMethod = Field(
         ...,
+        description="Payment method used",
         validation_alias=AliasChoices("paymentMethod", "payment_method"),
         serialization_alias="paymentMethod",
     )
@@ -168,7 +169,7 @@ class PaymentResponse(BaseModel):
 
 
 class SaleResponse(BaseModel):
-    """Schema para respuesta de una venta"""
+    """Sale resource details."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -188,7 +189,7 @@ class SaleResponse(BaseModel):
         validation_alias=AliasChoices("shiftId", "shift_id"),
         serialization_alias="shiftId",
     )
-    status: str
+    status: SaleStatus = Field(description="Current sale status")
     sale_date: datetime | None = Field(
         None,
         validation_alias=AliasChoices("saleDate", "sale_date"),
@@ -197,8 +198,9 @@ class SaleResponse(BaseModel):
     subtotal: DecimalNumber
     tax: DecimalNumber
     discount: DecimalNumber
-    discount_type: str | None = Field(
+    discount_type: Literal["PERCENTAGE", "AMOUNT"] | None = Field(
         None,
+        description="Type of discount applied to the sale",
         validation_alias=AliasChoices("discountType", "discount_type"),
         serialization_alias="discountType",
     )
@@ -208,8 +210,9 @@ class SaleResponse(BaseModel):
         serialization_alias="discountValue",
     )
     total: DecimalNumber
-    payment_status: str = Field(
+    payment_status: PaymentStatus = Field(
         ...,
+        description="Current payment status",
         validation_alias=AliasChoices("paymentStatus", "payment_status"),
         serialization_alias="paymentStatus",
     )
@@ -242,7 +245,7 @@ class SaleResponse(BaseModel):
 
 
 class SaleDetailResponse(SaleResponse):
-    """Schema para respuesta de una venta con items y pagos"""
+    """Sale with items and payments included."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -252,5 +255,5 @@ class SaleDetailResponse(SaleResponse):
 
 # Query Params
 class SaleQueryParams(QueryParams):
-    customer_id: int | None = Field(None, ge=1)
-    status: str | None = None
+    customer_id: int | None = Field(None, ge=1, description="Filter by customer ID")
+    status: SaleStatus | None = Field(None, description="Filter by sale status")

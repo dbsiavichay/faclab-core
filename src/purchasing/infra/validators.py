@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, BaseModel, Field
 
+from src.purchasing.domain.entities import PurchaseOrderStatus
 from src.shared.infra.validators import DecimalNumber, QueryParams
 
 
@@ -35,7 +36,7 @@ class PurchaseOrderResponse(BaseModel):
         validation_alias=AliasChoices("orderNumber", "order_number"),
         serialization_alias="orderNumber",
     )
-    status: str
+    status: PurchaseOrderStatus = Field(description="Current purchase order status")
     subtotal: DecimalNumber
     tax: DecimalNumber
     total: DecimalNumber
@@ -205,5 +206,7 @@ class PurchaseReceiptResponse(BaseModel):
 
 # Query Params
 class PurchaseOrderQueryParams(QueryParams):
-    status: str | None = None
+    status: PurchaseOrderStatus | None = Field(
+        None, description="Filter by order status"
+    )
     supplier_id: int | None = Field(None, ge=1)

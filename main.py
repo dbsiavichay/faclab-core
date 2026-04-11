@@ -108,28 +108,38 @@ _SCALAR_TEMPLATE = """<!DOCTYPE html>
 
 
 def _scalar_response(title: str, schema_url: str) -> HTMLResponse:
-    cfg = json.dumps({"layout": "sidebar", "theme": "default", "searchHotKey": "k"})
+    cfg = json.dumps(
+        {
+            "layout": "sidebar",
+            "theme": "default",
+            "searchHotKey": "k",
+            "defaultHttpClient": {
+                "targetKey": "python",
+                "clientKey": "requests",
+            },
+            "withDefaultFonts": True,
+            "hideDownloadButton": False,
+            "hideDarkModeToggle": False,
+        }
+    )
     return HTMLResponse(
         _SCALAR_TEMPLATE.format(title=title, schema_url=schema_url, config=cfg)
     )
 
 
-def _filtered_schema(tag_prefix: str) -> dict:
-    """Return a deepcopy of the full schema containing only operations whose tags start with *tag_prefix*."""
+def _filtered_schema(path_prefix: str) -> dict:
+    """Return a deepcopy of the full schema containing only operations whose paths start with *path_prefix*."""
     schema = copy.deepcopy(app.openapi())
     used_tags: set[str] = set()
     filtered_paths: dict = {}
 
     for path, path_item in schema.get("paths", {}).items():
-        filtered_ops: dict = {}
-        for method, operation in path_item.items():
-            if isinstance(operation, dict) and any(
-                t.startswith(tag_prefix) for t in operation.get("tags", [])
-            ):
-                filtered_ops[method] = operation
+        if not path.startswith(path_prefix):
+            continue
+        filtered_paths[path] = path_item
+        for _method, operation in path_item.items():
+            if isinstance(operation, dict):
                 used_tags.update(operation.get("tags", []))
-        if filtered_ops:
-            filtered_paths[path] = filtered_ops
 
     schema["paths"] = filtered_paths
     schema["tags"] = [t for t in schema.get("tags", []) if t["name"] in used_tags]
@@ -158,113 +168,103 @@ src.wireup_container = wireup_container
 # Admin API
 admin_router = APIRouter(prefix="/api/admin")
 admin_router.include_router(
-    CategoryRouter().router, prefix="/categories", tags=["admin - categories"]
+    CategoryRouter().router, prefix="/categories", tags=["Categories"]
 )
 admin_router.include_router(
     UnitOfMeasureRouter().router,
     prefix="/units-of-measure",
-    tags=["admin - units of measure"],
+    tags=["Units of Measure"],
 )
 admin_router.include_router(
-    ProductRouter().router, prefix="/products", tags=["admin - products"]
+    ProductRouter().router, prefix="/products", tags=["Products"]
 )
 admin_router.include_router(
-    WarehouseRouter().router, prefix="/warehouses", tags=["admin - warehouses"]
+    WarehouseRouter().router, prefix="/warehouses", tags=["Warehouses"]
 )
 admin_router.include_router(
-    LocationRouter().router, prefix="/locations", tags=["admin - locations"]
+    LocationRouter().router, prefix="/locations", tags=["Locations"]
 )
+admin_router.include_router(StockRouter().router, prefix="/stock", tags=["Stock"])
 admin_router.include_router(
-    StockRouter().router, prefix="/stock", tags=["admin - stock"]
+    MovementRouter().router, prefix="/movements", tags=["Movements"]
 )
+admin_router.include_router(LotRouter().router, prefix="/lots", tags=["Lots"])
+admin_router.include_router(SerialRouter().router, prefix="/serials", tags=["Serials"])
 admin_router.include_router(
-    MovementRouter().router, prefix="/movements", tags=["admin - movements"]
-)
-admin_router.include_router(LotRouter().router, prefix="/lots", tags=["admin - lots"])
-admin_router.include_router(
-    SerialRouter().router, prefix="/serials", tags=["admin - serials"]
-)
-admin_router.include_router(
-    CustomerRouter().router, prefix="/customers", tags=["admin - customers"]
+    CustomerRouter().router, prefix="/customers", tags=["Customers"]
 )
 admin_router.include_router(
     CustomerContactRouter().router,
     prefix="/customer-contacts",
-    tags=["admin - customer-contacts"],
+    tags=["Customer Contacts"],
 )
 admin_router.include_router(
-    SupplierRouter().router, prefix="/suppliers", tags=["admin - suppliers"]
+    SupplierRouter().router, prefix="/suppliers", tags=["Suppliers"]
 )
 admin_router.include_router(
     SupplierContactRouter().router,
     prefix="/supplier-contacts",
-    tags=["admin - supplier-contacts"],
+    tags=["Supplier Contacts"],
 )
 admin_router.include_router(
     SupplierProductRouter().router,
     prefix="/supplier-products",
-    tags=["admin - supplier-products"],
+    tags=["Supplier Products"],
 )
 admin_router.include_router(
     PurchaseOrderRouter().router,
     prefix="/purchase-orders",
-    tags=["admin - purchase-orders"],
+    tags=["Purchase Orders"],
 )
 admin_router.include_router(
     POItemRouter().router,
     prefix="/purchase-order-items",
-    tags=["admin - purchase-order-items"],
+    tags=["Purchase Order Items"],
 )
-admin_router.include_router(
-    SaleRouter().router, prefix="/sales", tags=["admin - sales"]
-)
+admin_router.include_router(SaleRouter().router, prefix="/sales", tags=["Sales"])
 admin_router.include_router(
     AdjustmentRouter().router,
     prefix="/adjustments",
-    tags=["admin - adjustments"],
+    tags=["Adjustments"],
 )
 admin_router.include_router(
     AdjustmentItemRouter().router,
     prefix="/adjustment-items",
-    tags=["admin - adjustment-items"],
+    tags=["Adjustment Items"],
 )
 admin_router.include_router(
     TransferRouter().router,
     prefix="/transfers",
-    tags=["admin - transfers"],
+    tags=["Transfers"],
 )
 admin_router.include_router(
     TransferItemRouter().router,
     prefix="/transfer-items",
-    tags=["admin - transfer-items"],
+    tags=["Transfer Items"],
 )
-admin_router.include_router(
-    AlertRouter().router, prefix="/alerts", tags=["admin - alerts"]
-)
+admin_router.include_router(AlertRouter().router, prefix="/alerts", tags=["Alerts"])
 admin_router.include_router(
     ReportRouter().router,
     prefix="/reports/inventory",
-    tags=["admin - reports"],
+    tags=["Inventory Reports"],
 )
 
 # POS API
 pos_router = APIRouter(prefix="/api/pos")
-pos_router.include_router(POSSaleRouter().router, prefix="/sales", tags=["pos - sales"])
+pos_router.include_router(POSSaleRouter().router, prefix="/sales", tags=["POS Sales"])
+pos_router.include_router(POSShiftRouter().router, prefix="/shifts", tags=["Shifts"])
 pos_router.include_router(
-    POSShiftRouter().router, prefix="/shifts", tags=["pos - shifts"]
+    POSProductRouter().router, prefix="/products", tags=["Product Search"]
 )
 pos_router.include_router(
-    POSProductRouter().router, prefix="/products", tags=["pos - products"]
+    POSCustomerRouter().router, prefix="/customers", tags=["Customer Search"]
+)
+pos_router.include_router(POSRefundRouter().router, prefix="/refunds", tags=["Refunds"])
+pos_router.include_router(
+    POSCashRouter().router, prefix="/shifts", tags=["Cash Drawer"]
 )
 pos_router.include_router(
-    POSCustomerRouter().router, prefix="/customers", tags=["pos - customers"]
-)
-pos_router.include_router(
-    POSRefundRouter().router, prefix="/refunds", tags=["pos - refunds"]
-)
-pos_router.include_router(POSCashRouter().router, prefix="/shifts", tags=["pos - cash"])
-pos_router.include_router(
-    POSReportRouter().router, prefix="/reports", tags=["pos - reports"]
+    POSReportRouter().router, prefix="/reports", tags=["POS Reports"]
 )
 
 # ---------------------------------------------------------------------------
@@ -306,11 +306,11 @@ if _docs.enabled:
 
     @app.get("/openapi/admin.json", include_in_schema=False)
     async def admin_openapi_schema():
-        return JSONResponse(_filtered_schema("admin"))
+        return JSONResponse(_filtered_schema("/api/admin"))
 
     @app.get("/openapi/pos.json", include_in_schema=False)
     async def pos_openapi_schema():
-        return JSONResponse(_filtered_schema("pos"))
+        return JSONResponse(_filtered_schema("/api/pos"))
 
 
 # ---------------------------------------------------------------------------

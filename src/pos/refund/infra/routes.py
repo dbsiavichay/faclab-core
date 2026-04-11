@@ -27,7 +27,14 @@ from src.pos.refund.infra.validators import (
     RefundResponse,
 )
 from src.shared.infra.dependencies import get_meta
-from src.shared.infra.validators import DataResponse, Meta, PaginatedDataResponse
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    Meta,
+    PaginatedDataResponse,
+)
 
 
 class POSRefundRouter:
@@ -41,26 +48,31 @@ class POSRefundRouter:
             response_model=DataResponse[RefundDetailResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Create refund",
+            responses=RESPONSES_COMMAND,
         )(self.create_refund)
         self.router.post(
             "/{refund_id}/process",
             response_model=DataResponse[RefundDetailResponse],
             summary="Process refund",
+            responses=RESPONSES_COMMAND,
         )(self.process_refund)
         self.router.post(
             "/{refund_id}/cancel",
             response_model=DataResponse[RefundResponse],
             summary="Cancel refund",
+            responses=RESPONSES_COMMAND,
         )(self.cancel_refund)
         self.router.get(
             "/{refund_id}",
             response_model=DataResponse[RefundDetailResponse],
             summary="Get refund",
+            responses=RESPONSES_QUERY,
         )(self.get_refund)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[RefundResponse],
             summary="List refunds",
+            responses=RESPONSES_LIST,
         )(self.list_refunds)
 
     def create_refund(
@@ -69,6 +81,11 @@ class POSRefundRouter:
         refund_input: CreateRefundRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[RefundDetailResponse]:
+        """Create a refund for a confirmed sale.
+
+        Specify the items to refund (partial or total). The refund is created in PENDING
+        status and must be processed to register payments and restore inventory.
+        """
         result = handler.handle(
             CreateRefundCommand(
                 original_sale_id=refund_input.original_sale_id,
@@ -86,6 +103,11 @@ class POSRefundRouter:
         process_input: ProcessRefundRequest,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[RefundDetailResponse]:
+        """Process a pending refund by registering refund payments.
+
+        The total of all payments must cover the refund amount. Once processed,
+        inventory IN movements are created to restore stock.
+        """
         result = handler.handle(
             ProcessRefundCommand(
                 refund_id=refund_id,
@@ -100,6 +122,7 @@ class POSRefundRouter:
         refund_id: int,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[RefundResponse]:
+        """Cancel a pending refund. Only refunds that have not been processed can be cancelled."""
         result = handler.handle(CancelRefundCommand(refund_id=refund_id))
         return DataResponse(data=RefundResponse.model_validate(result), meta=meta)
 
@@ -109,6 +132,7 @@ class POSRefundRouter:
         refund_id: int,
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[RefundDetailResponse]:
+        """Retrieve a refund by ID, including its items and payments."""
         result = handler.handle(GetRefundByIdQuery(refund_id=refund_id))
         return DataResponse(data=RefundDetailResponse.model_validate(result), meta=meta)
 
@@ -118,6 +142,7 @@ class POSRefundRouter:
         meta: Meta = Depends(get_meta),
         params: RefundQueryParams = Depends(),
     ) -> PaginatedDataResponse[RefundResponse]:
+        """List refunds with optional filtering by sale ID or status. Supports pagination."""
         result = handler.handle(
             GetRefundsQuery(
                 sale_id=params.sale_id,

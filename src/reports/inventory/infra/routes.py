@@ -29,6 +29,8 @@ from src.reports.inventory.infra.validators import (
 )
 from src.shared.infra.dependencies import get_meta
 from src.shared.infra.validators import (
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
     DataResponse,
     ListResponse,
     Meta,
@@ -46,21 +48,25 @@ class ReportRouter:
             "/valuation",
             response_model=DataResponse[InventoryValuationResponse],
             summary="Inventory valuation report",
+            responses=RESPONSES_QUERY,
         )(self.valuation)
         self.router.get(
             "/rotation",
             response_model=ListResponse[ProductRotationResponse],
             summary="Product rotation report",
+            responses=RESPONSES_LIST,
         )(self.rotation)
         self.router.get(
             "/movements",
             response_model=PaginatedDataResponse[MovementHistoryItemResponse],
             summary="Movement history report",
+            responses=RESPONSES_LIST,
         )(self.movement_history)
         self.router.get(
             "/summary",
             response_model=ListResponse[WarehouseSummaryResponse],
             summary="Warehouse summary report",
+            responses=RESPONSES_LIST,
         )(self.warehouse_summary)
 
     def valuation(

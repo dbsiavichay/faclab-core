@@ -4,7 +4,7 @@ from src.shared.infra.validators import QueryParams
 
 
 class StockResponse(BaseModel):
-    id: int
+    id: int = Field(description="Stock record ID")
     product_id: int = Field(
         ...,
         ge=1,
@@ -12,19 +12,21 @@ class StockResponse(BaseModel):
         validation_alias=AliasChoices("productId", "product_id"),
         serialization_alias="productId",
     )
-    quantity: int
+    quantity: int = Field(description="Current stock quantity on hand")
     location_id: int | None = Field(
         None,
+        description="Storage location ID",
         validation_alias=AliasChoices("locationId", "location_id"),
         serialization_alias="locationId",
     )
     reserved_quantity: int = Field(
         0,
+        description="Quantity reserved for confirmed transfers or orders",
         validation_alias=AliasChoices("reservedQuantity", "reserved_quantity"),
         serialization_alias="reservedQuantity",
     )
 
 
 class StockQueryParams(QueryParams):
-    product_id: int | None = Field(None, ge=1)
-    location_id: int | None = Field(None, ge=1)
+    product_id: int | None = Field(None, ge=1, description="Filter by product ID")
+    location_id: int | None = Field(None, ge=1, description="Filter by location ID")

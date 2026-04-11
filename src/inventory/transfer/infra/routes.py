@@ -40,6 +40,10 @@ from src.inventory.transfer.infra.validators import (
 )
 from src.shared.infra.dependencies import get_meta
 from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_DELETE,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
     DataResponse,
     ListResponse,
     Meta,
@@ -57,49 +61,61 @@ class TransferRouter:
             "",
             response_model=PaginatedDataResponse[TransferResponse],
             summary="Get all transfers",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.post(
             "",
             response_model=DataResponse[TransferResponse],
             summary="Create transfer",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.get(
             "/{id}",
             response_model=DataResponse[TransferResponse],
             summary="Get transfer by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
         self.router.put(
             "/{id}",
             response_model=DataResponse[TransferResponse],
             summary="Update transfer",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", status_code=204, summary="Delete transfer")(
-            self.delete
-        )
+        self.router.delete(
+            "/{id}",
+            status_code=204,
+            summary="Delete transfer",
+            responses=RESPONSES_DELETE,
+        )(self.delete)
         self.router.post(
             "/{id}/confirm",
             response_model=DataResponse[TransferResponse],
             summary="Confirm transfer",
+            responses=RESPONSES_COMMAND,
         )(self.confirm)
         self.router.post(
             "/{id}/receive",
             response_model=DataResponse[TransferResponse],
             summary="Receive transfer",
+            responses=RESPONSES_COMMAND,
         )(self.receive)
         self.router.post(
             "/{id}/cancel",
             response_model=DataResponse[TransferResponse],
             summary="Cancel transfer",
+            responses=RESPONSES_COMMAND,
         )(self.cancel)
         self.router.post(
             "/{id}/items",
             response_model=DataResponse[TransferItemResponse],
             summary="Add item to transfer",
+            responses=RESPONSES_COMMAND,
         )(self.add_item)
         self.router.get(
             "/{id}/items",
             response_model=ListResponse[TransferItemResponse],
             summary="Get transfer items",
+            responses=RESPONSES_LIST,
         )(self.get_items)
 
     def get_all(
@@ -238,10 +254,14 @@ class TransferItemRouter:
             "/{id}",
             response_model=DataResponse[TransferItemResponse],
             summary="Update transfer item",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", status_code=204, summary="Remove transfer item")(
-            self.remove
-        )
+        self.router.delete(
+            "/{id}",
+            status_code=204,
+            summary="Remove transfer item",
+            responses=RESPONSES_DELETE,
+        )(self.remove)
 
     def update(
         self,

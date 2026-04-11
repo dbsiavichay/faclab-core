@@ -3,6 +3,10 @@ from wireup import Injected
 
 from src.shared.infra.dependencies import get_meta
 from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_DELETE,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
     DataResponse,
     ListResponse,
     Meta,
@@ -78,52 +82,64 @@ class SupplierRouter:
             "",
             response_model=DataResponse[SupplierResponse],
             summary="Create supplier",
+            responses=RESPONSES_COMMAND,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[SupplierResponse],
             summary="Update supplier",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete supplier")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete supplier", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[SupplierResponse],
             summary="Get all suppliers",
+            responses=RESPONSES_LIST,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[SupplierResponse],
             summary="Get supplier by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
         self.router.post(
             "/{id}/activate",
             response_model=DataResponse[SupplierResponse],
             summary="Activate supplier",
+            responses=RESPONSES_COMMAND,
         )(self.activate)
         self.router.post(
             "/{id}/deactivate",
             response_model=DataResponse[SupplierResponse],
             summary="Deactivate supplier",
+            responses=RESPONSES_COMMAND,
         )(self.deactivate)
         self.router.post(
             "/{supplier_id}/contacts",
             response_model=DataResponse[SupplierContactResponse],
             summary="Create supplier contact",
+            responses=RESPONSES_COMMAND,
         )(self.create_contact)
         self.router.get(
             "/{supplier_id}/contacts",
             response_model=ListResponse[SupplierContactResponse],
             summary="Get supplier contacts",
+            responses=RESPONSES_LIST,
         )(self.get_supplier_contacts)
         self.router.post(
             "/{supplier_id}/products",
             response_model=DataResponse[SupplierProductResponse],
             summary="Add product to supplier catalog",
+            responses=RESPONSES_COMMAND,
         )(self.create_supplier_product)
         self.router.get(
             "/{supplier_id}/products",
             response_model=ListResponse[SupplierProductResponse],
             summary="Get supplier products",
+            responses=RESPONSES_LIST,
         )(self.get_supplier_products)
 
     def create(
@@ -283,12 +299,16 @@ class SupplierContactRouter:
             "/{id}",
             response_model=DataResponse[SupplierContactResponse],
             summary="Update supplier contact",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete supplier contact")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete supplier contact", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "/{id}",
             response_model=DataResponse[SupplierContactResponse],
             summary="Get supplier contact by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
 
     def update(
@@ -338,17 +358,22 @@ class SupplierProductRouter:
             "/{id}",
             response_model=DataResponse[SupplierProductResponse],
             summary="Update supplier product",
+            responses=RESPONSES_COMMAND,
         )(self.update)
-        self.router.delete("/{id}", summary="Delete supplier product")(self.delete)
+        self.router.delete(
+            "/{id}", summary="Delete supplier product", responses=RESPONSES_DELETE
+        )(self.delete)
         self.router.get(
             "/{id}",
             response_model=DataResponse[SupplierProductResponse],
             summary="Get supplier product by ID",
+            responses=RESPONSES_QUERY,
         )(self.get_by_id)
         self.router.get(
             "/by-product/{product_id}",
             response_model=ListResponse[SupplierProductResponse],
             summary="Get all suppliers for a product",
+            responses=RESPONSES_LIST,
         )(self.get_by_product)
 
     def update(
