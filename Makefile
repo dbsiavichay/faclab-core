@@ -31,3 +31,6 @@ downgrade:  ## Downgrade the database to the previous migration
 
 seed:  ## Seed the database with test data
 	docker compose run --rm api python -m scripts.seed
+
+seed-admin:  ## Bootstrap the initial admin user (idempotent)
+	docker compose run --rm api python -m src.auth.seed

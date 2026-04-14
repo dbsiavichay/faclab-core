@@ -4,6 +4,7 @@ from config import config
 def create_wireup_container():
     from wireup import create_async_container
 
+    from src.auth.infra.container import INJECTABLES as AUTH_INJECTABLES
     from src.catalog.product.infra.container import INJECTABLES as CATALOG_INJECTABLES
     from src.catalog.uom.infra.container import INJECTABLES as UOM_INJECTABLES
     from src.customers.infra.container import INJECTABLES as CUSTOMER_INJECTABLES
@@ -44,6 +45,7 @@ def create_wireup_container():
         injectables=[
             get_db_session,
             EventBusPublisher,
+            *AUTH_INJECTABLES,
             *CATALOG_INJECTABLES,
             *UOM_INJECTABLES,
             *WAREHOUSE_INJECTABLES,

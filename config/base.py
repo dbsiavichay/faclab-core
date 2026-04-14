@@ -54,6 +54,14 @@ class BaseConfig:
     KAFKA_ENABLED = env.bool("KAFKA_ENABLED", False)
 
     #
+    # Auth / JWT config
+    #
+    JWT_SECRET = env("JWT_SECRET", "dev-only-change-me")
+    JWT_ACCESS_TTL_SECONDS = env.int("JWT_ACCESS_TTL_SECONDS", 900)
+    JWT_REFRESH_TTL_SECONDS = env.int("JWT_REFRESH_TTL_SECONDS", 604800)
+    JWT_ISSUER = env("JWT_ISSUER", "faclab-core")
+
+    #
     # Docs config
     #
     DOCS_ENABLED = env.bool("DOCS_ENABLED", True)
