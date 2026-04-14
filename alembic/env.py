@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 # Import all models for autogenerate support
+from src.auth.infra.models import UserModel  # noqa: F401
 from src.catalog.product.infra.models import CategoryModel, ProductModel  # noqa: F401
 from src.catalog.uom.infra.models import UnitOfMeasureModel  # noqa: F401
 from src.customers.infra.models import CustomerContactModel, CustomerModel  # noqa: F401
