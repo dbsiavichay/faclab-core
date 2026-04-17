@@ -1,0 +1,165 @@
+from fastapi import APIRouter, Depends
+from wireup import Injected
+
+from src.auth.app.commands.activate_user import (
+    ActivateUserCommand,
+    ActivateUserCommandHandler,
+)
+from src.auth.app.commands.create_user import (
+    CreateUserCommand,
+    CreateUserCommandHandler,
+)
+from src.auth.app.commands.deactivate_user import (
+    DeactivateUserCommand,
+    DeactivateUserCommandHandler,
+)
+from src.auth.app.commands.update_user_role import (
+    UpdateUserRoleCommand,
+    UpdateUserRoleCommandHandler,
+)
+from src.auth.app.queries.get_users import (
+    GetUserByIdQuery,
+    GetUserByIdQueryHandler,
+    ListUsersQuery,
+    ListUsersQueryHandler,
+)
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
+from src.auth.infra.validators import (
+    CreateUserRequest,
+    UpdateUserRoleRequest,
+    UserQueryParams,
+    UserResponse,
+)
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_LIST,
+    RESPONSES_QUERY,
+    DataResponse,
+    Meta,
+    PaginatedDataResponse,
+)
+
+_perm = [Depends(require_permission(Permission.USER_MANAGE))]
+
+
+class UserAdminRouter:
+    def __init__(self):
+        self.router = APIRouter()
+        self._setup_routes()
+
+    def _setup_routes(self):
+        self.router.get(
+            "",
+            response_model=PaginatedDataResponse[UserResponse],
+            summary="List all users",
+            responses=RESPONSES_LIST,
+            dependencies=_perm,
+        )(self.list_users)
+        self.router.get(
+            "/{user_id}",
+            response_model=DataResponse[UserResponse],
+            summary="Get user by ID",
+            responses=RESPONSES_QUERY,
+            dependencies=_perm,
+        )(self.get_user)
+        self.router.post(
+            "",
+            response_model=DataResponse[UserResponse],
+            summary="Create a new user",
+            responses=RESPONSES_COMMAND,
+            dependencies=_perm,
+        )(self.create_user)
+        self.router.put(
+            "/{user_id}/role",
+            response_model=DataResponse[UserResponse],
+            summary="Update user role",
+            responses=RESPONSES_COMMAND,
+            dependencies=_perm,
+        )(self.update_role)
+        self.router.post(
+            "/{user_id}/activate",
+            response_model=DataResponse[UserResponse],
+            summary="Activate a user",
+            responses=RESPONSES_COMMAND,
+            dependencies=_perm,
+        )(self.activate)
+        self.router.post(
+            "/{user_id}/deactivate",
+            response_model=DataResponse[UserResponse],
+            summary="Deactivate a user",
+            responses=RESPONSES_COMMAND,
+            dependencies=_perm,
+        )(self.deactivate)
+
+    def list_users(
+        self,
+        handler: Injected[ListUsersQueryHandler],
+        query_params: UserQueryParams = Depends(),
+        meta: Meta = Depends(get_meta),
+    ) -> PaginatedDataResponse[UserResponse]:
+        result = handler.handle(
+            ListUsersQuery(**query_params.model_dump(exclude_none=True))
+        )
+        return PaginatedDataResponse(
+            data=[UserResponse.model_validate(u) for u in result["items"]],
+            meta=meta.with_pagination(
+                total=result["total"],
+                limit=result["limit"],
+                offset=result["offset"],
+            ),
+        )
+
+    def get_user(
+        self,
+        handler: Injected[GetUserByIdQueryHandler],
+        user_id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[UserResponse]:
+        result = handler.handle(GetUserByIdQuery(user_id=user_id))
+        return DataResponse(data=UserResponse.model_validate(result), meta=meta)
+
+    def create_user(
+        self,
+        handler: Injected[CreateUserCommandHandler],
+        body: CreateUserRequest,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[UserResponse]:
+        result = handler.handle(
+            CreateUserCommand(
+                username=body.username,
+                email=body.email,
+                password=body.password,
+                role=body.role,
+            )
+        )
+        return DataResponse(data=UserResponse.model_validate(result), meta=meta)
+
+    def update_role(
+        self,
+        handler: Injected[UpdateUserRoleCommandHandler],
+        user_id: int,
+        body: UpdateUserRoleRequest,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[UserResponse]:
+        result = handler.handle(UpdateUserRoleCommand(user_id=user_id, role=body.role))
+        return DataResponse(data=UserResponse.model_validate(result), meta=meta)
+
+    def activate(
+        self,
+        handler: Injected[ActivateUserCommandHandler],
+        user_id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[UserResponse]:
+        result = handler.handle(ActivateUserCommand(user_id=user_id))
+        return DataResponse(data=UserResponse.model_validate(result), meta=meta)
+
+    def deactivate(
+        self,
+        handler: Injected[DeactivateUserCommandHandler],
+        user_id: int,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[UserResponse]:
+        result = handler.handle(DeactivateUserCommand(user_id=user_id))
+        return DataResponse(data=UserResponse.model_validate(result), meta=meta)

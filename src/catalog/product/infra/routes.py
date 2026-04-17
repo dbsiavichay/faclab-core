@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.catalog.product.app.commands.create_category import (
     CreateCategoryCommand,
     CreateCategoryCommandHandler,
@@ -160,32 +162,42 @@ class ProductRouter:
 
     def _setup_routes(self):
         """Sets up all the routes for the router."""
+        _read = [Depends(require_permission(Permission.PRODUCT_READ))]
+        _write = [Depends(require_permission(Permission.PRODUCT_WRITE))]
+
         self.router.post(
             "",
             response_model=DataResponse[ProductResponse],
             summary="Save product",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[ProductResponse],
             summary="Update product",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.delete(
-            "/{id}", summary="Delete product", responses=RESPONSES_DELETE
+            "/{id}",
+            summary="Delete product",
+            responses=RESPONSES_DELETE,
+            dependencies=_write,
         )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[ProductResponse],
             summary="Get all products",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[ProductResponse],
             summary="Get product by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
 
     def create(
