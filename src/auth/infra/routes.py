@@ -1,0 +1,103 @@
+from fastapi import APIRouter, Depends
+from wireup import Injected
+
+from src.auth.app.commands.login import LoginCommand, LoginCommandHandler
+from src.auth.app.commands.refresh_token import (
+    RefreshTokenCommand,
+    RefreshTokenCommandHandler,
+)
+from src.auth.domain.entities import AuthenticatedUser
+from src.auth.infra.dependencies import get_current_user
+from src.auth.infra.validators import (
+    AuthenticatedUserResponse,
+    LoginRequest,
+    RefreshRequest,
+    TokenPairResponse,
+)
+from src.shared.infra.dependencies import get_meta
+from src.shared.infra.validators import (
+    RESPONSES_COMMAND,
+    RESPONSES_QUERY,
+    DataResponse,
+    Meta,
+)
+
+
+class AuthRouter:
+    def __init__(self):
+        self.router = APIRouter()
+        self._setup_routes()
+
+    def _setup_routes(self):
+        self.router.post(
+            "/login",
+            response_model=DataResponse[TokenPairResponse],
+            summary="Login with username and password",
+            responses=RESPONSES_COMMAND,
+        )(self.login)
+        self.router.post(
+            "/refresh",
+            response_model=DataResponse[TokenPairResponse],
+            summary="Refresh an access token",
+            responses=RESPONSES_COMMAND,
+        )(self.refresh)
+        self.router.get(
+            "/me",
+            response_model=DataResponse[AuthenticatedUserResponse],
+            summary="Get the currently authenticated user",
+            responses=RESPONSES_QUERY,
+        )(self.me)
+
+    def login(
+        self,
+        handler: Injected[LoginCommandHandler],
+        credentials: LoginRequest,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TokenPairResponse]:
+        pair = handler.handle(
+            LoginCommand(
+                username=credentials.username,
+                password=credentials.password,
+            )
+        )
+        return DataResponse(
+            data=TokenPairResponse(
+                access_token=pair.access_token,
+                refresh_token=pair.refresh_token,
+                token_type=pair.token_type,
+                expires_in=pair.expires_in,
+            ),
+            meta=meta,
+        )
+
+    def refresh(
+        self,
+        handler: Injected[RefreshTokenCommandHandler],
+        request: RefreshRequest,
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[TokenPairResponse]:
+        pair = handler.handle(RefreshTokenCommand(refresh_token=request.refresh_token))
+        return DataResponse(
+            data=TokenPairResponse(
+                access_token=pair.access_token,
+                refresh_token=pair.refresh_token,
+                token_type=pair.token_type,
+                expires_in=pair.expires_in,
+            ),
+            meta=meta,
+        )
+
+    def me(
+        self,
+        user: AuthenticatedUser = Depends(get_current_user),
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[AuthenticatedUserResponse]:
+        return DataResponse(
+            data=AuthenticatedUserResponse(
+                id=user.id,
+                username=user.username,
+                role=int(user.role),
+                permissions=sorted(p.value for p in user.permissions),
+            ),
+            meta=meta,
+        )

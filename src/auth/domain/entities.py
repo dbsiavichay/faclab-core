@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum
 
@@ -22,3 +22,11 @@ class User(Entity):
     is_active: bool = True
     last_login_at: datetime | None = None
     created_at: datetime | None = None
+
+
+@dataclass(frozen=True)
+class AuthenticatedUser:
+    id: int
+    username: str
+    role: Role
+    permissions: frozenset = field(default_factory=frozenset)

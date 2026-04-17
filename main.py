@@ -10,6 +10,9 @@ from wireup.integration.fastapi import setup as wireup_fastapi_setup
 
 import src
 from config import config
+from src.auth.infra.middleware import AuthMiddleware
+from src.auth.infra.routes import AuthRouter
+from src.auth.infra.token_service import JwtTokenService
 from src.catalog.product.infra.routes import CategoryRouter, ProductRouter
 from src.catalog.uom.infra.routes import UnitOfMeasureRouter
 from src.container import create_wireup_container
@@ -267,10 +270,15 @@ pos_router.include_router(
     POSReportRouter().router, prefix="/reports", tags=["POS Reports"]
 )
 
+# Auth API
+auth_router = APIRouter(prefix="/api/auth")
+auth_router.include_router(AuthRouter().router, tags=["Auth"])
+
 # ---------------------------------------------------------------------------
 # Middleware
 # ---------------------------------------------------------------------------
 
+app.add_middleware(AuthMiddleware, token_service=JwtTokenService())
 app.add_middleware(ErrorHandlingMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -282,6 +290,7 @@ app.add_middleware(
 
 app.include_router(admin_router)
 app.include_router(pos_router)
+app.include_router(auth_router)
 
 # ---------------------------------------------------------------------------
 # Doc endpoints (only registered when DOCS_ENABLED=true)

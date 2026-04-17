@@ -18,3 +18,15 @@ class UserCreated(DomainEvent):
             "email": self.email,
             "role": self.role,
         }
+
+
+@dataclass
+class UserLoggedIn(DomainEvent):
+    user_id: int = 0
+    username: str = ""
+
+    def _payload(self) -> dict[str, Any]:
+        return {
+            "user_id": self.user_id,
+            "username": self.username,
+        }
