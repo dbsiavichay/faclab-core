@@ -1,6 +1,10 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.app.commands.change_password import (
+    ChangePasswordCommand,
+    ChangePasswordCommandHandler,
+)
 from src.auth.app.commands.login import LoginCommand, LoginCommandHandler
 from src.auth.app.commands.refresh_token import (
     RefreshTokenCommand,
@@ -10,6 +14,7 @@ from src.auth.domain.entities import AuthenticatedUser
 from src.auth.infra.dependencies import get_current_user
 from src.auth.infra.validators import (
     AuthenticatedUserResponse,
+    ChangePasswordRequest,
     LoginRequest,
     RefreshRequest,
     TokenPairResponse,
@@ -47,6 +52,12 @@ class AuthRouter:
             summary="Get the currently authenticated user",
             responses=RESPONSES_QUERY,
         )(self.me)
+        self.router.post(
+            "/change-password",
+            status_code=204,
+            summary="Change the current user's password",
+            responses=RESPONSES_COMMAND,
+        )(self.change_password)
 
     def login(
         self,
@@ -100,4 +111,18 @@ class AuthRouter:
                 permissions=sorted(p.value for p in user.permissions),
             ),
             meta=meta,
+        )
+
+    def change_password(
+        self,
+        handler: Injected[ChangePasswordCommandHandler],
+        body: ChangePasswordRequest,
+        user: AuthenticatedUser = Depends(get_current_user),
+    ) -> None:
+        handler.handle(
+            ChangePasswordCommand(
+                user_id=user.id,
+                current_password=body.current_password,
+                new_password=body.new_password,
+            )
         )

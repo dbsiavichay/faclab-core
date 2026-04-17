@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.sales.app.queries.get_payments import (
     GetSalePaymentsQuery,
     GetSalePaymentsQueryHandler,
@@ -40,29 +42,35 @@ class SaleRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.SALE_READ))]
+
         self.router.get(
             "",
             response_model=PaginatedDataResponse[SaleResponse],
             summary="List all sales",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all_sales)
         self.router.get(
             "/{sale_id}",
             response_model=DataResponse[SaleResponse],
             summary="Get sale",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_sale)
         self.router.get(
             "/{sale_id}/items",
             response_model=ListResponse[SaleItemResponse],
             summary="List sale items",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_sale_items)
         self.router.get(
             "/{sale_id}/payments",
             response_model=ListResponse[PaymentResponse],
             summary="List sale payments",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_sale_payments)
 
     def get_all_sales(
