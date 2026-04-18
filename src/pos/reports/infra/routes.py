@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.pos.reports.app.queries.by_payment_method import (
     GetSalesByPaymentMethodQuery,
     GetSalesByPaymentMethodQueryHandler,
@@ -37,29 +39,35 @@ class POSReportRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.REPORT_POS_READ))]
+
         self.router.get(
             "/x-report",
             response_model=DataResponse[XReportResponse],
             summary="X-Report (shift sales summary)",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.x_report)
         self.router.get(
             "/z-report",
             response_model=DataResponse[ZReportResponse],
             summary="Z-Report (shift closing report)",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.z_report)
         self.router.get(
             "/daily",
             response_model=DataResponse[DailySummaryResponse],
             summary="Daily sales summary",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.daily_summary)
         self.router.get(
             "/by-payment-method",
             response_model=ListResponse[PaymentMethodSummaryResponse],
             summary="Sales by payment method",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.by_payment_method)
 
     def x_report(

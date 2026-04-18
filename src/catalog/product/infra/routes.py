@@ -66,32 +66,42 @@ class CategoryRouter:
 
     def _setup_routes(self):
         """Sets up all the routes for the router."""
+        _read = [Depends(require_permission(Permission.PRODUCT_READ))]
+        _write = [Depends(require_permission(Permission.CATEGORY_WRITE))]
+
         self.router.post(
             "",
             response_model=DataResponse[CategoryResponse],
             summary="Save category",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[CategoryResponse],
             summary="Update category",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.delete(
-            "/{id}", summary="Delete category", responses=RESPONSES_DELETE
+            "/{id}",
+            summary="Delete category",
+            responses=RESPONSES_DELETE,
+            dependencies=_write,
         )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[CategoryResponse],
             summary="Get all categories",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[CategoryResponse],
             summary="Get category by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
 
     def create(

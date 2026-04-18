@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.inventory.serial.app.commands.serial import (
     CreateSerialNumberCommand,
     CreateSerialNumberCommandHandler,
@@ -36,29 +38,36 @@ class SerialRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.STOCK_READ))]
+        _write = [Depends(require_permission(Permission.SERIAL_WRITE))]
+
         self.router.post(
             "",
             response_model=DataResponse[SerialNumberResponse],
             summary="Create serial number",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[SerialNumberResponse],
             summary="Get serial numbers",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[SerialNumberResponse],
             summary="Get serial number by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
         self.router.put(
             "/{id}/status",
             response_model=DataResponse[SerialNumberResponse],
             summary="Update serial number status",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update_status)
 
     def create(

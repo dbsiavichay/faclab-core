@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.inventory.alert.app.queries.alerts import (
     GetExpiringLotsAlertsQuery,
     GetExpiringLotsAlertsQueryHandler,
@@ -26,29 +28,35 @@ class AlertRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.ALERT_READ))]
+
         self.router.get(
             "/low-stock",
             response_model=ListResponse[StockAlertResponse],
             summary="Get low stock alerts",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.low_stock)
         self.router.get(
             "/out-of-stock",
             response_model=ListResponse[StockAlertResponse],
             summary="Get out of stock alerts",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.out_of_stock)
         self.router.get(
             "/reorder-point",
             response_model=ListResponse[StockAlertResponse],
             summary="Get reorder point alerts",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.reorder_point)
         self.router.get(
             "/expiring-lots",
             response_model=ListResponse[StockAlertResponse],
             summary="Get expiring lots alerts",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.expiring_lots)
 
     def low_stock(

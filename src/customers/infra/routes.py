@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.customers.app.commands.customer import (
     ActivateCustomerCommand,
     ActivateCustomerCommandHandler,
@@ -62,62 +64,77 @@ class CustomerRouter:
 
     def _setup_routes(self):
         """Sets up all the routes for the router."""
+        _read = [Depends(require_permission(Permission.CUSTOMER_READ))]
+        _write = [Depends(require_permission(Permission.CUSTOMER_WRITE))]
+
         self.router.post(
             "",
             response_model=DataResponse[CustomerResponse],
             summary="Create customer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[CustomerResponse],
             summary="Update customer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.delete(
-            "/{id}", summary="Delete customer", responses=RESPONSES_DELETE
+            "/{id}",
+            summary="Delete customer",
+            responses=RESPONSES_DELETE,
+            dependencies=_write,
         )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[CustomerResponse],
             summary="Get all customers",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[CustomerResponse],
             summary="Get customer by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
         self.router.get(
             "/search/by-tax-id",
             response_model=DataResponse[CustomerResponse],
             summary="Get customer by tax ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_tax_id)
         self.router.post(
             "/{id}/activate",
             response_model=DataResponse[CustomerResponse],
             summary="Activate customer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.activate)
         self.router.post(
             "/{id}/deactivate",
             response_model=DataResponse[CustomerResponse],
             summary="Deactivate customer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.deactivate)
         self.router.post(
             "/{customer_id}/contacts",
             response_model=DataResponse[CustomerContactResponse],
             summary="Create customer contact",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create_contact)
         self.router.get(
             "/{customer_id}/contacts",
             response_model=ListResponse[CustomerContactResponse],
             summary="Get customer contacts",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_customer_contacts)
 
     def create(
@@ -250,20 +267,28 @@ class CustomerContactRouter:
 
     def _setup_routes(self):
         """Sets up all the routes for the router."""
+        _read = [Depends(require_permission(Permission.CUSTOMER_READ))]
+        _write = [Depends(require_permission(Permission.CUSTOMER_WRITE))]
+
         self.router.put(
             "/{id}",
             response_model=DataResponse[CustomerContactResponse],
             summary="Update customer contact",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.delete(
-            "/{id}", summary="Delete customer contact", responses=RESPONSES_DELETE
+            "/{id}",
+            summary="Delete customer contact",
+            responses=RESPONSES_DELETE,
+            dependencies=_write,
         )(self.delete)
         self.router.get(
             "/{id}",
             response_model=DataResponse[CustomerContactResponse],
             summary="Get customer contact by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
 
     def update(

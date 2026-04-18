@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.inventory.movement.app.commands.movement import (
     CreateMovementCommand,
     CreateMovementCommandHandler,
@@ -31,17 +33,22 @@ class MovementRouter:
 
     def _setup_routes(self):
         """Sets up all the routes for the router."""
+        _read = [Depends(require_permission(Permission.STOCK_READ))]
+        _write = [Depends(require_permission(Permission.MOVEMENT_WRITE))]
+
         self.router.post(
             "",
             response_model=DataResponse[MovementResponse],
             summary="Save movement",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[MovementResponse],
             summary="Get all movements",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
 
     def create(

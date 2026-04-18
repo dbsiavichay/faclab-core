@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.purchasing.app.commands.purchase_order import (
     CancelPurchaseOrderCommand,
     CancelPurchaseOrderCommandHandler,
@@ -69,62 +71,79 @@ class PurchaseOrderRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.PURCHASE_READ))]
+        _write = [Depends(require_permission(Permission.PURCHASE_WRITE))]
+        _confirm = [Depends(require_permission(Permission.PURCHASE_CONFIRM))]
+        _receive = [Depends(require_permission(Permission.PURCHASE_RECEIVE))]
+
         self.router.post(
             "",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Create purchase order",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Update purchase order",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.delete(
-            "/{id}", summary="Delete purchase order", responses=RESPONSES_DELETE
+            "/{id}",
+            summary="Delete purchase order",
+            responses=RESPONSES_DELETE,
+            dependencies=_write,
         )(self.delete)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[PurchaseOrderResponse],
             summary="Get all purchase orders",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Get purchase order by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
         self.router.post(
             "/{id}/send",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Send purchase order to supplier",
             responses=RESPONSES_COMMAND,
+            dependencies=_confirm,
         )(self.send)
         self.router.post(
             "/{id}/cancel",
             response_model=DataResponse[PurchaseOrderResponse],
             summary="Cancel purchase order",
             responses=RESPONSES_COMMAND,
+            dependencies=_confirm,
         )(self.cancel)
         self.router.post(
             "/{id}/receive",
             response_model=DataResponse[PurchaseReceiptResponse],
             summary="Receive goods for purchase order",
             responses=RESPONSES_COMMAND,
+            dependencies=_receive,
         )(self.receive)
         self.router.get(
             "/{id}/items",
             response_model=ListResponse[PurchaseOrderItemResponse],
             summary="Get items for a purchase order",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_items)
         self.router.get(
             "/{id}/receipts",
             response_model=ListResponse[PurchaseReceiptResponse],
             summary="Get receipts for a purchase order",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_receipts)
 
     def create(
@@ -282,20 +301,27 @@ class POItemRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _write = [Depends(require_permission(Permission.PURCHASE_WRITE))]
+
         self.router.post(
             "",
             response_model=DataResponse[PurchaseOrderItemResponse],
             summary="Add item to purchase order",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.add)
         self.router.put(
             "/{id}",
             response_model=DataResponse[PurchaseOrderItemResponse],
             summary="Update purchase order item",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.delete(
-            "/{id}", summary="Remove purchase order item", responses=RESPONSES_DELETE
+            "/{id}",
+            summary="Remove purchase order item",
+            responses=RESPONSES_DELETE,
+            dependencies=_write,
         )(self.remove)
 
     def add(
