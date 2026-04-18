@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.inventory.stock.app.queries.stock import (
     GetAllStocksQuery,
     GetAllStocksQueryHandler,
@@ -17,11 +19,14 @@ class StockRouter:
 
     def _setup_routes(self):
         """Sets up all the routes for the router."""
+        _read = [Depends(require_permission(Permission.STOCK_READ))]
+
         self.router.get(
             "",
             response_model=PaginatedDataResponse[StockResponse],
             summary="Get all stocks",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
 
     def get_all(

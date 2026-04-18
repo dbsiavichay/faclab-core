@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, status
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.pos.shift.app.commands.close_shift import (
     CloseShiftCommand,
     CloseShiftCommandHandler,
@@ -42,36 +44,43 @@ class POSShiftRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _pos = [Depends(require_permission(Permission.POS_OPERATE))]
+
         self.router.post(
             "/open",
             response_model=DataResponse[ShiftResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Open shift",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.open_shift)
         self.router.post(
             "/{shift_id}/close",
             response_model=DataResponse[ShiftResponse],
             summary="Close shift",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.close_shift)
         self.router.get(
             "/active",
             response_model=DataResponse[ShiftResponse | None],
             summary="Get active shift",
             responses=RESPONSES_QUERY,
+            dependencies=_pos,
         )(self.get_active_shift)
         self.router.get(
             "/{shift_id}",
             response_model=DataResponse[ShiftResponse],
             summary="Get shift by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_pos,
         )(self.get_shift)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[ShiftResponse],
             summary="List all shifts",
             responses=RESPONSES_LIST,
+            dependencies=_pos,
         )(self.get_all_shifts)
 
     def open_shift(

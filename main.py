@@ -81,6 +81,19 @@ def _custom_openapi() -> dict:
         tags=_docs.openapi_tags,
     )
     schema["x-tagGroups"] = _docs.tag_groups
+    schema.setdefault("components", {})["securitySchemes"] = {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    }
+    schema["security"] = [{"bearerAuth": []}]
+    for public_path in ("/api/auth/login", "/api/auth/refresh"):
+        path_item = schema.get("paths", {}).get(public_path, {})
+        for operation in path_item.values():
+            if isinstance(operation, dict):
+                operation["security"] = []
     app.openapi_schema = schema
     return schema
 

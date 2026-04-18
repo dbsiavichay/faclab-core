@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.inventory.transfer.app.commands.transfer import (
     AddTransferItemCommand,
     AddTransferItemCommandHandler,
@@ -57,65 +59,78 @@ class TransferRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.STOCK_READ))]
+        _write = [Depends(require_permission(Permission.TRANSFER_WRITE))]
+
         self.router.get(
             "",
             response_model=PaginatedDataResponse[TransferResponse],
             summary="Get all transfers",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.post(
             "",
             response_model=DataResponse[TransferResponse],
             summary="Create transfer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.get(
             "/{id}",
             response_model=DataResponse[TransferResponse],
             summary="Get transfer by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
         self.router.put(
             "/{id}",
             response_model=DataResponse[TransferResponse],
             summary="Update transfer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.delete(
             "/{id}",
             status_code=204,
             summary="Delete transfer",
             responses=RESPONSES_DELETE,
+            dependencies=_write,
         )(self.delete)
         self.router.post(
             "/{id}/confirm",
             response_model=DataResponse[TransferResponse],
             summary="Confirm transfer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.confirm)
         self.router.post(
             "/{id}/receive",
             response_model=DataResponse[TransferResponse],
             summary="Receive transfer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.receive)
         self.router.post(
             "/{id}/cancel",
             response_model=DataResponse[TransferResponse],
             summary="Cancel transfer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.cancel)
         self.router.post(
             "/{id}/items",
             response_model=DataResponse[TransferItemResponse],
             summary="Add item to transfer",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.add_item)
         self.router.get(
             "/{id}/items",
             response_model=ListResponse[TransferItemResponse],
             summary="Get transfer items",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_items)
 
     def get_all(
@@ -250,17 +265,21 @@ class TransferItemRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _write = [Depends(require_permission(Permission.TRANSFER_WRITE))]
+
         self.router.put(
             "/{id}",
             response_model=DataResponse[TransferItemResponse],
             summary="Update transfer item",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.delete(
             "/{id}",
             status_code=204,
             summary="Remove transfer item",
             responses=RESPONSES_DELETE,
+            dependencies=_write,
         )(self.remove)
 
     def update(

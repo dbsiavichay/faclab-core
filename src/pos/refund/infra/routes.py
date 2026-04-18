@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, status
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.pos.refund.app.commands.cancel_refund import (
     CancelRefundCommand,
     CancelRefundCommandHandler,
@@ -43,36 +45,44 @@ class POSRefundRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _pos = [Depends(require_permission(Permission.POS_OPERATE))]
+        _approve = [Depends(require_permission(Permission.REFUND_APPROVE))]
+
         self.router.post(
             "",
             response_model=DataResponse[RefundDetailResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Create refund",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.create_refund)
         self.router.post(
             "/{refund_id}/process",
             response_model=DataResponse[RefundDetailResponse],
             summary="Process refund",
             responses=RESPONSES_COMMAND,
+            dependencies=_approve,
         )(self.process_refund)
         self.router.post(
             "/{refund_id}/cancel",
             response_model=DataResponse[RefundResponse],
             summary="Cancel refund",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.cancel_refund)
         self.router.get(
             "/{refund_id}",
             response_model=DataResponse[RefundDetailResponse],
             summary="Get refund",
             responses=RESPONSES_QUERY,
+            dependencies=_pos,
         )(self.get_refund)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[RefundResponse],
             summary="List refunds",
             responses=RESPONSES_LIST,
+            dependencies=_pos,
         )(self.list_refunds)
 
     def create_refund(

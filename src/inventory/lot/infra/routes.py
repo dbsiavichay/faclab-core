@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.inventory.lot.app.commands.lot import (
     CreateLotCommand,
     CreateLotCommandHandler,
@@ -36,29 +38,36 @@ class LotRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.STOCK_READ))]
+        _write = [Depends(require_permission(Permission.LOT_WRITE))]
+
         self.router.post(
             "",
             response_model=DataResponse[LotResponse],
             summary="Create lot",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[LotResponse],
             summary="Update lot",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.get(
             "",
             response_model=PaginatedDataResponse[LotResponse],
             summary="Get lots",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[LotResponse],
             summary="Get lot by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
 
     def create(

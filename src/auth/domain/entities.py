@@ -10,6 +10,7 @@ class Role(IntEnum):
     MANAGER = 2
     OPERATOR = 3
     VIEWER = 4
+    CASHIER = 5
 
 
 @dataclass

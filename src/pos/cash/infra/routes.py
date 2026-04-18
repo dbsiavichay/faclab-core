@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, status
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.pos.cash.app.commands.register_cash_movement import (
     RegisterCashMovementCommand,
     RegisterCashMovementCommandHandler,
@@ -36,24 +38,29 @@ class POSCashRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _pos = [Depends(require_permission(Permission.POS_OPERATE))]
+
         self.router.post(
             "/{shift_id}/cash-movements",
             response_model=DataResponse[CashMovementResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Register cash movement",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.register_cash_movement)
         self.router.get(
             "/{shift_id}/cash-movements",
             response_model=PaginatedDataResponse[CashMovementResponse],
             summary="List cash movements for a shift",
             responses=RESPONSES_LIST,
+            dependencies=_pos,
         )(self.get_cash_movements)
         self.router.get(
             "/{shift_id}/cash-summary",
             response_model=DataResponse[CashSummaryResponse],
             summary="Get cash summary for a shift",
             responses=RESPONSES_QUERY,
+            dependencies=_pos,
         )(self.get_cash_summary)
 
     def register_cash_movement(

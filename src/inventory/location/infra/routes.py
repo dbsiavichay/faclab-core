@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.inventory.location.app.commands.create import (
     CreateLocationCommand,
     CreateLocationCommandHandler,
@@ -38,32 +40,42 @@ class LocationRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.STOCK_READ))]
+        _write = [Depends(require_permission(Permission.LOCATION_WRITE))]
+
         self.router.post(
             "",
             response_model=DataResponse[LocationResponse],
             summary="Create location",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.put(
             "/{id}",
             response_model=DataResponse[LocationResponse],
             summary="Update location",
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.update)
         self.router.delete(
-            "/{id}", summary="Delete location", responses=RESPONSES_DELETE
+            "/{id}",
+            summary="Delete location",
+            responses=RESPONSES_DELETE,
+            dependencies=_write,
         )(self.delete)
         self.router.get(
             "",
             response_model=ListResponse[LocationResponse],
             summary="Get all locations",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.get(
             "/{id}",
             response_model=DataResponse[LocationResponse],
             summary="Get location by ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
 
     def create(

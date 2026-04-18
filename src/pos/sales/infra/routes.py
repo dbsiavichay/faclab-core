@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, status
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.pos.sales.app.commands.apply_discount import (
     ApplySaleDiscountCommand,
     ApplySaleDiscountCommandHandler,
@@ -104,12 +106,15 @@ class POSSaleRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _pos = [Depends(require_permission(Permission.POS_OPERATE))]
+
         self.router.post(
             "",
             response_model=DataResponse[SaleResponse],
             status_code=status.HTTP_201_CREATED,
             summary="Create sale",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.create_sale)
         self.router.post(
             "/quick",
@@ -117,18 +122,21 @@ class POSSaleRouter:
             status_code=status.HTTP_201_CREATED,
             summary="Quick sale (checkout in one request)",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.quick_sale)
         self.router.get(
             "/parked",
             response_model=ListResponse[SaleResponse],
             summary="List parked sales",
             responses=RESPONSES_LIST,
+            dependencies=_pos,
         )(self.get_parked_sales)
         self.router.get(
             "/{sale_id}",
             response_model=DataResponse[SaleResponse],
             summary="Get sale",
             responses=RESPONSES_QUERY,
+            dependencies=_pos,
         )(self.get_sale)
         self.router.post(
             "/{sale_id}/items",
@@ -136,53 +144,62 @@ class POSSaleRouter:
             status_code=status.HTTP_201_CREATED,
             summary="Add item to sale",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.add_sale_item)
         self.router.get(
             "/{sale_id}/items",
             response_model=ListResponse[SaleItemResponse],
             summary="List sale items",
             responses=RESPONSES_LIST,
+            dependencies=_pos,
         )(self.get_sale_items)
         self.router.put(
             "/{sale_id}/items/{item_id}",
             response_model=DataResponse[SaleItemResponse],
             summary="Update sale item",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.update_sale_item)
         self.router.delete(
             "/{sale_id}/items/{item_id}",
             summary="Remove item from sale",
             responses=RESPONSES_DELETE,
+            dependencies=_pos,
         )(self.remove_sale_item)
         self.router.post(
             "/{sale_id}/confirm",
             response_model=DataResponse[SaleResponse],
             summary="Confirm sale",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.confirm_sale)
         self.router.post(
             "/{sale_id}/cancel",
             response_model=DataResponse[SaleResponse],
             summary="Cancel sale",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.cancel_sale)
         self.router.post(
             "/{sale_id}/park",
             response_model=DataResponse[SaleResponse],
             summary="Park sale",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.park_sale)
         self.router.post(
             "/{sale_id}/resume",
             response_model=DataResponse[SaleResponse],
             summary="Resume parked sale",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.resume_sale)
         self.router.post(
             "/{sale_id}/discount",
             response_model=DataResponse[SaleResponse],
             summary="Apply discount to sale",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.apply_discount)
         self.router.post(
             "/{sale_id}/payments",
@@ -190,24 +207,28 @@ class POSSaleRouter:
             status_code=status.HTTP_201_CREATED,
             summary="Register payment",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.register_payment)
         self.router.get(
             "/{sale_id}/payments",
             response_model=ListResponse[PaymentResponse],
             summary="List sale payments",
             responses=RESPONSES_LIST,
+            dependencies=_pos,
         )(self.get_sale_payments)
         self.router.put(
             "/{sale_id}/items/{item_id}/price",
             response_model=DataResponse[SaleItemResponse],
             summary="Override item price",
             responses=RESPONSES_COMMAND,
+            dependencies=_pos,
         )(self.override_item_price)
         self.router.get(
             "/{sale_id}/receipt",
             response_model=DataResponse[ReceiptResponse],
             summary="Generate receipt",
             responses=RESPONSES_QUERY,
+            dependencies=_pos,
         )(self.generate_receipt)
 
     def create_sale(

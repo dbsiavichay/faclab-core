@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.reports.inventory.app.queries.movement_history import (
     GetMovementHistoryReportQuery,
     GetMovementHistoryReportQueryHandler,
@@ -44,29 +46,35 @@ class ReportRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.REPORT_INVENTORY_READ))]
+
         self.router.get(
             "/valuation",
             response_model=DataResponse[InventoryValuationResponse],
             summary="Inventory valuation report",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.valuation)
         self.router.get(
             "/rotation",
             response_model=ListResponse[ProductRotationResponse],
             summary="Product rotation report",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.rotation)
         self.router.get(
             "/movements",
             response_model=PaginatedDataResponse[MovementHistoryItemResponse],
             summary="Movement history report",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.movement_history)
         self.router.get(
             "/summary",
             response_model=ListResponse[WarehouseSummaryResponse],
             summary="Warehouse summary report",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.warehouse_summary)
 
     def valuation(

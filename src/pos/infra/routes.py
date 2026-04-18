@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, Query
 from wireup import Injected
 
+from src.auth.domain.permissions import Permission
+from src.auth.infra.dependencies import require_permission
 from src.catalog.product.app.queries.get_products import (
     GetAllProductsQuery,
     GetAllProductsQueryHandler,
@@ -43,23 +45,28 @@ class POSProductRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.PRODUCT_READ))]
+
         self.router.get(
             "",
             response_model=ListResponse[ProductResponse],
             summary="List products",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.get(
             "/search",
             response_model=ListResponse[ProductResponse],
             summary="Search products by SKU, barcode or name",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.search)
         self.router.get(
             "/{id}",
             response_model=DataResponse[ProductResponse],
             summary="Get product",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
 
     def get_all(
@@ -103,30 +110,37 @@ class POSCustomerRouter:
         self._setup_routes()
 
     def _setup_routes(self):
+        _read = [Depends(require_permission(Permission.CUSTOMER_READ))]
+        _write = [Depends(require_permission(Permission.CUSTOMER_WRITE))]
+
         self.router.post(
             "",
             response_model=DataResponse[CustomerResponse],
             summary="Quick create customer",
             status_code=201,
             responses=RESPONSES_COMMAND,
+            dependencies=_write,
         )(self.create)
         self.router.get(
             "",
             response_model=ListResponse[CustomerResponse],
             summary="List customers",
             responses=RESPONSES_LIST,
+            dependencies=_read,
         )(self.get_all)
         self.router.get(
             "/search/by-tax-id",
             response_model=DataResponse[CustomerResponse],
             summary="Search customer by tax ID",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_tax_id)
         self.router.get(
             "/{id}",
             response_model=DataResponse[CustomerResponse],
             summary="Get customer",
             responses=RESPONSES_QUERY,
+            dependencies=_read,
         )(self.get_by_id)
 
     def create(
