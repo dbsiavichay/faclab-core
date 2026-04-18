@@ -40,9 +40,9 @@ class AuthenticatedUserResponse(BaseModel):
     id: int = Field(ge=1)
     username: str
     role: int = Field(
-        description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER)"
+        description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER, 5=CASHIER)"
     )
-    permissions: list[str] = Field(default_factory=list)
+    permissions: list[str] = []
 
 
 class CreateUserRequest(BaseModel):
@@ -54,8 +54,8 @@ class CreateUserRequest(BaseModel):
     role: int = Field(
         4,
         ge=1,
-        le=4,
-        description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER)",
+        le=5,
+        description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER, 5=CASHIER)",
     )
 
 
@@ -65,8 +65,8 @@ class UpdateUserRoleRequest(BaseModel):
     role: int = Field(
         ...,
         ge=1,
-        le=4,
-        description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER)",
+        le=5,
+        description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER, 5=CASHIER)",
     )
 
 
@@ -77,7 +77,7 @@ class UserResponse(BaseModel):
     username: str
     email: str
     role: int = Field(
-        description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER)"
+        description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER, 5=CASHIER)"
     )
     is_active: bool
     last_login_at: datetime | None = None
@@ -86,4 +86,4 @@ class UserResponse(BaseModel):
 
 class UserQueryParams(QueryParams):
     is_active: bool | None = Field(None, description="Filter by active status")
-    role: int | None = Field(None, ge=1, le=4, description="Filter by role")
+    role: int | None = Field(None, ge=1, le=5, description="Filter by role")

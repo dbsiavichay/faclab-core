@@ -86,6 +86,80 @@ domain model.
 | **Admin** | `/api/admin` | [`/docs/admin`](/docs/admin) | Back-office: catalog, inventory, warehouses, customers, suppliers, purchasing, sales reporting, and analytics. |
 | **POS** | `/api/pos` | [`/docs/pos`](/docs/pos) | Point-of-sale terminal: product lookup, customer search, shift management, full sales lifecycle, refunds, cash drawer, and operational reports. |
 
+Authentication endpoints live under `/api/auth` and are included in **all three docs**, since both Admin and POS surfaces require a Bearer token.
+
+---
+
+## Authentication
+
+All endpoints — except `POST /api/auth/login` and `POST /api/auth/refresh` — require a **JWT Bearer token** (`HS256`) in the `Authorization` header:
+
+```
+Authorization: Bearer <accessToken>
+```
+
+### Flow
+
+1. **Login** — `POST /api/auth/login` with `{ "username": "...", "password": "..." }`. Receive an `accessToken` and a `refreshToken`.
+2. **Authenticated calls** — send `Authorization: Bearer <accessToken>` on every request.
+3. **Refresh** — when the access token expires (the API responds with a `TOKEN_EXPIRED` error), `POST /api/auth/refresh` with `{ "refreshToken": "..." }` to obtain a new pair. The refresh token is also rotated.
+4. **Profile / change password** — `GET /api/auth/me` and `POST /api/auth/change-password` operate on the currently authenticated user.
+
+### Token lifetimes
+
+| Token | Default TTL | Env override |
+|-------|-------------|--------------|
+| Access | 15 minutes | `JWT_ACCESS_TTL_SECONDS` |
+| Refresh | 7 days | `JWT_REFRESH_TTL_SECONDS` |
+
+The signing secret is `JWT_SECRET` and the issuer claim is `JWT_ISSUER` (default `faclab-core`).
+
+### Roles & permissions
+
+Authorization is permission-based. Each user holds a single role, and each role expands to a set of granular permissions (e.g. `product:read`, `sale:cancel`, `pos:operate`, `user:manage`). Endpoints declare the permissions they require; missing permissions return a `PERMISSION_DENIED` error.
+
+| Role | Intended for | Highlights |
+|------|--------------|------------|
+| **ADMIN** | System owner / IT | Full access, including user management. |
+| **MANAGER** | Store / branch manager | Everything except user management and POS. Can confirm purchases, cancel sales, approve refunds. |
+| **OPERATOR** | Back-office / warehouse staff | Inventory writes (movements, lots, serials, adjustments, transfers), product/customer/supplier writes, sale & purchase create — no critical approvals, no POS, no user management. |
+| **VIEWER** | Auditors / accountants | Read-only across the catalog, inventory, sales, purchases, customers, suppliers, alerts and reports. |
+| **CASHIER** | POS terminal operator | POS operations, sale create/read, customer create/read, product/stock read, POS reports. No inventory writes, no approvals, no admin. |
+
+### Authorization errors
+
+| HTTP | Error code | Meaning |
+|------|------------|---------|
+| 400 | `INVALID_CREDENTIALS` | Wrong username/password, or user is inactive. |
+| 400 | `TOKEN_EXPIRED` | Access (or refresh) token expired — call `/api/auth/refresh` or log in again. |
+| 400 | `INVALID_TOKEN` | Token is malformed, signed with a wrong secret, or refers to a user that no longer exists/is active. |
+| 400 | `PERMISSION_DENIED` | Authenticated, but missing one or more permissions required by the endpoint. |
+
+### Trying it from this UI
+
+Click the **lock icon** at the top of any endpoint, choose **`bearerAuth`**, and paste the `accessToken` value (without the `Bearer ` prefix). Scalar will inject the `Authorization` header on every "Try it" request.
+
+### curl example
+
+```bash
+# 1. Login
+TOKENS=$(curl -s -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"change-me"}')
+
+ACCESS=$(echo "$TOKENS" | jq -r '.data.accessToken')
+REFRESH=$(echo "$TOKENS" | jq -r '.data.refreshToken')
+
+# 2. Call a protected endpoint
+curl -s http://localhost:3000/api/auth/me \
+  -H "Authorization: Bearer $ACCESS"
+
+# 3. Refresh when the access token expires
+curl -s -X POST http://localhost:3000/api/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d "{\"refreshToken\":\"$REFRESH\"}"
+```
+
 ---
 
 ## Response format
@@ -159,6 +233,23 @@ All errors follow a consistent structure with one or more error entries:
 """
 
     API_OPENAPI_TAGS: list[dict] = [
+        # Administration — Auth & Users
+        {
+            "name": "Auth",
+            "description": (
+                "Authentication endpoints — login, refresh access tokens, get the "
+                "current authenticated user, and change password. "
+                "**`POST /api/auth/login` and `POST /api/auth/refresh` are public**; "
+                "all other endpoints require a Bearer token."
+            ),
+        },
+        {
+            "name": "Users",
+            "description": (
+                "Administer system users: create, list, view, update role, "
+                "activate and deactivate. Requires the `user:manage` permission."
+            ),
+        },
         # Admin — Catalog
         {
             "name": "Categories",
@@ -327,6 +418,10 @@ All errors follow a consistent structure with one or more error entries:
     ]
 
     API_TAG_GROUPS: list[dict] = [
+        {
+            "name": "Administration",
+            "tags": ["Auth", "Users"],
+        },
         {
             "name": "Catalog",
             "tags": [
