@@ -144,14 +144,14 @@ def _scalar_response(title: str, schema_url: str) -> HTMLResponse:
     )
 
 
-def _filtered_schema(path_prefix: str) -> dict:
-    """Return a deepcopy of the full schema containing only operations whose paths start with *path_prefix*."""
+def _filtered_schema(path_prefixes: tuple[str, ...]) -> dict:
+    """Return a deepcopy of the full schema containing only operations whose paths start with one of *path_prefixes*."""
     schema = copy.deepcopy(app.openapi())
     used_tags: set[str] = set()
     filtered_paths: dict = {}
 
     for path, path_item in schema.get("paths", {}).items():
-        if not path.startswith(path_prefix):
+        if not any(path.startswith(p) for p in path_prefixes):
             continue
         filtered_paths[path] = path_item
         for _method, operation in path_item.items():
@@ -330,11 +330,11 @@ if _docs.enabled:
 
     @app.get("/openapi/admin.json", include_in_schema=False)
     async def admin_openapi_schema():
-        return JSONResponse(_filtered_schema("/api/admin"))
+        return JSONResponse(_filtered_schema(("/api/admin", "/api/auth")))
 
     @app.get("/openapi/pos.json", include_in_schema=False)
     async def pos_openapi_schema():
-        return JSONResponse(_filtered_schema("/api/pos"))
+        return JSONResponse(_filtered_schema(("/api/pos", "/api/auth")))
 
 
 # ---------------------------------------------------------------------------
