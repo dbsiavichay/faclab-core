@@ -26,6 +26,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     username=claims.username,
                     role=role,
                     permissions=permissions_for(role),
+                    must_change_password=claims.must_change_password,
                 )
             except TokenExpiredError:
                 request.state.auth_error = "token_expired"

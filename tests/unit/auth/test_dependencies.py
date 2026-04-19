@@ -5,6 +5,7 @@ import pytest
 from src.auth.domain.entities import AuthenticatedUser, Role
 from src.auth.domain.exceptions import (
     InvalidTokenError,
+    PasswordChangeRequiredError,
     PermissionDeniedError,
     TokenExpiredError,
 )
@@ -73,4 +74,17 @@ def test_require_permission_raises_when_missing():
     )
     dep = require_permission(Permission.USER_MANAGE)
     with pytest.raises(PermissionDeniedError):
+        dep(user=user)
+
+
+def test_require_permission_blocks_when_must_change_password():
+    user = AuthenticatedUser(
+        id=3,
+        username="cashier",
+        role=Role.CASHIER,
+        permissions=frozenset({Permission.POS_OPERATE}),
+        must_change_password=True,
+    )
+    dep = require_permission(Permission.POS_OPERATE)
+    with pytest.raises(PasswordChangeRequiredError):
         dep(user=user)

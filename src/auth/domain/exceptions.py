@@ -17,6 +17,10 @@ class PermissionDeniedError(ApplicationError):
     error_code = "PERMISSION_DENIED"
 
 
+class PasswordChangeRequiredError(ApplicationError):
+    error_code = "PASSWORD_CHANGE_REQUIRED"
+
+
 class UsernameAlreadyExistsError(DomainError):
     error_code = "USERNAME_ALREADY_EXISTS"
 

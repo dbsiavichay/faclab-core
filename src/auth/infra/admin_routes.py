@@ -5,6 +5,10 @@ from src.auth.app.commands.activate_user import (
     ActivateUserCommand,
     ActivateUserCommandHandler,
 )
+from src.auth.app.commands.admin_reset_password import (
+    AdminResetPasswordCommand,
+    AdminResetPasswordCommandHandler,
+)
 from src.auth.app.commands.create_user import (
     CreateUserCommand,
     CreateUserCommandHandler,
@@ -23,9 +27,11 @@ from src.auth.app.queries.get_users import (
     ListUsersQuery,
     ListUsersQueryHandler,
 )
+from src.auth.domain.entities import AuthenticatedUser
 from src.auth.domain.permissions import Permission
 from src.auth.infra.dependencies import require_permission
 from src.auth.infra.validators import (
+    AdminResetPasswordRequest,
     CreateUserRequest,
     UpdateUserRoleRequest,
     UserQueryParams,
@@ -92,6 +98,13 @@ class UserAdminRouter:
             responses=RESPONSES_COMMAND,
             dependencies=_perm,
         )(self.deactivate)
+        self.router.post(
+            "/{user_id}/reset-password",
+            response_model=DataResponse[UserResponse],
+            summary="Reset a user's password (forces must-change on next action)",
+            responses=RESPONSES_COMMAND,
+            dependencies=_perm,
+        )(self.reset_password)
 
     def list_users(
         self,
@@ -162,4 +175,21 @@ class UserAdminRouter:
         meta: Meta = Depends(get_meta),
     ) -> DataResponse[UserResponse]:
         result = handler.handle(DeactivateUserCommand(user_id=user_id))
+        return DataResponse(data=UserResponse.model_validate(result), meta=meta)
+
+    def reset_password(
+        self,
+        handler: Injected[AdminResetPasswordCommandHandler],
+        user_id: int,
+        body: AdminResetPasswordRequest,
+        caller: AuthenticatedUser = Depends(require_permission(Permission.USER_MANAGE)),
+        meta: Meta = Depends(get_meta),
+    ) -> DataResponse[UserResponse]:
+        result = handler.handle(
+            AdminResetPasswordCommand(
+                user_id=user_id,
+                new_password=body.new_password,
+                reset_by_user_id=caller.id,
+            )
+        )
         return DataResponse(data=UserResponse.model_validate(result), meta=meta)

@@ -1,4 +1,5 @@
 from src.auth.app.commands.activate_user import ActivateUserCommandHandler
+from src.auth.app.commands.admin_reset_password import AdminResetPasswordCommandHandler
 from src.auth.app.commands.change_password import ChangePasswordCommandHandler
 from src.auth.app.commands.create_user import CreateUserCommandHandler
 from src.auth.app.commands.deactivate_user import DeactivateUserCommandHandler
@@ -26,6 +27,7 @@ INJECTABLES = [
     UpdateUserRoleCommandHandler,
     DeactivateUserCommandHandler,
     ActivateUserCommandHandler,
+    AdminResetPasswordCommandHandler,
     ListUsersQueryHandler,
     GetUserByIdQueryHandler,
 ]

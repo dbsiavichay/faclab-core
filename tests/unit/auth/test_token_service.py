@@ -103,6 +103,33 @@ def test_garbage_token_raises_invalid_token():
         svc.decode_access("not-a-jwt")
 
 
+def test_mcp_claim_round_trip():
+    svc = _service()
+    user = _user(must_change_password=True)
+    pair = svc.issue_pair(user)
+    claims = svc.decode_access(pair.access_token)
+    assert claims.must_change_password is True
+    refresh_claims = svc.decode_refresh(pair.refresh_token)
+    assert refresh_claims.must_change_password is True
+
+
+def test_mcp_claim_defaults_false_for_legacy_tokens():
+    svc = _service()
+    now = datetime.now(UTC)
+    payload = {
+        "sub": "1",
+        "username": "u",
+        "role": 1,
+        "typ": "access",
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(seconds=60)).timestamp()),
+        "iss": "faclab-test",
+    }
+    token = jwt.encode(payload, "test-secret", algorithm="HS256")
+    claims = svc.decode_access(token)
+    assert claims.must_change_password is False
+
+
 def test_wrong_issuer_raises_invalid_token():
     svc = _service(JWT_ISSUER="faclab-a")
     pair = svc.issue_pair(_user())
