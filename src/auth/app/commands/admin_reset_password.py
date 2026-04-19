@@ -4,8 +4,7 @@ from wireup import injectable
 
 from src.auth.app.repositories import UserRepository
 from src.auth.app.services.password_hasher import PasswordHasher
-from src.auth.domain.events import UserPasswordChanged
-from src.auth.domain.exceptions import InvalidCredentialsError
+from src.auth.domain.events import UserPasswordReset
 from src.auth.domain.value_objects import PlainPassword
 from src.shared.app.commands import Command, CommandHandler
 from src.shared.app.events import EventPublisher
@@ -13,14 +12,14 @@ from src.shared.domain.exceptions import NotFoundError
 
 
 @dataclass
-class ChangePasswordCommand(Command):
+class AdminResetPasswordCommand(Command):
     user_id: int = 0
-    current_password: str = ""
     new_password: str = ""
+    reset_by_user_id: int = 0
 
 
 @injectable(lifetime="scoped")
-class ChangePasswordCommandHandler(CommandHandler[ChangePasswordCommand, None]):
+class AdminResetPasswordCommandHandler(CommandHandler[AdminResetPasswordCommand, dict]):
     def __init__(
         self,
         repo: UserRepository,
@@ -31,24 +30,27 @@ class ChangePasswordCommandHandler(CommandHandler[ChangePasswordCommand, None]):
         self.hasher = hasher
         self.event_publisher = event_publisher
 
-    def _handle(self, command: ChangePasswordCommand) -> None:
+    def _handle(self, command: AdminResetPasswordCommand) -> dict:
         user = self.repo.get_by_id(command.user_id)
         if user is None:
             raise NotFoundError(f"User with id {command.user_id} not found")
 
         PlainPassword(command.new_password)
 
-        if not self.hasher.verify(command.current_password, user.password_hash):
-            raise InvalidCredentialsError("current password is incorrect")
-
         new_hash = self.hasher.hash(command.new_password)
-        user = replace(user, password_hash=new_hash, must_change_password=False)
-        self.repo.update(user)
+        user = replace(
+            user,
+            password_hash=new_hash,
+            must_change_password=True,
+        )
+        user = self.repo.update(user)
 
         self.event_publisher.publish(
-            UserPasswordChanged(
+            UserPasswordReset(
                 aggregate_id=user.id,
                 user_id=user.id,
                 username=user.username,
+                reset_by_user_id=command.reset_by_user_id,
             )
         )
+        return user.dict()

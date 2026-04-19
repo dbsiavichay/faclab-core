@@ -42,3 +42,17 @@ class UserPasswordChanged(DomainEvent):
             "user_id": self.user_id,
             "username": self.username,
         }
+
+
+@dataclass
+class UserPasswordReset(DomainEvent):
+    user_id: int = 0
+    username: str = ""
+    reset_by_user_id: int = 0
+
+    def _payload(self) -> dict[str, Any]:
+        return {
+            "user_id": self.user_id,
+            "username": self.username,
+            "reset_by_user_id": self.reset_by_user_id,
+        }

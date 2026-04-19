@@ -37,12 +37,22 @@ class TokenPairResponse(BaseModel):
 
 
 class AuthenticatedUserResponse(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
     id: int = Field(ge=1)
     username: str
     role: int = Field(
         description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER, 5=CASHIER)"
     )
     permissions: list[str] = []
+    must_change_password: bool = Field(
+        False,
+        description=(
+            "When true, the caller must hit POST /api/auth/change-password before any "
+            "permission-gated route; all protected endpoints will return 403 "
+            "PASSWORD_CHANGE_REQUIRED."
+        ),
+    )
 
 
 class CreateUserRequest(BaseModel):
@@ -80,8 +90,23 @@ class UserResponse(BaseModel):
         description="Role code (1=ADMIN, 2=MANAGER, 3=OPERATOR, 4=VIEWER, 5=CASHIER)"
     )
     is_active: bool
+    must_change_password: bool = False
     last_login_at: datetime | None = None
     created_at: datetime | None = None
+
+
+class AdminResetPasswordRequest(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    new_password: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description=(
+            "Temporary password communicated out-of-band to the user. "
+            "They will be forced to change it on their next action."
+        ),
+    )
 
 
 class UserQueryParams(QueryParams):

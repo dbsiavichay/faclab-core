@@ -109,6 +109,7 @@ class AuthRouter:
                 username=user.username,
                 role=int(user.role),
                 permissions=sorted(p.value for p in user.permissions),
+                must_change_password=user.must_change_password,
             ),
             meta=meta,
         )

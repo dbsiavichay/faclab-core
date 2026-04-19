@@ -24,6 +24,7 @@ class TokenClaims:
     iat: int
     exp: int
     iss: str
+    must_change_password: bool = False
 
 
 class TokenService(ABC):

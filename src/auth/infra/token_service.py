@@ -49,6 +49,7 @@ class JwtTokenService(TokenService):
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(seconds=ttl_seconds)).timestamp()),
             "iss": self._issuer,
+            "mcp": bool(user.must_change_password),
         }
         return jwt.encode(payload, self._secret, algorithm=_ALGORITHM)
 
@@ -80,6 +81,7 @@ class JwtTokenService(TokenService):
                 iat=int(payload["iat"]),
                 exp=int(payload["exp"]),
                 iss=payload["iss"],
+                must_change_password=bool(payload.get("mcp", False)),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise InvalidTokenError("malformed token claims") from exc

@@ -21,6 +21,7 @@ class User(Entity):
     role: Role = Role.VIEWER
     id: int | None = None
     is_active: bool = True
+    must_change_password: bool = False
     last_login_at: datetime | None = None
     created_at: datetime | None = None
 
@@ -31,3 +32,4 @@ class AuthenticatedUser:
     username: str
     role: Role
     permissions: frozenset = field(default_factory=frozenset)
+    must_change_password: bool = False

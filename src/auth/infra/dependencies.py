@@ -3,6 +3,7 @@ from fastapi import Depends, Request
 from src.auth.domain.entities import AuthenticatedUser
 from src.auth.domain.exceptions import (
     InvalidTokenError,
+    PasswordChangeRequiredError,
     PermissionDeniedError,
     TokenExpiredError,
 )
@@ -30,6 +31,10 @@ def require_permission(*required: Permission):
     def _dep(
         user: AuthenticatedUser = Depends(get_current_user),
     ) -> AuthenticatedUser:
+        if user.must_change_password:
+            raise PasswordChangeRequiredError(
+                "password change required before any other action"
+            )
         if not set(required).issubset(user.permissions):
             missing = [p.value for p in required if p not in user.permissions]
             raise PermissionDeniedError(f"missing permissions: {missing}")
