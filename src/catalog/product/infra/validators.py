@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic.alias_generators import to_camel
 
 from src.shared.infra.validators import DecimalNumber, QueryParams
@@ -18,6 +18,14 @@ class ProductRequest(BaseModel):
     name: str = Field(description="Product name")
     sku: str = Field(description="Stock Keeping Unit — unique product code")
     description: str | None = Field(None, description="Product description")
+
+    @field_validator("barcode", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: str | None) -> str | None:
+        if isinstance(v, str) and v.strip() == "":
+            return None
+        return v
+    
     barcode: str | None = Field(None, description="Barcode (EAN/UPC)")
     category_id: int | None = Field(None, ge=1, description="Category ID")
     unit_of_measure_id: int | None = Field(None, ge=1, description="Unit of measure ID")

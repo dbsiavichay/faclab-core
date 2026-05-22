@@ -22,6 +22,7 @@ class UpdateProductCommand(Command):
     unit_of_measure_id: int | None = None
     purchase_price: Decimal | None = None
     sale_price: Decimal | None = None
+    tax_rate: Decimal = Decimal("15.00")
     is_active: bool = True
     is_service: bool = False
     min_stock: int = 0
@@ -51,6 +52,7 @@ class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
             unit_of_measure_id=command.unit_of_measure_id,
             purchase_price=command.purchase_price,
             sale_price=command.sale_price,
+            tax_rate=command.tax_rate,
             is_active=command.is_active,
             is_service=command.is_service,
             min_stock=command.min_stock,
@@ -70,6 +72,7 @@ class UpdateProductCommandHandler(CommandHandler[UpdateProductCommand, dict]):
             "unit_of_measure_id",
             "purchase_price",
             "sale_price",
+            "tax_rate",
             "is_active",
             "is_service",
             "min_stock",
